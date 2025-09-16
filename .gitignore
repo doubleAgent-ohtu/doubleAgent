@@ -23,6 +23,10 @@ dist-ssr
 *.sln
 *.sw?
 
-# Custom
+# Backend
+.venv
+__pycache__
+
+# Secrets
 .env
 .env.local
