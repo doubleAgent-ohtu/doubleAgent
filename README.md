@@ -6,9 +6,6 @@
 
 This repository contains a **FastAPI backend** and a **React + Vite frontend** in a monorepo setup.
 
-- **Backend:** `backend/app/main.py` (FastAPI)
-- **Frontend:** `frontend/src/App.jsx` (React + Vite)
-
 This README explains how to run the project manually during development and also how to test using Docker Compose.
 
 ---
