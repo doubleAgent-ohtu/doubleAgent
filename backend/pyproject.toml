@@ -1,19 +1,22 @@
-[project]
+[tool.poetry]
 name = "double-agent-backend"
 version = "0.1.0"
 description = ""
-authors = [
-    {name = "Your Name",email = "you@example.com"}
-]
-license = {text = "MIT"}
-readme = "README.md"
-requires-python = ">=3.11"
-dependencies = [
-    "fastapi (>=0.116.1,<0.117.0)",
-    "uvicorn (>=0.35.0,<0.36.0)"
-]
+authors = ["Your Name <you@example.com>"]
+packages = [{include = "app"}]
 
+[tool.poetry.dependencies]
+python = "^3.10.12"
+fastapi = "^0.116.1"
+uvicorn = "^0.35.0"
+langchain-core = "^0.3.0"
+langgraph = "^0.2.28"
+langchain-openai = "^0.2.0"
+python-dotenv = "^1.0.0"
 
 [build-system]
-requires = ["poetry-core>=2.0.0,<3.0.0"]
+requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
+
+[tool.poetry.scripts]
+dev = "app.dev:main"
