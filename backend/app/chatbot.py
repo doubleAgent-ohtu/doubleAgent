@@ -1,7 +1,7 @@
 import os
 from typing import Dict, Any
 from dotenv import load_dotenv
-from langchain_openai import AzureChatOpenAI
+from langchain_openai import ChatOpenAI
 from langchain_core.messages import HumanMessage, AIMessage
 from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
 from langgraph.checkpoint.memory import MemorySaver
@@ -12,13 +12,11 @@ load_dotenv()
 
 class ChatbotService:
     def __init__(self):
-        # Initialize Azure OpenAI model
-        self.model = AzureChatOpenAI(
-            azure_endpoint=os.getenv("AZURE_OPENAI_ENDPOINT"),
+        self.model = ChatOpenAI(
+            model="gpt-4o-mini",
             openai_api_key=os.getenv("OPENAI_API_KEY"),
-            azure_deployment=os.getenv("AZURE_OPENAI_DEPLOYMENT", "gpt-4"),
-            openai_api_version=os.getenv("AZURE_OPENAI_API_VERSION", "2024-02-15-preview"),
-            temperature=0.7
+            openai_api_base="https://doubleagents.openai.azure.com/openai/v1",
+            temperature=1.0
         )
         
         # Simple prompt

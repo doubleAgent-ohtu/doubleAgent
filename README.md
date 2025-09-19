@@ -28,7 +28,7 @@ You can run the backend and frontend dev servers manually for faster development
 ```bash
 cd backend
 poetry install
-poetry run uvicorn app.main:app --reload
+poetry run dev --reload
 ```
 
 ### 1.2 Frontend
