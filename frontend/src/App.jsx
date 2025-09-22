@@ -39,13 +39,20 @@ const App = () => {
           value={input}
           onChange={(e) => setInput(e.target.value)}
           placeholder="Type something"
+          style={{
+            fontSize: "1.2em",
+            padding: "0.7em",
+            width: "400px",
+            borderRadius: "8px",
+            marginRight: "1em"
+          }}
         />
         <button type="submit">Add</button>
       </form>
 
       <div style={{ marginTop: "1rem" }}>
         <h2>Conversation:</h2>
-        <div style={{ textAlign: "left", maxWidth: 600, margin: "0 auto" }}>
+        <div className="chat-window">
           {messages.map((msg, idx) => (
             <div key={idx} style={{ margin: "0.5em 0" }}>
               <b>{msg.role === "user" ? "You" : "AI"}:</b> {msg.content}
