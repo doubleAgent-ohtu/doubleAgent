@@ -34,3 +34,8 @@ jobs:
         run: |
           echo Add other actions to build,
           echo test, and deploy your project.
+
+      # Run Prettier check(for JS frontend)
+      - name: Check code formatting with Prettier
+        run: npm run format:check
+      
