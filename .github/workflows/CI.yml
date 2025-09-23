@@ -38,4 +38,18 @@ jobs:
       # Run Prettier check(for JS frontend)
       - name: Check code formatting with Prettier
         run: npm run format:check
+
+      # Setup Python for backend
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+
+      # Install Python dependencies (Black)
+      - name: Install Python Black
+        run: pip install black
+
+      # Run Black check (Python)
+      - name: Check Python formatting with Black
+        run: black --check "backend/app/**/*.py"
       
