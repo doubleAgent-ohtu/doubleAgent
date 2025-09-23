@@ -35,9 +35,17 @@ jobs:
           echo Add other actions to build,
           echo test, and deploy your project.
 
-      # Run Prettier check(for JS frontend)
-      - name: Check code formatting with Prettier
-        run: npm run format:check
+      #Install npm for Prettier check
+      - name: Install npm dependencies (frontend)
+        run: |
+          cd frontend
+          npm install
+
+      #Run Prettier in frontend
+      - name: Check code formatting with Prettier (frontend)
+        run: |
+          cd frontend
+          npm run format:check
 
       # Setup Python for backend
       - name: Set up Python
