@@ -15,7 +15,7 @@ app.add_middleware(
 )
 
 # Initialize the chatbot
-chatbot = ChatbotService()
+chatbot = ChatbotService(system_prompt='You are a helpful assistant. Answer questions clearly.')
 
 messages: list[str] = []
 
@@ -27,6 +27,7 @@ class Message(BaseModel):
 class ChatMessage(BaseModel):
     message: str
     thread_id: str = "default"
+    system_prompt: str | None = None 
 
 
 class ChatResponse(BaseModel):
@@ -50,7 +51,7 @@ def get_messages():
 @app.post("/chat", response_model=ChatResponse)
 def chat_with_bot(chat_msg: ChatMessage):
     """
-    Chat with the AI assistant
+    Chat with the AI assistant. Optional custom system prompt can be provided.
     """
     ai_response = chatbot.chat(chat_msg.message, chat_msg.thread_id)
 
