@@ -10,20 +10,23 @@ from langgraph.graph import START, MessagesState, StateGraph
 # Load environment variables
 load_dotenv()
 
+
 class ChatbotService:
     def __init__(self):
         self.model = ChatOpenAI(
             model="gpt-4o-mini",
             openai_api_key=os.getenv("OPENAI_API_KEY"),
             openai_api_base="https://doubleagents.openai.azure.com/openai/v1",
-            temperature=1.0
+            temperature=1.0,
         )
 
         # Simple prompt
-        self.prompt_template = ChatPromptTemplate.from_messages([
-            ("system", "You are a helpful assistant. Answer questions clearly."),
-            MessagesPlaceholder(variable_name="messages"),
-        ])
+        self.prompt_template = ChatPromptTemplate.from_messages(
+            [
+                ("system", "You are a helpful assistant. Answer questions clearly."),
+                MessagesPlaceholder(variable_name="messages"),
+            ]
+        )
 
         self.workflow = StateGraph(state_schema=MessagesState)
         self.workflow.add_edge(START, "model")
@@ -59,9 +62,7 @@ class ChatbotService:
             input_messages = [HumanMessage(content=message)]
 
             async for chunk, metadata in self.app.astream(
-                {"messages": input_messages}, 
-                config, 
-                stream_mode="messages"
+                {"messages": input_messages}, config, stream_mode="messages"
             ):
                 if isinstance(chunk, AIMessage):
                     yield chunk.content

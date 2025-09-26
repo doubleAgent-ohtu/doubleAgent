@@ -1,38 +1,38 @@
-import { useState, useEffect } from "react"
-import axios from "axios"
+import { useState, useEffect } from 'react';
+import axios from 'axios';
 
 const App = () => {
   // Luodaan kaksi react statea
-  const [input, setInput] = useState("")
-  const [messages, setMessages] = useState([])
+  const [input, setInput] = useState('');
+  const [messages, setMessages] = useState([]);
 
   useEffect(() => {
-    fetch("http://127.0.0.1:8000/messages")
+    fetch('http://127.0.0.1:8000/messages')
       .then((res) => res.json())
-      .then((data) => setMessages(data.messages.map(text => ({ role: "user", content: text }))))
-  }, []) // useEffect hook hakee viestit backendistä vain kerran, kun komponentti mountataan eli kun sivu ladataan
+      .then((data) => setMessages(data.messages.map((text) => ({ role: 'user', content: text }))));
+  }, []); // useEffect hook hakee viestit backendistä vain kerran, kun komponentti mountataan eli kun sivu ladataan
 
   const handleSubmit = async (e) => {
-    e.preventDefault() // Tämä estää html form elementin oletuskäyttäytymisen (sivun uudelleenlataus)
+    e.preventDefault(); // Tämä estää html form elementin oletuskäyttäytymisen (sivun uudelleenlataus)
     try {
-      const res = await axios.post("http://127.0.0.1:8000/chat", { 
+      const res = await axios.post('http://127.0.0.1:8000/chat', {
         message: input,
-        thread_id: "default"
-      }) // Lähetetään POST pyyntö backendille axios kirjaston avulla
+        thread_id: 'default',
+      }); // Lähetetään POST pyyntö backendille axios kirjaston avulla
 
-      setMessages(prev => [
+      setMessages((prev) => [
         ...prev,
-        { role: "user", content: res.data.user_message },
-        { role: "ai", content: res.data.ai_response }
-      ])
-      setInput("") // Tyhjennetään input kenttä
+        { role: 'user', content: res.data.user_message },
+        { role: 'ai', content: res.data.ai_response },
+      ]);
+      setInput(''); // Tyhjennetään input kenttä
     } catch (err) {
-      console.error(err)
+      console.error(err);
     }
-  }
+  };
 
   return (
-    <div style={{ padding: "2rem" }}>
+    <div style={{ padding: '2rem' }}>
       <h1>Our simple chatbot</h1>
       <form onSubmit={handleSubmit}>
         <input
@@ -40,28 +40,28 @@ const App = () => {
           onChange={(e) => setInput(e.target.value)}
           placeholder="Type something"
           style={{
-            fontSize: "1.2em",
-            padding: "0.7em",
-            width: "400px",
-            borderRadius: "8px",
-            marginRight: "1em"
+            fontSize: '1.2em',
+            padding: '0.7em',
+            width: '400px',
+            borderRadius: '8px',
+            marginRight: '1em',
           }}
         />
         <button type="submit">Add</button>
       </form>
 
-      <div style={{ marginTop: "1rem" }}>
+      <div style={{ marginTop: '1rem' }}>
         <h2>Conversation:</h2>
         <div className="chat-window">
           {messages.map((msg, idx) => (
-            <div key={idx} style={{ margin: "0.5em 0" }}>
-              <b>{msg.role === "user" ? "You" : "AI"}:</b> {msg.content}
+            <div key={idx} style={{ margin: '0.5em 0' }}>
+              <b>{msg.role === 'user' ? 'You' : 'AI'}:</b> {msg.content}
             </div>
           ))}
         </div>
       </div>
     </div>
-  )
-}
+  );
+};
 
-export default App
+export default App;
