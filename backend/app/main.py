@@ -53,6 +53,9 @@ def chat_with_bot(chat_msg: ChatMessage):
     """
     Chat with the AI assistant. Optional custom system prompt can be provided.
     """
+    if chat_msg.system_prompt and chat_msg.system_prompt.strip():
+        chatbot.set_system_prompt(chat_msg.system_prompt)
+
     ai_response = chatbot.chat(chat_msg.message, chat_msg.thread_id)
 
     return ChatResponse(
