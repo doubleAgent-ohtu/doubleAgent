@@ -18,13 +18,13 @@ RUN pip install --no-cache-dir "poetry==1.8.3"
 ENV POETRY_VIRTUALENVS_CREATE=false
 
 # Copy dependency files
-COPY backend/pyproject.toml backend/poetry.lock ./
+COPY pyproject.toml poetry.lock ./
 
 # Install production dependencies
 RUN poetry install --only main --no-interaction --no-ansi
 
 # Copy application code
-COPY backend/app ./app
+COPY app ./app
 
 # -----------------------------
 # Final production image
