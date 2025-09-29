@@ -5,6 +5,7 @@ import App from './App.jsx';
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>
-    <App />
+    <h1>Chatti pois käytöstä kunnes yliopistokirjautuminen on kunnossa.</h1>
+    {/* <App /> */}
   </StrictMode>,
 );
