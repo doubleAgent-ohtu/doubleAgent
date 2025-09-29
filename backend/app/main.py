@@ -34,6 +34,7 @@ class ChatResponse(BaseModel):
     ai_response: str
     thread_id: str
 
+
 # Disable black since we need these back up after login is implemented
 # fmt: off
 
@@ -69,7 +70,7 @@ class ChatResponse(BaseModel):
 
 # fmt: on
 
+
 @app.get("/health")
 def health_check():
     return {"status": "healthy"}
-
