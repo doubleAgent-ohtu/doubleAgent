@@ -34,6 +34,8 @@ class ChatResponse(BaseModel):
     ai_response: str
     thread_id: str
 
+# Disable black since we need these back up after login is implemented
+# fmt: off
 
 # @app.post("/add")
 # def add_message(msg: Message):
@@ -65,6 +67,7 @@ class ChatResponse(BaseModel):
 # def read_root():
 #     return {"message": "Chatbot API is running"}
 
+# fmt: on
 
 @app.get("/health")
 def health_check():
