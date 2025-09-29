@@ -66,6 +66,7 @@ class ChatResponse(BaseModel):
 #     return {"message": "Chatbot API is running"}
 
 
-# @app.get("/health")
-# def health_check():
-#     return {"status": "healthy"}
+@app.get("/health")
+def health_check():
+    return {"status": "healthy"}
+

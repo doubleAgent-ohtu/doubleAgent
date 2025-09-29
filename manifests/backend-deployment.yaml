@@ -1,0 +1,44 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  annotations:
+    alpha.image.policy.openshift.io/resolve-names: "*"
+    image.openshift.io/triggers: >-
+      [{"from":{"kind":"ImageStreamTag","name":"double-agent-backend:latest","namespace":"ohtuprojekti-staging"},"fieldPath":"spec.template.spec.containers[?(@.name==\"double-agent-backend\")].image","pause":"false"}]
+  name: double-agent-backend
+  labels:
+    app: double-agent-backend
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: double-agent-backend
+  template:
+    metadata:
+      labels:
+        app: double-agent-backend
+    spec:
+      containers:
+        - name: double-agent-backend
+          image: double-agent-backend:latest
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 8000
+          readinessProbe:
+            httpGet:
+              path: /docs
+              port: 8000
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /docs
+              port: 8000
+            initialDelaySeconds: 10
+            periodSeconds: 20
+          env:
+            - name: OPENAI_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: openai-key
+                  key: OPENAI_API_KEY
