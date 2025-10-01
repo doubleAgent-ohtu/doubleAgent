@@ -31,8 +31,31 @@ const App = () => {
     }
   };
 
+  const handleLogin = () => {
+    window.location.href = 'http://double-agent-backend:8000/login';
+  };
+
+  const handleLogout = () => {
+    window.location.href = window.location.origin;
+  };
+
   return (
     <div style={{ padding: '2rem' }}>
+      <div style={{ marginBottom: '1rem', textAlign: 'right' }}>
+        <a 
+          href="http://double-agent-backend:8000/login" 
+          style={{
+            backgroundColor: '#4CAF50',
+            color: 'white',
+            padding: '10px 20px',
+            textDecoration: 'none',
+            borderRadius: '5px',
+            fontSize: '14px'
+          }}
+        >
+          Login with University Account
+        </a>
+      </div>
       <h1>Our simple chatbot</h1>
       <form onSubmit={handleSubmit}>
         <input

@@ -2,8 +2,11 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from app.chatbot import ChatbotService
+from app.oidc_uni_login import router as oidc_router
 
 app = FastAPI()
+
+app.include_router(oidc_router)
 
 # CORS eston poisto
 app.add_middleware(
