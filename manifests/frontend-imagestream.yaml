@@ -1,0 +1,19 @@
+kind: ImageStream
+apiVersion: image.openshift.io/v1
+
+metadata:
+  name: double-agent-frontend
+  labels:
+    app: double-agent-frontend
+spec:
+  lookupPolicy:
+    local: false
+  tags:
+    - name: latest
+      from:
+        kind: DockerImage
+        name: aappoarvid/double-agent-frontend:latest
+      importPolicy:
+        scheduled: true
+      referencePolicy:
+        type: Local
