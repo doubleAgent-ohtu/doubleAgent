@@ -18,6 +18,20 @@ You can run the backend and frontend dev servers manually for faster development
 
 - Python 3.11+ and Poetry installed
 - Node.js 20+ and npm installed
+- `.env` file in the `backend/` folder containing your OpenAI API key
+
+To create the `.env` file:
+
+```bash
+cd backend
+touch .env
+```
+
+Add the following line to .env:
+
+```bash
+OPENAI_API_KEY=your_secret_key
+```
 
 ---
 
@@ -28,7 +42,8 @@ You can run the backend and frontend dev servers manually for faster development
 ```bash
 cd backend
 poetry install
-poetry run uvicorn app.main:app --reload
+(poetry add python-dotenv)
+poetry run dev
 ```
 
 ### 1.2 Frontend
@@ -63,10 +78,6 @@ From the project root:
 docker-compose up --build
 ```
 
-> **Note:** This setup is for **testing**, not production.
-> The backend runs Uvicorn without multiple workers or hot reload.
-> The frontend may be served as a static build via Nginx.
-
 ## 3. Notes
 
 > **Tip:** For active development, it’s recommended to run the backend and frontend manually with hot reload.
@@ -75,6 +86,4 @@ docker-compose up --build
 
 > **Future improvements:**
 >
-> - Separate Docker Compose setups for **development** and **production**.
-> - Backend production setup with **Gunicorn + Uvicorn workers**.
 > - Frontend environment variables pointing to production backend.
