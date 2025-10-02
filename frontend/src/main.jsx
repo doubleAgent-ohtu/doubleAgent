@@ -8,7 +8,7 @@ import { useState, useEffect } from 'react';
 const LoginPage = () => {
   const handleLogin = () => {
     // Ohjaa backend:n login-endpointiin
-    window.location.href = 'http://double-agent-backend:8000/login';
+    window.location.href = 'http://localhost:8000/login';
   };
 
   return (
