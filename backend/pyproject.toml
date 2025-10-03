@@ -3,7 +3,7 @@ name = "double-agent-backend"
 version = "0.1.0"
 description = ""
 authors = ["Your Name <you@example.com>"]
-package-mode = false
+packages = [{ include = "app" }]
 
 [tool.poetry.dependencies]
 python = "^3.11"
