@@ -42,7 +42,6 @@ OPENAI_API_KEY=your_secret_key
 ```bash
 cd backend
 poetry install
-(poetry add python-dotenv)
 poetry run dev
 ```
 
@@ -58,7 +57,7 @@ npm run dev
 
 ### 1.3 Connecting
 
-To reach the frontend go to URL <localhost:3000>
+To reach the frontend go to URL <localhost:5173>
 
 To reach the backend go to URL <localhost:8000>
 
