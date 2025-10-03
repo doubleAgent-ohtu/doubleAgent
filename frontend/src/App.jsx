@@ -7,7 +7,7 @@ const App = () => {
   const [messages, setMessages] = useState([]);
 
   useEffect(() => {
-    fetch('http://127.0.0.1:8000/messages')
+    fetch('http://double-agent-backend:8000/messages')
       .then((res) => res.json())
       .then((data) => setMessages(data.messages.map((text) => ({ role: 'user', content: text }))));
   }, []); // useEffect hook hakee viestit backendistä vain kerran, kun komponentti mountataan eli kun sivu ladataan
@@ -15,7 +15,7 @@ const App = () => {
   const handleSubmit = async (e) => {
     e.preventDefault(); // Tämä estää html form elementin oletuskäyttäytymisen (sivun uudelleenlataus)
     try {
-      const res = await axios.post('http://127.0.0.1:8000/chat', {
+      const res = await axios.post('http://double-agent-backend:8000/chat', {
         message: input,
         thread_id: 'default',
       }); // Lähetetään POST pyyntö backendille axios kirjaston avulla

@@ -77,10 +77,6 @@ From the project root:
 docker-compose up --build
 ```
 
-> **Note:** This setup is for **testing**, not production.
-> The backend runs Uvicorn without multiple workers or hot reload.
-> The frontend may be served as a static build via Nginx.
-
 ## 3. Notes
 
 > **Tip:** For active development, it’s recommended to run the backend and frontend manually with hot reload.
@@ -89,6 +85,4 @@ docker-compose up --build
 
 > **Future improvements:**
 >
-> - Separate Docker Compose setups for **development** and **production**.
-> - Backend production setup with **Gunicorn + Uvicorn workers**.
 > - Frontend environment variables pointing to production backend.

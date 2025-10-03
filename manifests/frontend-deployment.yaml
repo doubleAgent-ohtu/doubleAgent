@@ -1,0 +1,24 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  annotations:
+    alpha.image.policy.openshift.io/resolve-names: "*"
+    image.openshift.io/triggers: >-
+      [{"from":{"kind":"ImageStreamTag","name":"double-agent-frontend:latest","namespace":"ohtuprojekti-staging"},"fieldPath":"spec.template.spec.containers[?(@.name==\"double-agent-frontend\")].image","pause":"false"}]
+  name: double-agent-frontend
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: double-agent-frontend
+  template:
+    metadata:
+      labels:
+        app: double-agent-frontend
+    spec:
+      containers:
+        - name: double-agent-frontend
+          image: double-agent-frontend:latest
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 8080
