@@ -24,6 +24,9 @@ spec:
           imagePullPolicy: Always
           ports:
             - containerPort: 8000
+          envFrom:
+            - secretRef:
+                name: double-agent-env
           readinessProbe:
             httpGet:
               path: /health
@@ -36,9 +39,3 @@ spec:
               port: 8000
             initialDelaySeconds: 10
             periodSeconds: 20
-          env:
-            - name: OPENAI_API_KEY
-              valueFrom:
-                secretKeyRef:
-                  name: openai-key
-                  key: OPENAI_API_KEY

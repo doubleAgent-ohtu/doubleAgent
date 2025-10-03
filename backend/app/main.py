@@ -15,7 +15,7 @@ app.add_middleware(
 )
 
 # Initialize the chatbot
-chatbot = ChatbotService()
+# chatbot = ChatbotService()
 
 messages: list[str] = []
 
