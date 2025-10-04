@@ -39,3 +39,9 @@ spec:
               port: 8000
             initialDelaySeconds: 10
             periodSeconds: 20
+          env:
+            - name: DB_URL
+              valueFrom:
+              configMapKeyRef:
+                name: double-agent-config
+                key: DB_URL 
