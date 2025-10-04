@@ -31,3 +31,5 @@ __pycache__
 # Secrets
 .env
 .env.local
+
+manifests/configmap.yaml
