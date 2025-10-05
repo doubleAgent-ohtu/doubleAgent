@@ -5,10 +5,10 @@ import os
 
 router = APIRouter()
 
-OIDC_BASE_URL = os.getenv("OIDC_BASE_URL")
-OIDC_CLIENT_ID = os.getenv("OIDC_CLIENT_ID")
-OIDC_CLIENT_SECRET = os.getenv("OIDC_CLIENT_SECRET") #todo: mail to helpdesk
-OIDC_REDIRECT_URI = os.getenv("OIDC_REDIRECT_URI")
+OIDC_BASE_URL = os.getenv("DA_OIDC_BASE_URL")
+OIDC_CLIENT_ID = os.getenv("DA_OIDC_CLIENT_ID")
+OIDC_CLIENT_SECRET = os.getenv("DA_OIDC_CLIENT_SECRET")
+OIDC_REDIRECT_URI = os.getenv("DA_OIDC_REDIRECT_URI")
 
 oauth = OAuth()
 oauth.register(

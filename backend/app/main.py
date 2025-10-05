@@ -15,7 +15,7 @@ app = FastAPI()
 
 app.add_middleware(
     SessionMiddleware,
-    secret_key=os.getenv("SESSION_SECRET")  
+    secret_key=os.getenv("DA_SESSION_SECRET")  
 )
 
 app.include_router(oidc_router)
