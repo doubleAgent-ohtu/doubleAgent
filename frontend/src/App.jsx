@@ -5,6 +5,8 @@ const App = () => {
   // Luodaan kaksi react statea
   const [input, setInput] = useState('');
   const [messages, setMessages] = useState([]);
+  const [prompt, setPrompt] = useState('');
+  const [promptInput, setPromptInput] = useState('');
 
   useEffect(() => {
     fetch('/api/messages')
@@ -18,6 +20,7 @@ const App = () => {
       const res = await axios.post('/api/chat', {
         message: input,
         thread_id: 'default',
+        system_prompt: prompt,
       }); // Lähetetään POST pyyntö backendille axios kirjaston avulla
 
       setMessages((prev) => [
@@ -31,32 +34,34 @@ const App = () => {
     }
   };
 
-  const handleLogin = () => {
-    window.location.href = '/api/login';
-  };
-
-  const handleLogout = () => {
-    window.location.href = window.location.origin;
+  const handlePromptSet = () => {
+    if (promptInput.trim()) {
+      setPrompt(promptInput);
+      setPromptInput('');
+    }
   };
 
   return (
     <div style={{ padding: '2rem' }}>
-      <div style={{ marginBottom: '1rem', textAlign: 'right' }}>
-        <a
-          href="/api/login"
-          style={{
-            backgroundColor: '#4CAF50',
-            color: 'white',
-            padding: '10px 20px',
-            textDecoration: 'none',
-            borderRadius: '5px',
-            fontSize: '14px',
-          }}
-        >
-          Login with University Account
-        </a>
-      </div>
       <h1>Our simple chatbot</h1>
+      <div style={{ marginBottom: '1em' }}>
+        <input
+          value={promptInput}
+          onChange={(e) => setPromptInput(e.target.value)}
+          placeholder="Type prompt"
+          style={{
+            fontSize: '1.2em',
+            padding: '0.7em',
+            width: '400px',
+            borderRadius: '8px',
+            marginRight: '1em',
+          }}
+        />
+        <button onClick={handlePromptSet}>Set prompt</button>
+      </div>
+      <div style={{ marginBottom: '1em', color: '#555' }}>
+        <b>Current prompt:</b> {prompt}
+      </div>
       <form onSubmit={handleSubmit}>
         <input
           value={input}
