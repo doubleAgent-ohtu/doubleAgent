@@ -27,6 +27,9 @@ spec:
           envFrom:
             - secretRef:
                 name: double-agent-env
+          env:
+            - name: DA_ENVIRONMENT
+              value: "production"
           readinessProbe:
             httpGet:
               path: /health
