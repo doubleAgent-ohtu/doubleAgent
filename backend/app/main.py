@@ -3,12 +3,19 @@ from dotenv import load_dotenv
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
+from starlette.middleware.sessions import SessionMiddleware
 from app.chatbot import ChatbotService
+from app.oidc_uni_login import router as oidc_router
+import os
 
 # Load environment variables
 load_dotenv()
 
 app = FastAPI()
+
+app.add_middleware(SessionMiddleware, secret_key=os.getenv("DA_SESSION_SECRET"))
+
+app.include_router(oidc_router)
 
 # CORS eston poisto
 env = os.getenv("DA_ENVIRONMENT", "not_set")
