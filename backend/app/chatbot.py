@@ -15,7 +15,7 @@ class ChatbotService:
     def __init__(self, system_prompt: str):
         self.model = ChatOpenAI(
             model="gpt-4o-mini",
-            openai_api_key=os.getenv("OPENAI_API_KEY"),
+            openai_api_key=os.getenv("DA_OPENAI_API_KEY"),
             openai_api_base="https://doubleagents.openai.azure.com/openai/v1",
             temperature=1.0,
         )
