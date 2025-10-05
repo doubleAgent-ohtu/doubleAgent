@@ -63,12 +63,12 @@ class ChatResponse(BaseModel):
 #         thread_id=chat_msg.thread_id,
 #     )
 
-
-# @app.get("/")
-# def read_root():
-#     return {"message": "Chatbot API is running"}
-
 # fmt: on
+
+
+@app.get("/")
+def read_root():
+    return {"message": "Chatbot API is running"}
 
 
 @app.get("/health")
