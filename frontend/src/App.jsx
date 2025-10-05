@@ -43,21 +43,6 @@ const App = () => {
 
   return (
     <div style={{ padding: '2rem' }}>
-      <div style={{ marginBottom: '1rem', textAlign: 'right' }}>
-        <a
-          href="/api/login"
-          style={{
-            backgroundColor: '#4CAF50',
-            color: 'white',
-            padding: '10px 20px',
-            textDecoration: 'none',
-            borderRadius: '5px',
-            fontSize: '14px',
-          }}
-        >
-          Login with University Account
-        </a>
-      </div>
       <h1>Our simple chatbot</h1>
       <div style={{ marginBottom: '1em' }}>
         <input

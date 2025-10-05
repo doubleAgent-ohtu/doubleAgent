@@ -34,7 +34,9 @@ else:
     print("⚠️ DA_ENVIRONMENT not set correctly")
 
 # Initialize the chatbot
-chatbot = ChatbotService(system_prompt='You are a helpful assistant. Answer questions clearly.')
+chatbot = ChatbotService(
+    system_prompt="You are a helpful assistant. Answer questions clearly."
+)
 
 messages: list[str] = []
 
@@ -46,7 +48,7 @@ class Message(BaseModel):
 class ChatMessage(BaseModel):
     message: str
     thread_id: str = "default"
-    system_prompt: str | None = None 
+    system_prompt: str | None = None
 
 
 class ChatResponse(BaseModel):
@@ -55,18 +57,15 @@ class ChatResponse(BaseModel):
     thread_id: str
 
 
-# Disable black since we need these back up after login is implemented
-# fmt: off
-
-# @app.post("/add")
-# def add_message(msg: Message):
-#     messages.append(msg.text)
-#     return {"messages": messages}
+@app.post("/add")
+def add_message(msg: Message):
+    messages.append(msg.text)
+    return {"messages": messages}
 
 
-# @app.get("/messages")
-# def get_messages():
-#     return {"messages": messages}
+@app.get("/messages")
+def get_messages():
+    return {"messages": messages}
 
 
 # New chatbot endpoints
@@ -80,13 +79,11 @@ def chat_with_bot(chat_msg: ChatMessage):
 
     ai_response = chatbot.chat(chat_msg.message, chat_msg.thread_id)
 
-#     return ChatResponse(
-#         user_message=chat_msg.message,
-#         ai_response=ai_response,
-#         thread_id=chat_msg.thread_id,
-#     )
-
-# fmt: on
+    return ChatResponse(
+        user_message=chat_msg.message,
+        ai_response=ai_response,
+        thread_id=chat_msg.thread_id,
+    )
 
 
 @app.get("/")

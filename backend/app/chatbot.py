@@ -48,7 +48,7 @@ class ChatbotService:
 
         except Exception as e:
             return f"Error: {str(e)}"
-        
+
     def set_system_prompt(self, system_prompt: str):
         self.prompt_template = ChatPromptTemplate.from_messages(
             [
