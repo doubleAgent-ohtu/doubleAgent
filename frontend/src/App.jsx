@@ -9,7 +9,7 @@ const App = () => {
   const [promptInput, setPromptInput] = useState('');
 
   useEffect(() => {
-    fetch('http://127.0.0.1:8000/messages')
+    fetch('/api/messages')
       .then((res) => res.json())
       .then((data) => setMessages(data.messages.map((text) => ({ role: 'user', content: text }))));
   }, []); // useEffect hook hakee viestit backendistä vain kerran, kun komponentti mountataan eli kun sivu ladataan
@@ -17,7 +17,7 @@ const App = () => {
   const handleSubmit = async (e) => {
     e.preventDefault(); // Tämä estää html form elementin oletuskäyttäytymisen (sivun uudelleenlataus)
     try {
-      const res = await axios.post('http://127.0.0.1:8000/chat', {
+      const res = await axios.post('/api/chat', {
         message: input,
         thread_id: 'default',
         system_prompt: prompt,
@@ -43,6 +43,21 @@ const App = () => {
 
   return (
     <div style={{ padding: '2rem' }}>
+      <div style={{ marginBottom: '1rem', textAlign: 'right' }}>
+        <a
+          href="/api/login"
+          style={{
+            backgroundColor: '#4CAF50',
+            color: 'white',
+            padding: '10px 20px',
+            textDecoration: 'none',
+            borderRadius: '5px',
+            fontSize: '14px',
+          }}
+        >
+          Login with University Account
+        </a>
+      </div>
       <h1>Our simple chatbot</h1>
       <div style={{ marginBottom: '1em' }}>
         <input
