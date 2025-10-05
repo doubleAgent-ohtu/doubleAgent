@@ -1,3 +1,5 @@
+import os
+from dotenv import load_dotenv
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
@@ -5,6 +7,9 @@ from starlette.middleware.sessions import SessionMiddleware
 from app.chatbot import ChatbotService
 from app.oidc_uni_login import router as oidc_router
 import os
+
+# Load environment variables
+load_dotenv()
 
 app = FastAPI()
 
@@ -16,16 +21,23 @@ app.add_middleware(
 app.include_router(oidc_router)
 
 # CORS eston poisto
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["*"],
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
+env = os.getenv("DA_ENVIRONMENT", "not_set")
+if env == "development":
+    app.add_middleware(
+        CORSMiddleware,
+        allow_origins=["*"],
+        allow_credentials=True,
+        allow_methods=["*"],
+        allow_headers=["*"],
+    )
+    print("✅ CORS enabled for development")
+elif env == "production":
+    print("🚀 Production mode: CORS disabled")
+else:
+    print("⚠️ DA_ENVIRONMENT not set correctly")
 
 # Initialize the chatbot
-chatbot = ChatbotService()
+# chatbot = ChatbotService()
 
 messages: list[str] = []
 
@@ -73,12 +85,12 @@ class ChatResponse(BaseModel):
 #         thread_id=chat_msg.thread_id,
 #     )
 
-
-# @app.get("/")
-# def read_root():
-#     return {"message": "Chatbot API is running"}
-
 # fmt: on
+
+
+@app.get("/")
+def read_root():
+    return {"message": "Chatbot API is running"}
 
 
 @app.get("/health")
