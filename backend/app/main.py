@@ -1,18 +1,30 @@
+import os
+from dotenv import load_dotenv
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from app.chatbot import ChatbotService
 
+# Load environment variables
+load_dotenv()
+
 app = FastAPI()
 
 # CORS eston poisto
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["*"],
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
+env = os.getenv("DA_ENVIRONMENT", "not_set")
+if env == "development":
+    app.add_middleware(
+        CORSMiddleware,
+        allow_origins=["*"],
+        allow_credentials=True,
+        allow_methods=["*"],
+        allow_headers=["*"],
+    )
+    print("✅ CORS enabled for development")
+elif env == "production":
+    print("🚀 Production mode: CORS disabled")
+else:
+    print("⚠️ DA_ENVIRONMENT not set correctly")
 
 # Initialize the chatbot
 # chatbot = ChatbotService()
