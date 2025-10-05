@@ -12,12 +12,20 @@ load_dotenv()
 
 
 class ChatbotService:
-    def __init__(self, system_prompt: str):
+    def __init__(self):
         self.model = ChatOpenAI(
             model="gpt-4o-mini",
             openai_api_key=os.getenv("DA_OPENAI_API_KEY"),
             openai_api_base="https://doubleagents.openai.azure.com/openai/v1",
             temperature=1.0,
+        )
+
+        # Simple prompt
+        self.prompt_template = ChatPromptTemplate.from_messages(
+            [
+                ("system", "You are a helpful assistant. Answer questions clearly."),
+                MessagesPlaceholder(variable_name="messages"),
+            ]
         )
 
         self.workflow = StateGraph(state_schema=MessagesState)
@@ -27,8 +35,6 @@ class ChatbotService:
         # Add memory
         self.memory = MemorySaver()
         self.app = self.workflow.compile(checkpointer=self.memory)
-
-        self.system_prompt = system_prompt
 
     def _call_model(self, state: MessagesState):
         prompt = self.prompt_template.invoke(state)
@@ -48,14 +54,6 @@ class ChatbotService:
 
         except Exception as e:
             return f"Error: {str(e)}"
-
-    def set_system_prompt(self, system_prompt: str):
-        self.prompt_template = ChatPromptTemplate.from_messages(
-            [
-                ("system", system_prompt),
-                MessagesPlaceholder(variable_name="messages"),
-            ]
-        )
 
     async def stream_chat(self, message: str, thread_id: str = "default"):
 
