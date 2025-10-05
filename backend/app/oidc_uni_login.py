@@ -34,5 +34,5 @@ async def auth_callback(request: Request):
     
     except Exception as e:
         print(f"OIDC callback error: {e}")
-        frontend_url = os.getenv("FRONTEND_URL", "http://localhost:3000") 
+        frontend_url = os.getenv("FRONTEND_URL", "http://localhost:3000")
         return RedirectResponse(url=f"{frontend_url}?error=oidc_failed")
