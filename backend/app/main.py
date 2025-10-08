@@ -86,7 +86,7 @@ def chat_with_bot_a(chat_msg: ChatMessage):
     )
 
 
-# Chatbot B 
+# Chatbot B
 @app.post("/chat/b", response_model=ChatResponse)
 def chat_with_bot_b(chat_msg: ChatMessage):
     if chat_msg.system_prompt and chat_msg.system_prompt.strip():
