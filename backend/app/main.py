@@ -33,8 +33,11 @@ elif env == "production":
 else:
     print("⚠️ DA_ENVIRONMENT not set correctly")
 
-# Initialize the chatbot
-chatbot = ChatbotService(
+# Simple prompt
+chatbot_a = ChatbotService(
+    system_prompt="You are a helpful assistant. Answer questions clearly."
+)
+chatbot_b = ChatbotService(
     system_prompt="You are a helpful assistant. Answer questions clearly."
 )
 
@@ -68,16 +71,28 @@ def get_messages():
     return {"messages": messages}
 
 
-# New chatbot endpoints
-@app.post("/chat", response_model=ChatResponse)
-def chat_with_bot(chat_msg: ChatMessage):
-    """
-    Chat with the AI assistant. Optional custom system prompt can be provided.
-    """
+# Chatbot A
+@app.post("/chat/a", response_model=ChatResponse)
+def chat_with_bot_a(chat_msg: ChatMessage):
     if chat_msg.system_prompt and chat_msg.system_prompt.strip():
-        chatbot.set_system_prompt(chat_msg.system_prompt)
+        chatbot_a.set_system_prompt(chat_msg.system_prompt)
 
-    ai_response = chatbot.chat(chat_msg.message, chat_msg.thread_id)
+    ai_response = chatbot_a.chat(chat_msg.message, chat_msg.thread_id)
+
+    return ChatResponse(
+        user_message=chat_msg.message,
+        ai_response=ai_response,
+        thread_id=chat_msg.thread_id,
+    )
+
+
+# Chatbot B 
+@app.post("/chat/b", response_model=ChatResponse)
+def chat_with_bot_b(chat_msg: ChatMessage):
+    if chat_msg.system_prompt and chat_msg.system_prompt.strip():
+        chatbot_b.set_system_prompt(chat_msg.system_prompt)
+
+    ai_response = chatbot_b.chat(chat_msg.message, chat_msg.thread_id)
 
     return ChatResponse(
         user_message=chat_msg.message,

@@ -29,6 +29,7 @@ class ChatbotService:
         self.app = self.workflow.compile(checkpointer=self.memory)
 
         self.system_prompt = system_prompt
+        self.set_system_prompt(system_prompt)
 
     def _call_model(self, state: MessagesState):
         prompt = self.prompt_template.invoke(state)
