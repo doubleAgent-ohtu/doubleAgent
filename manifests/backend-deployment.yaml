@@ -30,3 +30,8 @@ spec:
           env:
             - name: DA_ENVIRONMENT
               value: "production"
+            - name: DA_DB_URL
+              valueFrom:
+              configMapKeyRef:
+                name: double-agent-config
+                key: DA_DB_URL 
