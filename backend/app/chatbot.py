@@ -2,7 +2,7 @@ import os
 from typing import Dict, Any
 from dotenv import load_dotenv
 from langchain_openai import ChatOpenAI
-from langchain_core.messages import HumanMessage, AIMessage
+from langchain_core.messages import HumanMessage, AIMessage, SystemMessage
 from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
 from langgraph.checkpoint.memory import MemorySaver
 from langgraph.graph import START, MessagesState, StateGraph
@@ -28,16 +28,22 @@ class ChatbotService:
         self.memory = MemorySaver()
         self.app = self.workflow.compile(checkpointer=self.memory)
 
-        self.system_prompt = system_prompt
+        self.default_system_prompt = system_prompt
+        self.current_system_prompt = system_prompt
+        self.set_system_prompt(system_prompt)
 
     def _call_model(self, state: MessagesState):
         prompt = self.prompt_template.invoke(state)
         response = self.model.invoke(prompt)
         return {"messages": response}
 
-    def chat(self, message: str, thread_id: str = "default") -> str:
-
+    def chat(
+        self, message: str, thread_id: str = "default", system_prompt: str = None
+    ) -> str:
         try:
+            if system_prompt and system_prompt.strip():
+                self.set_system_prompt(system_prompt)
+
             config = {"configurable": {"thread_id": thread_id}}
             input_messages = [HumanMessage(content=message)]
 
@@ -50,6 +56,7 @@ class ChatbotService:
             return f"Error: {str(e)}"
 
     def set_system_prompt(self, system_prompt: str):
+        self.current_system_prompt = system_prompt
         self.prompt_template = ChatPromptTemplate.from_messages(
             [
                 ("system", system_prompt),
@@ -58,7 +65,6 @@ class ChatbotService:
         )
 
     async def stream_chat(self, message: str, thread_id: str = "default"):
-
         try:
             config = {"configurable": {"thread_id": thread_id}}
             input_messages = [HumanMessage(content=message)]
