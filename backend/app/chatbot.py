@@ -37,11 +37,13 @@ class ChatbotService:
         response = self.model.invoke(prompt)
         return {"messages": response}
 
-    def chat(self, message: str, thread_id: str = "default", system_prompt: str = None) -> str:
+    def chat(
+        self, message: str, thread_id: str = "default", system_prompt: str = None
+    ) -> str:
         try:
             if system_prompt and system_prompt.strip():
                 self.set_system_prompt(system_prompt)
-            
+
             config = {"configurable": {"thread_id": thread_id}}
             input_messages = [HumanMessage(content=message)]
 

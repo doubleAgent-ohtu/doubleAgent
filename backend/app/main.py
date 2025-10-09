@@ -59,6 +59,7 @@ class ChatResponse(BaseModel):
     thread_id: str
     chatbot: str
 
+
 @app.post("/add")
 def add_message(msg: Message):
     messages.append(msg.text)
