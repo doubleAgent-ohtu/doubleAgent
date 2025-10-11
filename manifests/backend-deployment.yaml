@@ -32,6 +32,6 @@ spec:
               value: "production"
             - name: DA_DB_URL
               valueFrom:
-              configMapKeyRef:
-                name: double-agent-config
-                key: DA_DB_URL 
+                configMapKeyRef:
+                  name: double-agent-config
+                  key: DA_DB_URL 
