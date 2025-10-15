@@ -31,10 +31,10 @@ async def auth_callback(request: Request):
         token = await oauth.university.authorize_access_token(request)
         userinfo = await oauth.university.parse_id_token(request, token)
         # return {"user": userinfo}
-        frontend_url = os.getenv("FRONTEND_URL", "http://localhost:3000")
+        frontend_url = os.getenv("DA_FRONTEND_URL")
         return RedirectResponse(url=f"{frontend_url}?authenticated=true")
 
     except Exception as e:
         print(f"OIDC callback error: {e}")
-        frontend_url = os.getenv("FRONTEND_URL", "http://localhost:3000")
+        frontend_url = os.getenv("DA_FRONTEND_URL")
         return RedirectResponse(url=f"{frontend_url}?error=oidc_failed")
