@@ -82,7 +82,3 @@ docker-compose up --build
 > **Tip:** For active development, it’s recommended to run the backend and frontend manually with hot reload.
 >
 > Docker Compose is mainly useful for integration testing or quickly spinning up a fully containerized environment.
-
-> **Future improvements:**
->
-> - Frontend environment variables pointing to production backend.
