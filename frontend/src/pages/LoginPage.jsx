@@ -2,6 +2,8 @@ import { HealthCheckButton } from '../components/HealthCheckButton';
 
 const LoginPage = () => {
   const handleLogin = () => {
+    // KORJAUS: Käytetään suhteellista polkua.
+    // Tämä toimii sekä paikallisesti (Vite-proxyn kanssa) että OpenShiftissä.
     window.location.href = '/api/login';
   };
 
