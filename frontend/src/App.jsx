@@ -1,15 +1,39 @@
-import Chat from '../../components/Chat';
+import { useState, useEffect } from 'react';
+import HomePage from './pages/HomePage';
+import LoginPage from './pages/LoginPage';
 
 const App = () => {
-  return (
-    <div style={{ padding: '2rem' }}>
-      <h1 style={{ textAlign: 'center', marginBottom: '2rem' }}>Our little chatbots</h1>
-      <div style={{ display: 'flex', justifyContent: 'space-between', gap: '10rem' }}>
-        <Chat title="Chatbot A" threadId="chatbot_a" />
-        <Chat title="Chatbot B" threadId="chatbot_b" />
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    // Tarkista onko käyttäjä kirjautunut URL-parametreista
+    const checkAuthStatus = async () => {
+      try {
+        const urlParams = new URLSearchParams(window.location.search);
+        const isLoggedIn = urlParams.get('authenticated') === 'true';
+
+        setIsAuthenticated(isLoggedIn);
+      } catch (error) {
+        console.error('Auth check failed:', error);
+        setIsAuthenticated(false);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    checkAuthStatus();
+  }, []);
+
+  if (isLoading) {
+    return (
+      <div style={{ padding: '2rem', textAlign: 'center' }}>
+        <p>Ladataan...</p>
       </div>
-    </div>
-  );
+    );
+  }
+
+  return isAuthenticated ? <HomePage /> : <LoginPage />;
 };
 
 export default App;
