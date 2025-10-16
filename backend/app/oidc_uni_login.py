@@ -47,7 +47,7 @@ async def auth_callback(request: Request):
 
         # Redirects the user's browser back to the main frontend application.
         frontend_url = os.getenv("DA_LOCAL_FRONTEND_URL", "http://localhost:5173")
-        # TODOOOOD security issue!
+        # TODO security issue!
         return RedirectResponse(url=f"{frontend_url}?authenticated=true")
 
     except Exception as e:

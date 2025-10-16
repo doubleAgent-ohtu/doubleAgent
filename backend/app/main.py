@@ -13,19 +13,22 @@ app = FastAPI()
 
 app.add_middleware(SessionMiddleware, secret_key=os.getenv("DA_SESSION_SECRET"))
 
-app.include_router(oidc_router, prefix="/api")
+app.include_router(oidc_router)
 
-
-env = os.getenv("DA_ENVIRONMENT", "development")
-
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["*"],
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
-print("CORS enabled for all origins.")
+env = os.getenv("DA_ENVIRONMENT", "not_set")
+if env == "development":
+    app.add_middleware(
+        CORSMiddleware,
+        allow_origins=["*"],
+        allow_credentials=True,
+        allow_methods=["*"],
+        allow_headers=["*"],
+    )
+    print("✅ CORS enabled for development")
+elif env == "production":
+    print("🚀 Production mode: CORS disabled")
+else:
+    print("⚠️ DA_ENVIRONMENT not set correctly")
 
 chatbot_a = ChatbotService(
     system_prompt="You are a helpful assistant. Answer questions clearly."
@@ -34,6 +37,10 @@ chatbot_b = ChatbotService(
     system_prompt="You are a helpful assistant. Answer questions clearly."
 )
 
+messages: list[str] = []
+
+class Message(BaseModel):
+    text: str
 
 class ChatMessage(BaseModel):
     message: str
@@ -49,7 +56,7 @@ class ChatResponse(BaseModel):
     chatbot: str
 
 
-@app.post("/api/chat", response_model=ChatResponse)
+@app.post("/chat", response_model=ChatResponse)
 def chat_with_bot(chat_msg: ChatMessage):
     if chat_msg.chatbot == "b":
         chatbot = chatbot_b
@@ -66,8 +73,11 @@ def chat_with_bot(chat_msg: ChatMessage):
         chatbot=chat_msg.chatbot,
     )
 
+@app.get("/messages")
+def get_messages():
+    return {"messages": messages}
 
-@app.get("/api/health")
+@app.get("/health")
 def health_check():
     return {"status": "healthy"}
 
