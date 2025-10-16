@@ -39,8 +39,10 @@ chatbot_b = ChatbotService(
 
 messages: list[str] = []
 
+
 class Message(BaseModel):
     text: str
+
 
 class ChatMessage(BaseModel):
     message: str
@@ -73,9 +75,11 @@ def chat_with_bot(chat_msg: ChatMessage):
         chatbot=chat_msg.chatbot,
     )
 
+
 @app.get("/messages")
 def get_messages():
     return {"messages": messages}
+
 
 @app.get("/health")
 def health_check():
