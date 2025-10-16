@@ -7,23 +7,23 @@ from starlette.middleware.sessions import SessionMiddleware
 from app.chatbot import ChatbotService
 from app.oidc_uni_login import router as oidc_router
 
-# Load environment variables
+# Ladataan ympäristömuuttujat .env-tiedostosta
 load_dotenv()
 
 app = FastAPI()
 
-app.add_middleware(
-    SessionMiddleware,
-    secret_key=os.getenv("DA_SESSION_SECRET"),
-    https_only=True,
-    same_site="lax",
-)
+# Lisätään SessionMiddleware, joka on tärkeä kirjautumisen tilan hallintaan
+app.add_middleware(SessionMiddleware, secret_key=os.getenv("DA_SESSION_SECRET"))
 
-app.include_router(oidc_router)
+# --- MUUTOS 1: LISÄTTY "/api" PREFIX ---
+# Tämä korjaa "404 Not Found" -virheen. Nyt /login-reitti löytyy osoitteesta /api/login.
+app.include_router(oidc_router, prefix="/api")
 
-# CORS eston poisto
-env = os.getenv("DA_ENVIRONMENT", "not_set")
+# CORS-asetukset
+env = os.getenv("DA_ENVIRONMENT", "development") # Oletusarvona 'development' jos ei asetettu
+
 if env == "development":
+    # Kehitystilassa sallitaan kaikki yhteydet testaamisen helpottamiseksi
     app.add_middleware(
         CORSMiddleware,
         allow_origins=["*"],
@@ -31,12 +31,25 @@ if env == "development":
         allow_methods=["*"],
         allow_headers=["*"],
     )
-    print("✅ CORS enabled for development")
+    print("✅ CORS enabled for local development")
 elif env == "production":
-    print("🚀 Production mode: CORS disabled")
-else:
-    print("⚠️ DA_ENVIRONMENT not set correctly")
+    # --- MUUTOS 2: KORJATTU TUOTANNON CORS-ASETUKSET ---
+    # Tuotannossa salli yhteydet VAIN oikeasta frontend-osoitteesta.
+    # Muista asettaa DA_FRONTEND_URL -ympäristömuuttuja OpenShiftissä!
+    frontend_url = os.getenv("DA_FRONTEND_URL")
+    if frontend_url:
+        app.add_middleware(
+            CORSMiddleware,
+            allow_origins=[frontend_url], # Sallitaan vain oma frontend
+            allow_credentials=True,
+            allow_methods=["GET", "POST"], # Sallitaan vain tarvittavat metodit
+            allow_headers=["*"],
+        )
+        print(f"🚀 Production mode: CORS enabled for origin: {frontend_url}")
+    else:
+        print("⚠️ WARNING: DA_FRONTEND_URL not set in production. Frontend may not work.")
 
+# Chatbot-palveluiden alustus
 chatbot_a = ChatbotService(
     system_prompt="You are a helpful assistant. Answer questions clearly."
 )
@@ -44,19 +57,16 @@ chatbot_b = ChatbotService(
     system_prompt="You are a helpful assistant. Answer questions clearly."
 )
 
-messages: list[str] = []
+# --- MUUTOS 3: POISTETTU GLOBAALI VIESTILISTA ---
+# Tämä oli kriittinen virhe. Kaikki käyttäjät jakoivat saman viestilistan.
+# Keskusteluhistoria tulee hallita frontendissä.
 
-
-class Message(BaseModel):
-    text: str
-
-
+# Pydantic-mallit viesteille
 class ChatMessage(BaseModel):
     message: str
     thread_id: str = "default"
     system_prompt: str | None = None
     chatbot: str = "a"  # "a" or "b"
-
 
 class ChatResponse(BaseModel):
     user_message: str
@@ -64,19 +74,8 @@ class ChatResponse(BaseModel):
     thread_id: str
     chatbot: str
 
-
-@app.post("/add")
-def add_message(msg: Message):
-    messages.append(msg.text)
-    return {"messages": messages}
-
-
-@app.get("/messages")
-def get_messages():
-    return {"messages": messages}
-
-
-@app.post("/chat", response_model=ChatResponse)
+# API-endpointit
+@app.post("/api/chat", response_model=ChatResponse)
 def chat_with_bot(chat_msg: ChatMessage):
     if chat_msg.chatbot == "b":
         chatbot = chatbot_b
@@ -93,12 +92,10 @@ def chat_with_bot(chat_msg: ChatMessage):
         chatbot=chat_msg.chatbot,
     )
 
+@app.get("/api/health")
+def health_check():
+    return {"status": "healthy"}
 
 @app.get("/")
 def read_root():
     return {"message": "Chatbot API is running"}
-
-
-@app.get("/health")
-def health_check():
-    return {"status": "healthy"}
