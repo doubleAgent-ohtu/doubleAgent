@@ -16,7 +16,6 @@ langchain-openai = "^0.2.0"
 python-dotenv = "^1.0.0"
 authlib = "^1.3.0"
 itsdangerous = "^2.2.0"
-sqlmodel = {extras = ["asyncio"], version = "^0.0.27"}
 psycopg2-binary = "^2.9.10"
 alembic = "^1.16.5"
 sqlalchemy = "^2.0.44"
