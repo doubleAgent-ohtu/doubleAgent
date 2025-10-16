@@ -6,7 +6,6 @@ from pydantic import BaseModel
 from starlette.middleware.sessions import SessionMiddleware
 from app.chatbot import ChatbotService
 from app.oidc_uni_login import router as oidc_router
-import os
 
 # Load environment variables
 load_dotenv()
@@ -33,8 +32,10 @@ elif env == "production":
 else:
     print("⚠️ DA_ENVIRONMENT not set correctly")
 
-# Initialize the chatbot
-chatbot = ChatbotService(
+chatbot_a = ChatbotService(
+    system_prompt="You are a helpful assistant. Answer questions clearly."
+)
+chatbot_b = ChatbotService(
     system_prompt="You are a helpful assistant. Answer questions clearly."
 )
 
@@ -49,12 +50,14 @@ class ChatMessage(BaseModel):
     message: str
     thread_id: str = "default"
     system_prompt: str | None = None
+    chatbot: str = "a"  # "a" or "b"
 
 
 class ChatResponse(BaseModel):
     user_message: str
     ai_response: str
     thread_id: str
+    chatbot: str
 
 
 @app.post("/add")
@@ -68,21 +71,21 @@ def get_messages():
     return {"messages": messages}
 
 
-# New chatbot endpoints
 @app.post("/chat", response_model=ChatResponse)
 def chat_with_bot(chat_msg: ChatMessage):
-    """
-    Chat with the AI assistant. Optional custom system prompt can be provided.
-    """
-    if chat_msg.system_prompt and chat_msg.system_prompt.strip():
-        chatbot.set_system_prompt(chat_msg.system_prompt)
+    if chat_msg.chatbot == "b":
+        chatbot = chatbot_b
+    else:
+        chatbot = chatbot_a
 
-    ai_response = chatbot.chat(chat_msg.message, chat_msg.thread_id)
-
+    ai_response = chatbot.chat(
+        chat_msg.message, chat_msg.thread_id, chat_msg.system_prompt
+    )
     return ChatResponse(
         user_message=chat_msg.message,
         ai_response=ai_response,
         thread_id=chat_msg.thread_id,
+        chatbot=chat_msg.chatbot,
     )
 
 
