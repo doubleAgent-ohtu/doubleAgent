@@ -1,8 +1,13 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
 :root {
   font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
   line-height: 1.5;
   font-weight: 400;
-
+  --sidebar-width-open: 16rem;
+  --sidebar-width-closed: 3.5rem;
   color-scheme: light dark;
   color: rgba(255, 255, 255, 0.87);
   background-color: #242424;
@@ -18,14 +23,13 @@ a {
   color: #646cff;
   text-decoration: inherit;
 }
+
 a:hover {
   color: #535bf2;
 }
 
 body {
   margin: 0;
-  display: flex;
-  place-items: center;
   min-width: 320px;
   min-height: 100vh;
 }
@@ -43,26 +47,19 @@ button {
   font-weight: 500;
   font-family: inherit;
   background-color: #1a1a1a;
-  cursor: pointer;
   transition: border-color 0.25s;
 }
-button:hover {
-  border-color: #646cff;
-}
+button:hover { border-color: #646cff; }
 button:focus,
-button:focus-visible {
-  outline: 4px auto -webkit-focus-ring-color;
-}
+button:focus-visible { outline: 4px auto -webkit-focus-ring-color; }
 
 .chat-window {
   max-width: 900px;
   min-height: 400px;
-  margin: 0 auto;
   padding: 1em;
   border-radius: 8px;
   font-size: 1.2em;
-  /* No background color */
-  width: 400px;
+  flex: 1;
 }
 
 @media (prefers-color-scheme: light) {
@@ -77,3 +74,60 @@ button:focus-visible {
     background-color: #f9f9f9;
   }
 }
+
+#my-drawer-4 {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+}
+
+#my-drawer-4 ~ .drawer-side .sidebar { width: var(--sidebar-width-open); transition: width 200ms ease; }
+#my-drawer-4:not(:checked) ~ .drawer-side .sidebar { width: var(--sidebar-width-closed); }
+#my-drawer-4:not(:checked) ~ .drawer-side .sidebar .label-text { display: none; }
+
+#my-drawer-4:checked ~ .drawer-side .sidebar .label-text { display: inline; }
+
+#my-drawer-4 ~ .drawer-side .sidebar .icon {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 2rem; height: 2rem; min-width: 2rem; flex-shrink: 0;
+}
+
+.sidebar .icon svg { width: 1.5rem; height: 1.5rem; display: block; margin: 0; color: inherit; }
+
+.sidebar .menu li > button {
+  display: flex; align-items: center; gap: 0.75rem; width: 100%;
+  justify-content: flex-start; color: inherit; background: transparent; border: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.sidebar .menu li > button:hover {
+  background-color: rgba(100, 108, 255, 0.15) !important;
+  border-radius: 8px;
+  transform: translateX(4px);
+}
+
+#my-drawer-4:not(:checked) ~ .drawer-side .sidebar .menu li > button {
+  justify-content: center;
+  padding: 0;
+  height: 2.5rem;
+  min-height: 2.5rem;
+  align-items: center;
+  width: 100%; 
+}
+
+#my-drawer-4:not(:checked) ~ .drawer-side .sidebar .drawer-toggle-btn,
+#my-drawer-4:not(:checked) ~ .drawer-side .sidebar .m-2 {
+  display: flex;
+  justify-content: center;
+  width: 100%;
+}
+
+.sidebar .drawer-toggle-btn { margin-top: auto; color: inherit; }
+
+.sidebar label.btn {
+  cursor: default;
+}
+
+.sidebar .menu li > button:focus-visible,
+.sidebar .menu li > button:focus { outline: 3px solid rgba(100,108,255,0.25); outline-offset: 2px; }

@@ -15,21 +15,18 @@ export const HealthCheckButton = () => {
   };
 
   return (
-    <div>
+    <div className="flex flex-col items-center gap-2">
       <button
         onClick={checkHealth}
-        style={{
-          backgroundColor: '#007bff',
-          color: 'white',
-          padding: '10px 15px',
-          border: 'none',
-          borderRadius: '5px',
-          cursor: 'pointer',
-        }}
+        className="btn btn-secondary"
       >
         Check Backend Health
       </button>
-      {status && <p>Backend status: {status}</p>}
+      {status && (
+        <p className="text-sm text-gray-400">
+          Backend status: <span className={status === 'error' ? 'text-error' : 'text-success'}>{status}</span>
+        </p>
+      )}
     </div>
   );
 };
