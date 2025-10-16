@@ -1,4 +1,4 @@
-import { HealthCheckButton } from './health_check';
+import { HealthCheckButton } from './HealthCheckButton';
 
 const LoginPage = () => {
   const handleLogin = () => {
