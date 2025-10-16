@@ -12,12 +12,11 @@ class Prompt(Base):
     __tablename__ = "prompt"
 
     id: Mapped[int] = mapped_column(primary_key=True)
-    agent_name: Mapped[str] = mapped_column(String(50), server_default='unknown')
+    agent_name: Mapped[str] = mapped_column(String(50), server_default="unknown")
     prompt: Mapped[str] = mapped_column(String(4000), nullable=False)
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), server_default=func.now()
     )
 
     def __repr__(self):
-        return f'id: {self.id}, agent_name: {self.agent_name}, prompt: {self.prompt}'
-    
+        return f"id: {self.id}, agent_name: {self.agent_name}, prompt: {self.prompt}"
