@@ -7,42 +7,16 @@ const LoginPage = () => {
 
   return (
     <div
-      style={{
-        position: 'fixed',
-        top: 0,
-        left: 0,
-        width: '100%',
-        height: '100%',
-        display: 'flex',
-        justifyContent: 'center',
-        alignItems: 'center',
-      }}
+      data-theme="dark"
+      className="fixed top-0 left-0 w-full h-full flex justify-center items-center"
     >
-      <div
-        style={{
-          padding: '2rem',
-          textAlign: 'center',
-          maxWidth: '600px',
-        }}
-      >
-        <h1>Tervetuloa</h1>
-        <p style={{ marginBottom: '2rem', color: '#666' }}>
+      <div className="p-8 text-center max-w-xl">
+        <h1 className="text-4xl mb-4">Tervetuloa</h1>
+        <p className="mb-8 text-gray-400">
           Kirjaudu sisään yliopistotunnuksillasi käyttääksesi chatbottia.
         </p>
 
-        <button
-          onClick={handleLogin}
-          style={{
-            backgroundColor: '#007bff',
-            color: 'white',
-            padding: '15px 30px',
-            border: 'none',
-            borderRadius: '8px',
-            fontSize: '16px',
-            cursor: 'pointer',
-            marginBottom: '2rem',
-          }}
-        >
+        <button onClick={handleLogin} className="btn btn-primary text-lg px-8 py-4 mb-8">
           Kirjaudu yliopistotunnuksilla
         </button>
 

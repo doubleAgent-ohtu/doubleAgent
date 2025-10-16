@@ -42,24 +42,20 @@ const Chat = ({ title, threadId }) => {
   };
 
   return (
-    <div style={{ flex: 1, padding: '1rem' }}>
+    <div className="flex-1 p-4">
       <h2>{title}</h2>
-      <div style={{ marginBottom: '1em' }}>
+      <div className="mb-4">
         <input
           value={promptInput}
           onChange={(e) => setPromptInput(e.target.value)}
           placeholder="Type prompt"
-          style={{
-            fontSize: '1.2em',
-            padding: '0.7em',
-            width: '100%',
-            borderRadius: '8px',
-            marginBottom: '0.5em',
-          }}
+          className="input input-bordered w-full text-lg p-3 rounded-lg mb-2"
         />
-        <button onClick={handlePromptSet}>Set prompt</button>
+        <button onClick={handlePromptSet} className="btn btn-soft">
+          Set prompt
+        </button>
       </div>
-      <div style={{ marginBottom: '1em', color: '#555' }}>
+      <div className="mb-4 text-gray-400">
         <b>Current prompt:</b> {prompt}
       </div>
       <form onSubmit={handleSubmit}>
@@ -67,22 +63,18 @@ const Chat = ({ title, threadId }) => {
           value={input}
           onChange={(e) => setInput(e.target.value)}
           placeholder="Type something"
-          style={{
-            fontSize: '1.2em',
-            padding: '0.7em',
-            width: '100%',
-            borderRadius: '8px',
-            marginBottom: '0.5em',
-          }}
+          className="input input-bordered w-full text-lg p-3 rounded-lg mb-2"
         />
-        <button type="submit">Add</button>
+        <button type="submit" className="btn btn-soft">
+          Add
+        </button>
       </form>
 
-      <div style={{ marginTop: '1rem' }}>
+      <div className="mt-4">
         <h3>Conversation:</h3>
         <div className="chat-window">
           {messages.map((msg, idx) => (
-            <div key={idx} style={{ margin: '0.5em 0' }}>
+            <div key={idx} className="my-2">
               <b>{msg.role === 'user' ? 'You' : 'AI'}:</b> {msg.content}
             </div>
           ))}
