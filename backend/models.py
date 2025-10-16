@@ -17,3 +17,7 @@ class Prompt(Base):
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), server_default=func.now()
     )
+
+    def __repr__(self):
+        return f'id: {self.id}, agent_name: {self.agent_name}, prompt: {self.prompt}'
+    
