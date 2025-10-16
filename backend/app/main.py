@@ -42,11 +42,13 @@ class ChatMessage(BaseModel):
     system_prompt: str | None = None
     chatbot: str = "a"  # "a" or "b"
 
+
 class ChatResponse(BaseModel):
     user_message: str
     ai_response: str
     thread_id: str
     chatbot: str
+
 
 @app.post("/api/chat", response_model=ChatResponse)
 def chat_with_bot(chat_msg: ChatMessage):
@@ -65,9 +67,11 @@ def chat_with_bot(chat_msg: ChatMessage):
         chatbot=chat_msg.chatbot,
     )
 
+
 @app.get("/api/health")
 def health_check():
     return {"status": "healthy"}
+
 
 @app.get("/")
 def read_root():
