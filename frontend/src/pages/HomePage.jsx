@@ -21,11 +21,7 @@ const HomePage = () => {
       </div>
 
       <div className="drawer-side">
-        <label
-          htmlFor="my-drawer-4"
-          aria-label="close sidebar"
-          className="drawer-overlay"
-        ></label>
+        <label htmlFor="my-drawer-4" aria-label="close sidebar" className="drawer-overlay"></label>
 
         <div className="bg-base-200 flex flex-col justify-between min-h-full">
           <div className="sidebar p-2">
@@ -47,9 +43,7 @@ const HomePage = () => {
                       <path d="M3 10a2 2 0 0 1 .709-1.528l7-5.999a2 2 0 0 1 2.582 0l7 5.999A2 2 0 0 1 21 10v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
                     </svg>
                   </span>
-                  <span className="label-text">
-                    Homepage
-                  </span>
+                  <span className="label-text">Homepage</span>
                 </button>
               </li>
 
@@ -72,19 +66,14 @@ const HomePage = () => {
                       <circle cx="7" cy="7" r="3"></circle>
                     </svg>
                   </span>
-                  <span className="label-text">
-                    Settings
-                  </span>
+                  <span className="label-text">Settings</span>
                 </button>
               </li>
             </ul>
           </div>
 
           <div className="m-2">
-            <label
-              htmlFor="my-drawer-4"
-              className="btn btn-ghost btn-circle"
-            >
+            <label htmlFor="my-drawer-4" className="btn btn-ghost btn-circle">
               <svg
                 xmlns="http://www.w3.org/2000/svg"
                 viewBox="0 0 24 24"

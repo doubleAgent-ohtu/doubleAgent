@@ -16,10 +16,7 @@ const LoginPage = () => {
           Kirjaudu sisään yliopistotunnuksillasi käyttääksesi chatbottia.
         </p>
 
-        <button
-          onClick={handleLogin}
-          className="btn btn-primary text-lg px-8 py-4 mb-8"
-        >
+        <button onClick={handleLogin} className="btn btn-primary text-lg px-8 py-4 mb-8">
           Kirjaudu yliopistotunnuksilla
         </button>
 
