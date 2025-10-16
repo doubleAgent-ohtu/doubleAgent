@@ -27,7 +27,6 @@ app.add_middleware(
 )
 print("CORS enabled for all origins.")
 
-# Chatbot-palveluiden alustus
 chatbot_a = ChatbotService(
     system_prompt="You are a helpful assistant. Answer questions clearly."
 )
