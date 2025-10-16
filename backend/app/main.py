@@ -12,7 +12,12 @@ load_dotenv()
 
 app = FastAPI()
 
-app.add_middleware(SessionMiddleware, secret_key=os.getenv("DA_SESSION_SECRET"), https_only=True, same_site="lax")
+app.add_middleware(
+    SessionMiddleware,
+    secret_key=os.getenv("DA_SESSION_SECRET"),
+    https_only=True,
+    same_site="lax",
+)
 
 app.include_router(oidc_router)
 
