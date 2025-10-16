@@ -35,6 +35,7 @@ async def login(request: Request):
 # Handles the callback from the university after the user has logged in.
 async def auth_callback(request: Request):
     print("Login Session at callback:", request.session)
+    frontend_url = os.getenv("DA_FRONTEND_URL")
     try:
         # This is a secure, direct request from our backend to the university's backend.
         token = await oauth.university.authorize_access_token(request)
@@ -46,12 +47,10 @@ async def auth_callback(request: Request):
         request.session["user"] = userinfo
 
         # Redirects the user's browser back to the main frontend application.
-        frontend_url = os.getenv("DA_LOCAL_FRONTEND_URL", "http://localhost:5173")
         # TODO security issue!
         return RedirectResponse(url=f"{frontend_url}?authenticated=true")
 
     except Exception as e:
         # Catch the login errors.
         print(f"OIDC callback error: {e}")
-        frontend_url = os.getenv("DA_LOCAL_FRONTEND_URL", "http://localhost:5173")
         return RedirectResponse(url=f"{frontend_url}?error=oidc_failed")
