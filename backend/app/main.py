@@ -7,21 +7,14 @@ from starlette.middleware.sessions import SessionMiddleware
 from app.chatbot import ChatbotService
 from app.oidc_uni_login import router as oidc_router
 
-# Load environment variables
 load_dotenv()
 
 app = FastAPI()
 
-app.add_middleware(
-    SessionMiddleware,
-    secret_key=os.getenv("DA_SESSION_SECRET"),
-    https_only=True,
-    same_site="lax",
-)
+app.add_middleware(SessionMiddleware, secret_key=os.getenv("DA_SESSION_SECRET"))
 
 app.include_router(oidc_router)
 
-# CORS eston poisto
 env = os.getenv("DA_ENVIRONMENT", "not_set")
 if env == "development":
     app.add_middleware(
@@ -65,17 +58,6 @@ class ChatResponse(BaseModel):
     chatbot: str
 
 
-@app.post("/add")
-def add_message(msg: Message):
-    messages.append(msg.text)
-    return {"messages": messages}
-
-
-@app.get("/messages")
-def get_messages():
-    return {"messages": messages}
-
-
 @app.post("/chat", response_model=ChatResponse)
 def chat_with_bot(chat_msg: ChatMessage):
     if chat_msg.chatbot == "b":
@@ -94,11 +76,16 @@ def chat_with_bot(chat_msg: ChatMessage):
     )
 
 
-@app.get("/")
-def read_root():
-    return {"message": "Chatbot API is running"}
+@app.get("/messages")
+def get_messages():
+    return {"messages": messages}
 
 
 @app.get("/health")
 def health_check():
     return {"status": "healthy"}
+
+
+@app.get("/")
+def read_root():
+    return {"message": "Chatbot API is running"}
