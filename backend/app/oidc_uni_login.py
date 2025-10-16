@@ -22,11 +22,13 @@ oauth.register(
 
 @router.get("/login")
 async def login(request: Request):
+    print("Login Session before redirect:", request.session)
     return await oauth.university.authorize_redirect(request, OIDC_REDIRECT_URI)
 
 
 @router.get("/auth/callback")
 async def auth_callback(request: Request):
+    print("Login Session at callback:", request.session)
     try:
         token = await oauth.university.authorize_access_token(request)
         userinfo = await oauth.university.parse_id_token(request, token)
