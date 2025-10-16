@@ -16,15 +16,13 @@ export const HealthCheckButton = () => {
 
   return (
     <div className="flex flex-col items-center gap-2">
-      <button
-        onClick={checkHealth}
-        className="btn btn-secondary"
-      >
+      <button onClick={checkHealth} className="btn btn-secondary">
         Check Backend Health
       </button>
       {status && (
         <p className="text-sm text-gray-400">
-          Backend status: <span className={status === 'error' ? 'text-error' : 'text-success'}>{status}</span>
+          Backend status:{' '}
+          <span className={status === 'error' ? 'text-error' : 'text-success'}>{status}</span>
         </p>
       )}
     </div>

@@ -51,7 +51,9 @@ const Chat = ({ title, threadId }) => {
           placeholder="Type prompt"
           className="input input-bordered w-full text-lg p-3 rounded-lg mb-2"
         />
-        <button onClick={handlePromptSet} className="btn btn-soft">Set prompt</button>
+        <button onClick={handlePromptSet} className="btn btn-soft">
+          Set prompt
+        </button>
       </div>
       <div className="mb-4 text-gray-400">
         <b>Current prompt:</b> {prompt}
@@ -63,7 +65,9 @@ const Chat = ({ title, threadId }) => {
           placeholder="Type something"
           className="input input-bordered w-full text-lg p-3 rounded-lg mb-2"
         />
-        <button type="submit" className="btn btn-soft">Add</button>
+        <button type="submit" className="btn btn-soft">
+          Add
+        </button>
       </form>
 
       <div className="mt-4">
