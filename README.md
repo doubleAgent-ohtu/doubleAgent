@@ -59,7 +59,7 @@ npm run dev
 
 To reach the frontend go to URL <localhost:5173>
 
-To reach the backend go to URL <localhost:8000>
+To reach the backend go to URL <localhost:3000>
 
 ## 2. Docker compose
 
