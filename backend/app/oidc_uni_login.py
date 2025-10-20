@@ -27,14 +27,12 @@ oauth.register(
 # Handles the initial login request from the user's browser
 # and redirects them to the university's login page.
 async def login(request: Request):
-    print("Login Session before redirect:", request.session)
     return await oauth.university.authorize_redirect(request, DA_OIDC_REDIRECT_URI)
 
 
 @router.get("/auth/callback")
 # Handles the callback from the university after the user has logged in.
 async def auth_callback(request: Request):
-    print("Login Session at callback:", request.session)
     frontend_url = os.getenv("DA_FRONTEND_URL")
     try:
         # This is a secure, direct request from our backend to the university's backend.
@@ -46,11 +44,9 @@ async def auth_callback(request: Request):
         # Saves the user's details into the server-side session
         request.session["user"] = userinfo
 
-        # Redirects the user's browser back to the main frontend application.
-        # TODO security issue!
-        return RedirectResponse(url=f"{frontend_url}?authenticated=true")
+        return RedirectResponse(url=frontend_url)
 
     except Exception as e:
         # Catch the login errors.
         print(f"OIDC callback error: {e}")
-        return RedirectResponse(url=f"{frontend_url}?error=oidc_failed")
+        return RedirectResponse(url=frontend_url)

@@ -1,7 +1,8 @@
 import os
 from dotenv import load_dotenv
-from fastapi import FastAPI
+from fastapi import FastAPI, Request, HTTPException, status
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import RedirectResponse
 from pydantic import BaseModel
 from starlette.middleware.sessions import SessionMiddleware
 from app.chatbot import ChatbotService
@@ -13,10 +14,11 @@ app = FastAPI()
 
 app.add_middleware(SessionMiddleware, secret_key=os.getenv("DA_SESSION_SECRET"))
 
-app.include_router(oidc_router)
-
 env = os.getenv("DA_ENVIRONMENT", "not_set")
 if env == "development":
+    # --- DEVELOPMENT ENVIRONMENT SETUP ---
+    print("✅ Running in DEVELOPMENT mode. MOCK login routes enabled.")
+
     app.add_middleware(
         CORSMiddleware,
         allow_origins=["*"],
@@ -25,10 +27,50 @@ if env == "development":
         allow_headers=["*"],
     )
     print("✅ CORS enabled for development")
-elif env == "production":
-    print("🚀 Production mode: CORS disabled")
+
+    # Add MOCK login/logout routes
+    @app.get("/login")
+    async def mock_login(request: Request):
+        """Sets the mock session key."""
+        request.session["mock_user_logged_in"] = True
+        # Set a mock user object directly in the session
+        request.session["user"] = {
+            "id": "2Q6XGZP4DNWAEYVIDZV2KLXKO3Z4QEBM",
+            "username": "pate",
+            "name": "Patrick Bateman"
+        }
+        print("Mock user logged in (session set)")
+        return RedirectResponse(url="/")
+
+    @app.post("/logout") # Not used in frontend, added for future expansion (20.10.2025)
+    async def mock_logout(request: Request):
+        """Clears the mock session keys."""
+        request.session.pop("mock_user_logged_in", None)
+        request.session.pop("user", None) # Also clear the mock user
+        print("Mock user logged out (session cleared)")
+        return RedirectResponse(url="/")
+
 else:
-    print("⚠️ DA_ENVIRONMENT not set correctly")
+    # --- PRODUCTION / OTHER ENVIRONMENT SETUP ---
+    if env == "production":
+        print("🚀 Running in PRODUCTION mode. Using REAL OIDC authentication.")
+    else:
+        print(f"⚠️ Running in '{env}' mode. Using REAL OIDC authentication.")
+        
+    # 1. Include the REAL OIDC router (which has /login and /auth/callback)
+    app.include_router(oidc_router)
+
+    # 2. Add a REAL logout route
+    @app.post("/api/logout")
+    async def real_logout(request: Request):
+        """Clears the real 'user' session key."""
+        request.session.pop("user", None)
+        print("Real user logged out (session cleared)")
+        return RedirectResponse(url="/")
+
+
+# --- COMMON APPLICATION LOGIC ---
+# (These are defined for all environments)
 
 chatbot_a = ChatbotService(
     system_prompt="You are a helpful assistant. Answer questions clearly."
@@ -84,6 +126,19 @@ def get_messages():
 @app.get("/health")
 def health_check():
     return {"status": "healthy"}
+
+
+@app.get("/me")
+def get_current_user_from_session(request: Request):
+    user = request.session.get("user")
+    
+    if not user:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED, 
+            detail="Not authenticated"
+        )
+    
+    return user
 
 
 @app.get("/")
