@@ -37,16 +37,18 @@ if env == "development":
         request.session["user"] = {
             "id": "2Q6XGZP4DNWAEYVIDZV2KLXKO3Z4QEBM",
             "username": "pate",
-            "name": "Patrick Bateman"
+            "name": "Patrick Bateman",
         }
         print("Mock user logged in (session set)")
         return RedirectResponse(url="/")
 
-    @app.post("/logout") # Not used in frontend, added for future expansion (20.10.2025)
+    @app.post(
+        "/logout"
+    )  # Not used in frontend, added for future expansion (20.10.2025)
     async def mock_logout(request: Request):
         """Clears the mock session keys."""
         request.session.pop("mock_user_logged_in", None)
-        request.session.pop("user", None) # Also clear the mock user
+        request.session.pop("user", None)  # Also clear the mock user
         print("Mock user logged out (session cleared)")
         return RedirectResponse(url="/")
 
@@ -56,7 +58,7 @@ else:
         print("🚀 Running in PRODUCTION mode. Using REAL OIDC authentication.")
     else:
         print(f"⚠️ Running in '{env}' mode. Using REAL OIDC authentication.")
-        
+
     # 1. Include the REAL OIDC router (which has /login and /auth/callback)
     app.include_router(oidc_router)
 
@@ -131,13 +133,12 @@ def health_check():
 @app.get("/me")
 def get_current_user_from_session(request: Request):
     user = request.session.get("user")
-    
+
     if not user:
         raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED, 
-            detail="Not authenticated"
+            status_code=status.HTTP_401_UNAUTHORIZED, detail="Not authenticated"
         )
-    
+
     return user
 
 
