@@ -1,82 +1,14 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import 'tailwindcss';
+@plugin "daisyui";
 
 :root {
-  font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
-  line-height: 1.5;
-  font-weight: 400;
   --sidebar-width-open: 16rem;
-  --sidebar-width-closed: 3.5rem;
-  color-scheme: light dark;
-  color: rgba(255, 255, 255, 0.87);
-  background-color: #242424;
+  --sidebar-width-closed: 4rem;
 
   font-synthesis: none;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-}
-
-a {
-  font-weight: 500;
-  color: #646cff;
-  text-decoration: inherit;
-}
-
-a:hover {
-  color: #535bf2;
-}
-
-body {
-  margin: 0;
-  min-width: 320px;
-  min-height: 100vh;
-}
-
-h1 {
-  font-size: 3.2em;
-  line-height: 1.1;
-}
-
-button {
-  border-radius: 8px;
-  border: 1px solid transparent;
-  padding: 0.6em 1.2em;
-  font-size: 1em;
-  font-weight: 500;
-  font-family: inherit;
-  background-color: #1a1a1a;
-  transition: border-color 0.25s;
-}
-button:hover {
-  border-color: #646cff;
-}
-button:focus,
-button:focus-visible {
-  outline: 4px auto -webkit-focus-ring-color;
-}
-
-.chat-window {
-  max-width: 900px;
-  min-height: 400px;
-  padding: 1em;
-  border-radius: 8px;
-  font-size: 1.2em;
-  flex: 1;
-}
-
-@media (prefers-color-scheme: light) {
-  :root {
-    color: #213547;
-    background-color: #ffffff;
-  }
-  a:hover {
-    color: #747bff;
-  }
-  button {
-    background-color: #f9f9f9;
-  }
 }
 
 #my-drawer-4 {
@@ -89,9 +21,11 @@ button:focus-visible {
   width: var(--sidebar-width-open);
   transition: width 200ms ease;
 }
+
 #my-drawer-4:not(:checked) ~ .drawer-side .sidebar {
   width: var(--sidebar-width-closed);
 }
+
 #my-drawer-4:not(:checked) ~ .drawer-side .sidebar .label-text {
   display: none;
 }
@@ -113,57 +47,15 @@ button:focus-visible {
 .sidebar .icon svg {
   width: 1.5rem;
   height: 1.5rem;
-  display: block;
-  margin: 0;
-  color: inherit;
-}
-
-.sidebar .menu li > button {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  width: 100%;
-  justify-content: flex-start;
-  color: inherit;
-  background: transparent;
-  border: none;
-  cursor: pointer;
-  transition: all 0.2s ease;
-}
-
-.sidebar .menu li > button:hover {
-  background-color: rgba(100, 108, 255, 0.15) !important;
-  border-radius: 8px;
-  transform: translateX(4px);
 }
 
 #my-drawer-4:not(:checked) ~ .drawer-side .sidebar .menu li > button {
   justify-content: center;
-  padding: 0;
-  height: 2.5rem;
-  min-height: 2.5rem;
-  align-items: center;
-  width: 100%;
+  padding-left: 0;
+  padding-right: 0;
 }
 
-#my-drawer-4:not(:checked) ~ .drawer-side .sidebar .drawer-toggle-btn,
 #my-drawer-4:not(:checked) ~ .drawer-side .sidebar .m-2 {
   display: flex;
   justify-content: center;
-  width: 100%;
-}
-
-.sidebar .drawer-toggle-btn {
-  margin-top: auto;
-  color: inherit;
-}
-
-.sidebar label.btn {
-  cursor: default;
-}
-
-.sidebar .menu li > button:focus-visible,
-.sidebar .menu li > button:focus {
-  outline: 3px solid rgba(100, 108, 255, 0.25);
-  outline-offset: 2px;
 }

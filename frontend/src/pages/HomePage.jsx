@@ -3,7 +3,7 @@ import Menu from '../components/Menu';
 
 const HomePage = () => {
   return (
-    <div data-theme="dark" className="drawer lg:drawer-open">
+    <div className="drawer lg:drawer-open">
       <input
         id="my-drawer-4"
         type="checkbox"

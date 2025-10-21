@@ -6,10 +6,7 @@ const LoginPage = () => {
   };
 
   return (
-    <div
-      data-theme="dark"
-      className="fixed top-0 left-0 w-full h-full flex justify-center items-center"
-    >
+    <div className="fixed top-0 left-0 w-full h-full flex justify-center items-center">
       <div className="p-8 text-center max-w-xl">
         <h1 className="text-4xl mb-4">Tervetuloa</h1>
         <p className="mb-8 text-gray-400">
