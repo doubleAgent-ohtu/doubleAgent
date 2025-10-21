@@ -7,13 +7,16 @@ const App = () => {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    // Tarkista onko käyttäjä kirjautunut URL-parametreista
     const checkAuthStatus = async () => {
       try {
-        const urlParams = new URLSearchParams(window.location.search);
-        const isLoggedIn = urlParams.get('authenticated') === 'true';
-
-        setIsAuthenticated(isLoggedIn);
+        const response = await fetch('/api/me');
+        if (response.ok) {
+          // If response is 200 OK, we are logged in.
+          setIsAuthenticated(true);
+        } else {
+          // If response is 401 Unauthorized or other error, we are not logged in.
+          setIsAuthenticated(false);
+        }
       } catch (error) {
         console.error('Auth check failed:', error);
         setIsAuthenticated(false);
