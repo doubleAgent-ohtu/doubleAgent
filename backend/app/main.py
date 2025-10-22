@@ -1,6 +1,6 @@
 import os
 from dotenv import load_dotenv
-from fastapi import FastAPI, Request, HTTPException, status
+from fastapi import FastAPI, Request, HTTPException, status, Depends
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import RedirectResponse
 from pydantic import BaseModel
@@ -13,6 +13,16 @@ load_dotenv()
 app = FastAPI()
 
 app.add_middleware(SessionMiddleware, secret_key=os.getenv("DA_SESSION_SECRET"))
+
+def get_current_user(request: Request) -> dict:
+    user = request.session.get("user")
+
+    if not user:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED, detail="Not authenticated"
+        )
+
+    return user
 
 env = os.getenv("DA_ENVIRONMENT", "not_set")
 if env == "development":
@@ -60,7 +70,7 @@ else:
         print(f"⚠️ Running in '{env}' mode. Using REAL OIDC authentication.")
 
     # 1. Include the REAL OIDC router (which has /login and /auth/callback)
-    app.include_router(oidc_router)
+    app.include_router(oidc_router, prefix="/api")
 
     # 2. Add a REAL logout route
     @app.post("/api/logout")
@@ -81,6 +91,8 @@ chatbot_b = ChatbotService(
     system_prompt="You are a helpful assistant. Answer questions clearly."
 )
 
+
+#TODO!!!! local list
 messages: list[str] = []
 
 
@@ -102,8 +114,8 @@ class ChatResponse(BaseModel):
     chatbot: str
 
 
-@app.post("/chat", response_model=ChatResponse)
-def chat_with_bot(chat_msg: ChatMessage):
+@app.post("/api/chat", response_model=ChatResponse)
+def chat_with_bot(chat_msg: ChatMessage, current_user: dict = Depends(get_current_user)):
     if chat_msg.chatbot == "b":
         chatbot = chatbot_b
     else:
@@ -120,26 +132,19 @@ def chat_with_bot(chat_msg: ChatMessage):
     )
 
 
-@app.get("/messages")
-def get_messages():
+@app.get("/api/messages")
+def get_messages(current_user: dict = Depends(get_current_user)):
     return {"messages": messages}
 
 
-@app.get("/health")
+@app.get("/api/health")
 def health_check():
     return {"status": "healthy"}
 
 
-@app.get("/me")
-def get_current_user_from_session(request: Request):
-    user = request.session.get("user")
-
-    if not user:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED, detail="Not authenticated"
-        )
-
-    return user
+@app.get("/api/me")
+def get_current_user_from_session(current_user: dict = Depends(get_current_user)):
+    return current_user
 
 
 @app.get("/")
