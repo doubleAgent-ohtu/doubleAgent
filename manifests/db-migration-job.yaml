@@ -7,9 +7,14 @@ spec:
     spec:
       containers:
         - name: migrate
-          image: double-agent-backend:latest
+          image: docker.io/aappoarvid/double-agent-backend:latest
+          imagePullPolicy: Always
           command:
-            ["alembic", "-c", "backend/app/db/alembic.ini", "upgrade", "head"]
+            - "alembic"
+            - "-c"
+            - "/app/app/db/alembic.ini" # <--- THIS IS THE CORRECT PATH FOR DOCKER CONTAINER
+            - "upgrade"
+            - "head"
           env:
             - name: DA_DB_URL
               valueFrom:
