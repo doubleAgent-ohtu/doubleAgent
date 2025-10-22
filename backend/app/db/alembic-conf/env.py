@@ -8,7 +8,7 @@ from sqlalchemy import pool
 from alembic import context
 
 # /app/app/db/alembic-conf/env.py -> /app/app/db -> /app/app -> /app
-path = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', '..'))
+path = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", ".."))
 sys.path.append(path)
 
 # Now this import will work, but use the absolute path
@@ -27,7 +27,9 @@ if config.config_file_name is not None:
 # Get the database URL from the environment variable set by the OpenShift Job
 db_url = os.getenv("DA_DB_URL")
 if db_url is None:
-    raise ValueError("Database configuration error: DA_DB_URL environment variable is missing.")
+    raise ValueError(
+        "Database configuration error: DA_DB_URL environment variable is missing."
+    )
 config.set_main_option("sqlalchemy.url", db_url)
 
 # add your model's MetaData object here
