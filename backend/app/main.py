@@ -14,6 +14,7 @@ app = FastAPI()
 
 app.add_middleware(SessionMiddleware, secret_key=os.getenv("DA_SESSION_SECRET"))
 
+
 def get_current_user(request: Request) -> dict:
     user = request.session.get("user")
 
@@ -23,6 +24,7 @@ def get_current_user(request: Request) -> dict:
         )
 
     return user
+
 
 env = os.getenv("DA_ENVIRONMENT", "not_set")
 if env == "development":
@@ -70,7 +72,7 @@ else:
         print(f"⚠️ Running in '{env}' mode. Using REAL OIDC authentication.")
 
     # 1. Include the REAL OIDC router (which has /login and /auth/callback)
-    app.include_router(oidc_router, prefix="/api")
+    app.include_router(oidc_router)
 
     # 2. Add a REAL logout route
     @app.post("/api/logout")
@@ -92,7 +94,7 @@ chatbot_b = ChatbotService(
 )
 
 
-#TODO!!!! local list
+# TODO!!!! local list
 messages: list[str] = []
 
 
@@ -114,8 +116,10 @@ class ChatResponse(BaseModel):
     chatbot: str
 
 
-@app.post("/api/chat", response_model=ChatResponse)
-def chat_with_bot(chat_msg: ChatMessage, current_user: dict = Depends(get_current_user)):
+@app.post("/chat", response_model=ChatResponse)
+def chat_with_bot(
+    chat_msg: ChatMessage, current_user: dict = Depends(get_current_user)
+):
     if chat_msg.chatbot == "b":
         chatbot = chatbot_b
     else:
@@ -132,17 +136,17 @@ def chat_with_bot(chat_msg: ChatMessage, current_user: dict = Depends(get_curren
     )
 
 
-@app.get("/api/messages")
+@app.get("/messages")
 def get_messages(current_user: dict = Depends(get_current_user)):
     return {"messages": messages}
 
 
-@app.get("/api/health")
+@app.get("/health")
 def health_check():
     return {"status": "healthy"}
 
 
-@app.get("/api/me")
+@app.get("/me")
 def get_current_user_from_session(current_user: dict = Depends(get_current_user)):
     return current_user
 
