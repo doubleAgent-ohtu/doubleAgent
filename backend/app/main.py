@@ -28,28 +28,17 @@ if env == "development":
     )
     print("✅ CORS enabled for development")
 
-    # Add MOCK login/logout routes
+    # Add MOCK login route
     @app.get("/login")
     async def mock_login(request: Request):
         """Sets the mock session key."""
-        request.session["mock_user_logged_in"] = True
         # Set a mock user object directly in the session
         request.session["user"] = {
             "id": "2Q6XGZP4DNWAEYVIDZV2KLXKO3Z4QEBM",
             "username": "pate",
             "name": "Patrick Bateman",
         }
-        print("Mock user logged in (session set)")
-        return RedirectResponse(url="/")
-
-    @app.post(
-        "/logout"
-    )  # Not used in frontend, added for future expansion (20.10.2025)
-    async def mock_logout(request: Request):
-        """Clears the mock session keys."""
-        request.session.pop("mock_user_logged_in", None)
-        request.session.pop("user", None)  # Also clear the mock user
-        print("Mock user logged out (session cleared)")
+        print("Mock user logged in")
         return RedirectResponse(url="/")
 
 else:
@@ -61,18 +50,6 @@ else:
 
     # 1. Include the REAL OIDC router (which has /login and /auth/callback)
     app.include_router(oidc_router)
-
-    # 2. Add a REAL logout route
-    @app.post("/api/logout")
-    async def real_logout(request: Request):
-        """Clears the real 'user' session key."""
-        request.session.pop("user", None)
-        print("Real user logged out (session cleared)")
-        return RedirectResponse(url="/")
-
-
-# --- COMMON APPLICATION LOGIC ---
-# (These are defined for all environments)
 
 chatbot_a = ChatbotService(
     system_prompt="You are a helpful assistant. Answer questions clearly."
@@ -100,6 +77,16 @@ class ChatResponse(BaseModel):
     ai_response: str
     thread_id: str
     chatbot: str
+
+
+# Logout route is not in oidc_uni_login.py because
+# local testing needs it aswell and oidc_router is
+# included only in production env.
+@app.post("/logout")
+async def real_logout(request: Request):
+    """Clears the 'user' session key."""
+    request.session.pop("user", None)
+    return RedirectResponse(url="/")
 
 
 @app.post("/chat", response_model=ChatResponse)
