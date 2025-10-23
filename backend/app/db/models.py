@@ -9,6 +9,8 @@ class Base(DeclarativeBase):
 
 
 class Prompt(Base):
+    """Table for storing prompts"""
+
     __tablename__ = "prompt"
 
     id: Mapped[int] = mapped_column(primary_key=True)
