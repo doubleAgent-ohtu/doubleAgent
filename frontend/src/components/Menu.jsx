@@ -1,20 +1,19 @@
 const Menu = () => {
-const handleLogout = async () => {
-  try {
-    const res = await fetch('/api/logout', {
-      method: 'POST',
-      credentials: 'include',
-    });
-    if (res.redirected) {
-      window.location.href = res.url;
-    } else {
-      window.location.href = '/';
+  const handleLogout = async () => {
+    try {
+      const res = await fetch('/api/logout', {
+        method: 'POST',
+        credentials: 'include',
+      });
+      if (res.redirected) {
+        window.location.href = res.url;
+      } else {
+        window.location.href = '/';
+      }
+    } catch (err) {
+      console.error('Logout failed:', err);
     }
-  } catch (err) {
-    console.error('Logout failed:', err);
-  }
-};
-
+  };
 
   return (
     <div className="bg-base-200 flex flex-col justify-between min-h-full sidebar p-2">
