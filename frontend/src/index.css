@@ -2,39 +2,36 @@
 @plugin "daisyui";
 
 :root {
-  --sidebar-width-open: 16rem;
-  --sidebar-width-closed: 4rem;
-
   font-synthesis: none;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
-#my-drawer-4 {
+.drawer-toggle {
   position: absolute;
   opacity: 0;
   pointer-events: none;
 }
 
-#my-drawer-4 ~ .drawer-side .sidebar {
-  width: var(--sidebar-width-open);
+.drawer-side .sidebar {
+  width: 16rem;
   transition: width 200ms ease;
 }
 
-#my-drawer-4:not(:checked) ~ .drawer-side .sidebar {
-  width: var(--sidebar-width-closed);
+.drawer-toggle:not(:checked) ~ .drawer-side .sidebar {
+  width: 4rem;
 }
 
-#my-drawer-4:not(:checked) ~ .drawer-side .sidebar .label-text {
+.drawer-toggle:not(:checked) ~ .drawer-side .label-text {
   display: none;
 }
 
-#my-drawer-4:checked ~ .drawer-side .sidebar .label-text {
+.drawer-toggle:checked ~ .drawer-side .label-text {
   display: inline;
 }
 
-#my-drawer-4 ~ .drawer-side .sidebar .icon {
+.drawer-side .icon {
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -49,13 +46,13 @@
   height: 1.5rem;
 }
 
-#my-drawer-4:not(:checked) ~ .drawer-side .sidebar .menu li > button {
+.drawer-toggle:not(:checked) ~ .drawer-side .sidebar .menu li > button {
   justify-content: center;
   padding-left: 0;
   padding-right: 0;
 }
 
-#my-drawer-4:not(:checked) ~ .drawer-side .sidebar .m-2 {
+.drawer-toggle:not(:checked) ~ .drawer-side .sidebar .m-2 {
   display: flex;
   justify-content: center;
 }

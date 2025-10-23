@@ -1,7 +1,24 @@
 const Menu = () => {
+const handleLogout = async () => {
+  try {
+    const res = await fetch('/api/logout', {
+      method: 'POST',
+      credentials: 'include',
+    });
+    if (res.redirected) {
+      window.location.href = res.url;
+    } else {
+      window.location.href = '/';
+    }
+  } catch (err) {
+    console.error('Logout failed:', err);
+  }
+};
+
+
   return (
-    <div className="bg-base-200 flex flex-col justify-between min-h-full">
-      <div className="sidebar p-2">
+    <div className="bg-base-200 flex flex-col justify-between min-h-full sidebar p-2">
+      <div>
         <ul className="menu w-full">
           <li>
             <button>
@@ -44,6 +61,28 @@ const Menu = () => {
                 </svg>
               </span>
               <span className="label-text">Settings</span>
+            </button>
+          </li>
+
+          <li>
+            <button onClick={handleLogout}>
+              <span className="icon" aria-hidden="true">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  viewBox="0 0 24 24"
+                  strokeLinejoin="round"
+                  strokeLinecap="round"
+                  strokeWidth="2"
+                  fill="none"
+                  stroke="currentColor"
+                  className="inline-block size-4 my-1.5"
+                >
+                  <path d="M14 8V6a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h7a2 2 0 0 0 2-2v-2"></path>
+                  <path d="M9 12h12l-3-3"></path>
+                  <path d="M18 15l3-3"></path>
+                </svg>
+              </span>
+              <span className="label-text">Logout</span>
             </button>
           </li>
         </ul>
