@@ -20,7 +20,7 @@ export const HealthCheckButton = () => {
         Check Backend Health
       </button>
       {status && (
-        <p className="text-sm text-gray-400">
+        <p className="text-sm text-base-content/70">
           Backend status:{' '}
           <span className={status === 'error' ? 'text-error' : 'text-success'}>{status}</span>
         </p>

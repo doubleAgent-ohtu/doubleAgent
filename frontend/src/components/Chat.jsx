@@ -43,30 +43,30 @@ const Chat = ({ title, threadId }) => {
 
   return (
     <div className="flex-1 p-4">
-      <h2>{title}</h2>
+      <h2 className="text-2xl font-bold mb-4">{title}</h2>
       <div className="mb-4">
         <input
           value={promptInput}
           onChange={(e) => setPromptInput(e.target.value)}
           placeholder="Type prompt"
-          className="input input-bordered w-full text-lg p-3 rounded-lg mb-2"
+          className="input input-bordered w-full mb-2"
         />
-        <button onClick={handlePromptSet} className="btn btn-soft">
+        <button onClick={handlePromptSet} className="btn btn-primary">
           Set prompt
         </button>
       </div>
-      <div className="mb-4 text-gray-400">
-        <b>Current prompt:</b> {prompt}
+      <div className="mb-4 text-base-content/70">
+        <b>Current prompt:</b> {prompt || 'No prompt set'}
       </div>
       <form onSubmit={handleSubmit}>
         <input
           value={input}
           onChange={(e) => setInput(e.target.value)}
           placeholder="Type something"
-          className="input input-bordered w-full text-lg p-3 rounded-lg mb-2"
+          className="input input-bordered w-full mb-2"
         />
-        <button type="submit" className="btn btn-soft">
-          Add
+        <button type="submit" className="btn btn-primary">
+          Send
         </button>
       </form>
 
