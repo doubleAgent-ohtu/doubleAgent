@@ -45,11 +45,11 @@ const Chat = ({ title, threadId }) => {
     <div className="flex-1 p-4">
       <h2 className="text-2xl font-bold mb-4">{title}</h2>
       <div className="mb-4">
-        <input
+        <textarea
           value={promptInput}
           onChange={(e) => setPromptInput(e.target.value)}
           placeholder="Type prompt"
-          className="input input-bordered w-full mb-2"
+          className="textarea textarea-bordered w-full mb-2"
         />
         <button onClick={handlePromptSet} className="btn btn-primary">
           Set prompt

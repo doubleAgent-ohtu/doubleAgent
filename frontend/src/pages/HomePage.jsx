@@ -15,8 +15,13 @@ const HomePage = () => {
         <main className="p-8">
           <h1 className="text-center text-2xl mb-8">Our little chatbots</h1>
           <div className="flex flex-col md:flex-row md:justify-between gap-8">
-            <Chat title="Chatbot A" threadId="chatbot_a" />
-            <Chat title="Chatbot B" threadId="chatbot_b" />
+            <div className="flex-1">
+              <Chat title="Chatbot A" threadId="chatbot_a" />
+            </div>
+            <div className="flex-1"></div>
+            <div className="flex-1">
+              <Chat title="Chatbot B" threadId="chatbot_b" />
+            </div>
           </div>
         </main>
       </div>
