@@ -1,14 +1,14 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 from datetime import datetime
 
 
 class Prompt(BaseModel):
     id: int
-    agent_name: str
     prompt: str
+    agent_name: str
     created_at: datetime
 
 
-class PromptCreate(BaseModel):
-    agent_name: str | None
-    prompt: str
+class PromptSave(BaseModel):
+    prompt: str = Field(max_length=4000, min_length=1)
+    agent_name: str | None = Field(max_length=50)

@@ -3,10 +3,14 @@ from dotenv import load_dotenv
 from fastapi import FastAPI, Request, HTTPException, status, Depends
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import RedirectResponse
-from pydantic import BaseModel
+from pydantic import BaseModel, ValidationError
 from starlette.middleware.sessions import SessionMiddleware
 from app.chatbot import ChatbotService
 from app.oidc_uni_login import router as oidc_router
+from app.db.database import DBSession
+from sqlalchemy.orm import Session
+from app import schemas
+
 
 load_dotenv()
 
@@ -141,3 +145,20 @@ def get_current_user_from_session(current_user: dict = Depends(get_current_user)
 @app.get("/")
 def read_root():
     return {"message": "Chatbot API is running"}
+
+
+def get_db():
+    db = DBSession()
+    try:
+        yield db
+    finally:
+        db.close()
+
+    db: Session = Depends(get_db)
+
+
+@app.post("/save_prompt")
+def save_prompt(prompt: schemas.PromptSave):
+    print(prompt)
+    return {"msg": "Success"}
+
