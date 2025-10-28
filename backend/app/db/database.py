@@ -11,4 +11,4 @@ if DATABASE_URL is None:
     raise ValueError("DA_DB_URL environment variable is not set")
 
 engine = create_engine(DATABASE_URL, echo=True)
-Session = sessionmaker(bind=engine)
+DBSession = sessionmaker(bind=engine)

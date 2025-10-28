@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import axios from 'axios';
 
-const Chat = ({ title, threadId }) => {
+const Chat = ({ title, threadId, setSavePrompt }) => {
   // Luodaan kaksi react statea
   const [input, setInput] = useState('');
   const [messages, setMessages] = useState([]);
@@ -58,6 +58,16 @@ const Chat = ({ title, threadId }) => {
       <div className="mb-4 text-base-content/70">
         <b>Current prompt:</b> {prompt || 'No prompt set'}
       </div>
+
+      <button 
+        onClick={() => {
+          setSavePrompt(prompt);
+          document.getElementById("savePromptModal").showModal();
+        }} 
+        className="btn btn-primary">
+        Save prompt
+      </button>
+
       <form onSubmit={handleSubmit}>
         <input
           value={input}
