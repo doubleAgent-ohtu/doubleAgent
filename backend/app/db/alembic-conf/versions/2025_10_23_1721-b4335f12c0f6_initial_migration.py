@@ -24,6 +24,7 @@ def upgrade() -> None:
     op.create_table(
         "prompt",
         Column("id", Integer, primary_key=True),
+        Column("user", String()),
         Column("agent_name", String(50), server_default="unknown"),
         Column("prompt", String(4000), nullable=False),
         Column("created_at", DateTime(timezone=True), server_default=func.now()),
