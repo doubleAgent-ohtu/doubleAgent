@@ -9,9 +9,12 @@ class Base(DeclarativeBase):
 
 
 class Prompt(Base):
+    """Table for storing prompts"""
+
     __tablename__ = "prompt"
 
     id: Mapped[int] = mapped_column(primary_key=True)
+    user: Mapped[str]
     agent_name: Mapped[str] = mapped_column(String(50), server_default="unknown")
     prompt: Mapped[str] = mapped_column(String(4000), nullable=False)
     created_at: Mapped[datetime] = mapped_column(
