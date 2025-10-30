@@ -27,41 +27,41 @@ const SavePrompt = ({ savePrompt, setSavePrompt }) => {
   return (
     <div>
       <dialog id="savePromptModal" className="modal">
-        <div className="modal-box" flex flex-col>
+        <form method="dialog" className="modal-box flex flex-col gap-4" onSubmit={handleSavePrompt}>
           <div>
             <label htmlFor="savePromptAgentName" className="label">
-              The agent name
+              <span className="label-text">The agent name</span>
             </label>
-            <input 
-             value={agentName}
-             onChange={(e) => setAgentName(e.target.value)}
-             maxLength={50}
-             id="savePromptAgentName"
-             className="input"
+            <input
+              value={agentName}
+              onChange={(e) => setAgentName(e.target.value)}
+              maxLength={50}
+              id="savePromptAgentName"
+              className="input input-bordered w-full"
             />
           </div>
           <div>
             <label htmlFor="savePromptText" className="label">
-              The prompt
+              <span className="label-text">The prompt</span>
             </label>
             <textarea
-             value={savePrompt}
-             onChange={(e) => setSavePrompt(e.target.value)}
-             maxLength={4000}
-             required
-             id="savePromptText"
-             className="textarea"
+              value={savePrompt}
+              onChange={(e) => setSavePrompt(e.target.value)}
+              maxLength={4000}
+              required
+              id="savePromptText"
+              className="textarea textarea-bordered w-full h-40"
             />
           </div>
-          <div>
-            <button onClick={handleSavePrompt} className="btn btn-primary">
+          <div className="modal-action justify-end">
+            <button type="submit" className="btn btn-primary">
               Save
             </button>
-            <button onClick={closeSavePromptModal} className="btn btn-primary">
+            <button type="button" onClick={closeSavePromptModal} className="btn btn-ghost">
               Close
             </button>
           </div>
-        </div>
+        </form>
       </dialog>
     </div>
   )

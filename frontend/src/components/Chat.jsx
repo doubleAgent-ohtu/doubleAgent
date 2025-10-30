@@ -52,19 +52,21 @@ const Chat = ({ title, threadId, setSavePrompt }) => {
           className="textarea textarea-bordered w-full mb-2"
         />
         <button onClick={handlePromptSet} className="btn btn-primary">
-          Set prompt
+          Create prompt
         </button>
       </div>
       <div className="mb-4 text-base-content/70">
         <b>Current prompt:</b> {prompt || 'No prompt set'}
       </div>
 
-      <button 
+      <button
+        type="button"
         onClick={() => {
           setSavePrompt(prompt);
           document.getElementById("savePromptModal").showModal();
-        }} 
-        className="btn btn-primary">
+        }}
+        className="btn btn-primary mb-2"
+      >
         Save prompt
       </button>
 
