@@ -4,11 +4,13 @@ from datetime import datetime
 
 class Prompt(BaseModel):
     id: int
-    prompt: str
+    user: str
     agent_name: str
+    prompt: str
     created_at: datetime
 
 
 class PromptSave(BaseModel):
-    prompt: str = Field(max_length=4000, min_length=1)
+    user: str
     agent_name: str | None = Field(max_length=50)
+    prompt: str = Field(max_length=4000, min_length=1)

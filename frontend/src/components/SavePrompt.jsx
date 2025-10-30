@@ -14,8 +14,9 @@ const SavePrompt = ({ savePrompt, setSavePrompt }) => {
     e.preventDefault();
     try {
       const res = await axios.post("/api/save_prompt", {
+        user: "", // user retrieved at the backend
+        agent_name: agentName,
         prompt: savePrompt,
-        agent_name: agentName
       })
       console.log(res.data);
     } catch (err) {

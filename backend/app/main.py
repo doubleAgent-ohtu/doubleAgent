@@ -3,13 +3,14 @@ from dotenv import load_dotenv
 from fastapi import FastAPI, Request, HTTPException, status, Depends
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import RedirectResponse
-from pydantic import BaseModel, ValidationError
+from pydantic import BaseModel
 from starlette.middleware.sessions import SessionMiddleware
 from app.chatbot import ChatbotService
 from app.oidc_uni_login import router as oidc_router
 from app.db.database import DBSession
 from sqlalchemy.orm import Session
 from app import schemas
+from app.db import models
 
 
 load_dotenv()
@@ -21,7 +22,6 @@ app.add_middleware(SessionMiddleware, secret_key=os.getenv("DA_SESSION_SECRET"))
 
 def get_current_user(request: Request) -> dict:
     user = request.session.get("user")
-
     if not user:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED, detail="Not authenticated"
@@ -154,11 +154,22 @@ def get_db():
     finally:
         db.close()
 
-    db: Session = Depends(get_db)
-
 
 @app.post("/save_prompt")
-def save_prompt(prompt: schemas.PromptSave):
-    print(prompt)
-    return {"msg": "Success"}
+def save_prompt(
+    data: schemas.PromptSave,
+    user: dict = Depends(get_current_user),
+    db: Session = Depends(get_db)
+    ) -> schemas.Prompt:
 
+    try:
+        data.user = user['id']
+    except KeyError as exc:
+        raise HTTPException(status_code=404, detail="Unable to identify the user.") from exc
+    
+    prompt = models.Prompt(**data.model_dump())
+    db.add(prompt)
+    db.commit()
+    db.refresh(prompt)
+
+    return prompt
