@@ -3,6 +3,7 @@ kind: Job
 metadata:
   name: db-migrate
 spec:
+  ttlSecondsAfterFinished: 300 # Clean up job after 5 minutes
   template:
     spec:
       containers:
