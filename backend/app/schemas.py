@@ -7,6 +7,7 @@ class Prompt(BaseModel):
     user: str
     agent_name: str
     prompt: str
+    agent_name: str
     created_at: datetime
 
 

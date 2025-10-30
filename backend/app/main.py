@@ -3,7 +3,7 @@ from dotenv import load_dotenv
 from fastapi import FastAPI, Request, HTTPException, status, Depends
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import RedirectResponse
-from pydantic import BaseModel
+from pydantic import BaseModel, ValidationError
 from starlette.middleware.sessions import SessionMiddleware
 from app.chatbot import ChatbotService
 from app.oidc_uni_login import router as oidc_router
