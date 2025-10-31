@@ -1,26 +1,25 @@
 import axios from 'axios';
 import { useState } from 'react';
 
-
 const SavePrompt = ({ savePrompt, setSavePrompt }) => {
-  const [agentName, setAgentName] = useState("");
+  const [agentName, setAgentName] = useState('');
 
   const closeSavePromptModal = () => {
     setAgentName('');
-    document.getElementById("savePromptModal").close();
+    document.getElementById('savePromptModal').close();
   };
 
   const handleSavePrompt = async (e) => {
     e.preventDefault();
     try {
-      const res = await axios.post("/api/save_prompt", {
-        user: "", // user retrieved at the backend
+      const res = await axios.post('/api/save_prompt', {
+        user: '', // user retrieved at the backend
         agent_name: agentName,
         prompt: savePrompt,
-      })
+      });
       console.log(res.data);
     } catch (err) {
-        console.log(err);
+      console.log(err);
     }
   };
 
@@ -64,7 +63,7 @@ const SavePrompt = ({ savePrompt, setSavePrompt }) => {
         </form>
       </dialog>
     </div>
-  )
-}
+  );
+};
 
 export default SavePrompt;

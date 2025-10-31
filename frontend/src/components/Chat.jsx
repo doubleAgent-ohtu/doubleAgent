@@ -63,7 +63,7 @@ const Chat = ({ title, threadId, setSavePrompt }) => {
         type="button"
         onClick={() => {
           setSavePrompt(prompt);
-          document.getElementById("savePromptModal").showModal();
+          document.getElementById('savePromptModal').showModal();
         }}
         className="btn btn-primary mb-2"
       >
