@@ -142,13 +142,13 @@ def start_conversation(
     conversation_messages = []
     current_message = conv.initial_message
     current_bot = "a"
-    
+
     # Set system prompts if provided
     if conv.system_prompt_a:
         chatbot_a.set_system_prompt(conv.system_prompt_a)
     if conv.system_prompt_b:
         chatbot_b.set_system_prompt(conv.system_prompt_b)
-    
+
     for i in range(conv.turns):
         if current_bot == "a":
             response = chatbot_a.chat(current_message, conv.thread_id)
@@ -160,7 +160,7 @@ def start_conversation(
             conversation_messages.append({"chatbot": "b", "message": response})
             current_message = response
             current_bot = "a"
-    
+
     return ConversationResponse(messages=conversation_messages)
 
 
