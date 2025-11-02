@@ -64,7 +64,11 @@ class ChatbotService:
             )
 
     def chat(
-        self, message: str, thread_id: str = "default", system_prompt: str = None, model: str = None
+        self,
+        message: str,
+        thread_id: str = "default",
+        system_prompt: str = None,
+        model: str = None,
     ) -> str:
         if model:
             self.set_model(model)
@@ -83,7 +87,9 @@ class ChatbotService:
         except Exception as e:
             return f"Error: {str(e)}"
 
-    async def stream_chat(self, message: str, thread_id: str = "default", model: str = None):
+    async def stream_chat(
+        self, message: str, thread_id: str = "default", model: str = None
+    ):
         if model:
             self.set_model(model)
         try:
