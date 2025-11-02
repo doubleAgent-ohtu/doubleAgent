@@ -30,8 +30,13 @@ const HomePage = () => {
             </select>
           </div>
           <div className="flex flex-col md:flex-row md:justify-between gap-8">
-            <Chat title="Chatbot A" threadId="chatbot_a" model={selectedModel} />
-            <Chat title="Chatbot B" threadId="chatbot_b" model={selectedModel} />
+            <div className="flex-1">
+              <Chat title="Chatbot A" threadId="chatbot_a" model={selectedModel} />
+            </div>
+            <div className="flex-1"></div>
+            <div className="flex-1">
+              <Chat title="Chatbot B" threadId="chatbot_b" model={selectedModel} />
+            </div>
           </div>
         </main>
       </div>
