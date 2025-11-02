@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import axios from 'axios';
 
-const Chat = ({ title, threadId, setSavePrompt }) => {
+const Chat = ({ title, threadId, setSavePrompt, showSvPrmptDialog }) => {
   // Luodaan kaksi react statea
   const [input, setInput] = useState('');
   const [messages, setMessages] = useState([]);
@@ -63,7 +63,7 @@ const Chat = ({ title, threadId, setSavePrompt }) => {
         type="button"
         onClick={() => {
           setSavePrompt(prompt);
-          document.getElementById('savePromptModal').showModal();
+          showSvPrmptDialog(true);
         }}
         className="btn btn-primary mb-2"
       >

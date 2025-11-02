@@ -161,7 +161,6 @@ def save_prompt(
     user: dict = Depends(get_current_user),
     db: Session = Depends(get_db)
     ) -> schemas.Prompt:
-
     try:
         data.user = user['id']
     except KeyError as exc:
