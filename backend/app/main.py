@@ -159,13 +159,15 @@ def get_db():
 def save_prompt(
     data: schemas.PromptSave,
     user: dict = Depends(get_current_user),
-    db: Session = Depends(get_db)
-    ) -> schemas.Prompt:
+    db: Session = Depends(get_db),
+) -> schemas.Prompt:
     try:
-        data.user = user['id']
+        data.user = user["id"]
     except KeyError as exc:
-        raise HTTPException(status_code=404, detail="Unable to identify the user.") from exc
-    
+        raise HTTPException(
+            status_code=404, detail="Unable to identify the user."
+        ) from exc
+
     prompt = models.Prompt(**data.model_dump())
     db.add(prompt)
     db.commit()
