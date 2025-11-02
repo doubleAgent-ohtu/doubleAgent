@@ -12,9 +12,7 @@ if DATABASE_URL is None:
 
 app_env = os.getenv("DA_ENVIRONMENT", "production").lower()
 
-engine_args = {
-    "echo": True
-}
+engine_args = {"echo": True}
 
 if app_env == "development":
     print("INFO: Running in 'development' mode, using NullPool (for supabase reasons).")
