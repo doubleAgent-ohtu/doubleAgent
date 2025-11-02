@@ -13,8 +13,13 @@ load_dotenv()
 
 class ChatbotService:
     def __init__(self, system_prompt: str):
+        self.allowed_models = {"gpt-4o-mini", "gpt-5"}
+        self.model_name = os.getenv("DA_OPENAI_MODEL", "gpt-4o-mini")
+        if self.model_name not in self.allowed_models:
+            self.model_name = "gpt-4o-mini"
+
         self.model = ChatOpenAI(
-            model="gpt-4o-mini",
+            model=self.model_name,
             openai_api_key=os.getenv("DA_OPENAI_API_KEY"),
             openai_api_base="https://doubleagents.openai.azure.com/openai/v1",
             temperature=1.0,
@@ -37,9 +42,32 @@ class ChatbotService:
         response = self.model.invoke(prompt)
         return {"messages": response}
 
+    def set_system_prompt(self, system_prompt: str):
+        self.current_system_prompt = system_prompt
+        self.prompt_template = ChatPromptTemplate.from_messages(
+            [
+                ("system", system_prompt),
+                MessagesPlaceholder(variable_name="messages"),
+            ]
+        )
+
+    def set_model(self, model_name: str):
+        if model_name not in self.allowed_models:
+            raise ValueError(f"Unsupported model: {model_name}")
+        if model_name != self.model_name:
+            self.model_name = model_name
+            self.model = ChatOpenAI(
+                model=self.model_name,
+                openai_api_key=os.getenv("DA_OPENAI_API_KEY"),
+                openai_api_base="https://doubleagents.openai.azure.com/openai/v1",
+                temperature=1.0,
+            )
+
     def chat(
-        self, message: str, thread_id: str = "default", system_prompt: str = None
+        self, message: str, thread_id: str = "default", system_prompt: str = None, model: str = None
     ) -> str:
+        if model:
+            self.set_model(model)
         try:
             if system_prompt and system_prompt.strip():
                 self.set_system_prompt(system_prompt)
@@ -55,16 +83,9 @@ class ChatbotService:
         except Exception as e:
             return f"Error: {str(e)}"
 
-    def set_system_prompt(self, system_prompt: str):
-        self.current_system_prompt = system_prompt
-        self.prompt_template = ChatPromptTemplate.from_messages(
-            [
-                ("system", system_prompt),
-                MessagesPlaceholder(variable_name="messages"),
-            ]
-        )
-
-    async def stream_chat(self, message: str, thread_id: str = "default"):
+    async def stream_chat(self, message: str, thread_id: str = "default", model: str = None):
+        if model:
+            self.set_model(model)
         try:
             config = {"configurable": {"thread_id": thread_id}}
             input_messages = [HumanMessage(content=message)]
