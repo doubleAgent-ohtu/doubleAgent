@@ -1,5 +1,6 @@
 import Chat from '../components/Chat';
 import Menu from '../components/Menu';
+import Tietosuojaseloste from '../components/TSS.jsx';
 
 const HomePage = () => {
   return (
@@ -11,8 +12,8 @@ const HomePage = () => {
         aria-label="Toggle sidebar"
         aria-controls="sidebar"
       />
-      <div className="drawer-content">
-        <main className="p-8">
+      <div className="drawer-content flex flex-col min-h-screen">
+        <main className="p-8 flex-grow">
           <h1 className="text-center text-2xl mb-8">Our little chatbots</h1>
           <div className="flex flex-col md:flex-row md:justify-between gap-8">
             <div className="flex-1">
@@ -24,12 +25,35 @@ const HomePage = () => {
             </div>
           </div>
         </main>
+
+        <footer className="text-center p-4">
+          <button
+            className="btn btn-link"
+            onClick={() => document.getElementById('privacy_modal').showModal()}
+          >
+            Tietosuojaseloste
+          </button>
+        </footer>
       </div>
 
       <div className="drawer-side">
         <label htmlFor="my-drawer-4" aria-label="close sidebar" className="drawer-overlay"></label>
         <Menu />
       </div>
+
+      <dialog id="privacy_modal" className="modal">
+        <div className="modal-box w-11/12 max-w-4xl">
+          <Tietosuojaseloste />
+          <div className="modal-action">
+            <form method="dialog">
+              <button className="btn">Sulje</button>
+            </form>
+          </div>
+        </div>
+        <form method="dialog" className="modal-backdrop">
+          <button>close</button>
+        </form>
+      </dialog>
     </div>
   );
 };
