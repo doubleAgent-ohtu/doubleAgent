@@ -1,6 +1,4 @@
-// src/pages/Tietosuojaseloste.jsx
-
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import ReactMarkdown from 'react-markdown';
 
 const Tietosuojaseloste = () => {
@@ -8,7 +6,7 @@ const Tietosuojaseloste = () => {
 
   useEffect(() => {
     // Fetch the file from the public folder
-    fetch('tietosuojaseloste.md')
+    fetch('/tietosuojaseloste.md')
       .then((response) => {
         if (response.ok) {
           return response.text();
@@ -23,7 +21,7 @@ const Tietosuojaseloste = () => {
         // This is a user-facing error message
         setMarkdown('# Error loading the privacy policy\n\nSee console for details.');
       });
-  }, []); // The empty dependency array ensures this effect runs only once
+  }, []);
 
   return (
     <div style={{ padding: '20px', maxWidth: '800px', margin: '0 auto' }}>

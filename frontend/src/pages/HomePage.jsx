@@ -1,6 +1,6 @@
 import Chat from '../components/Chat';
 import Menu from '../components/Menu';
-import Tietosuojaseloste from '../components/TSS.jsx';
+import Tietosuojaseloste from '../components/Tietosuojaseloste.jsx';
 
 const HomePage = () => {
   return (
