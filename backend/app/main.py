@@ -30,6 +30,15 @@ def get_current_user(request: Request) -> dict:
     return user
 
 
+def get_user_id(user: dict = Depends(get_current_user)) -> str:
+    try:
+        return user["id"]
+    except KeyError as exc:
+        raise HTTPException(
+            status_code=404, detail="Unable to identify the user"
+        ) from exc
+
+
 env = os.getenv("DA_ENVIRONMENT", "not_set")
 if env == "development":
     # --- DEVELOPMENT ENVIRONMENT SETUP ---
@@ -155,19 +164,13 @@ def get_db():
         db.close()
 
 
-@app.post("/save_prompt")
+@app.post("/save_prompt", response_model=schemas.Prompt)
 def save_prompt(
-    data: schemas.PromptSave,
-    user: dict = Depends(get_current_user),
-    db: Session = Depends(get_db),
-) -> schemas.Prompt:
-    try:
-        data.user = user["id"]
-    except KeyError as exc:
-        raise HTTPException(
-            status_code=404, detail="Unable to identify the user."
-        ) from exc
-
+    data: schemas.SavePrompt,
+    user: dict = Depends(get_user_id),
+    db: Session = Depends(get_db)
+):
+    data.user = user
     prompt = models.Prompt(**data.model_dump())
     db.add(prompt)
     db.commit()
