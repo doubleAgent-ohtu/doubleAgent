@@ -1,8 +1,17 @@
+import { useState, useRef } from 'react';
 import Chat from '../components/Chat';
 import Menu from '../components/Menu';
+import SavePrompt from '../components/SavePrompt';
 import Tietosuojaseloste from '../components/Tietosuojaseloste.jsx';
 
 const HomePage = () => {
+  const [savePrompt, setSavePrompt] = useState('');
+  const svPrmtDialogRef = useRef(null);
+
+  function showSvPrmptDialog(show) {
+    show ? svPrmtDialogRef.current.showModal() : svPrmtDialogRef.current.close();
+  }
+
   return (
     <div className="drawer lg:drawer-open">
       <input
@@ -17,13 +26,29 @@ const HomePage = () => {
           <h1 className="text-center text-2xl mb-8">Our little chatbots</h1>
           <div className="flex flex-col md:flex-row md:justify-between gap-8">
             <div className="flex-1">
-              <Chat title="Chatbot A" threadId="chatbot_a" />
+              <Chat
+                title="Chatbot A"
+                threadId="chatbot_a"
+                setSavePrompt={setSavePrompt}
+                showSvPrmptDialog={showSvPrmptDialog}
+              />
             </div>
             <div className="flex-1"></div>
             <div className="flex-1">
-              <Chat title="Chatbot B" threadId="chatbot_b" />
+              <Chat
+                title="Chatbot B"
+                threadId="chatbot_b"
+                setSavePrompt={setSavePrompt}
+                showSvPrmptDialog={showSvPrmptDialog}
+              />
             </div>
           </div>
+          <SavePrompt
+            savePrompt={savePrompt}
+            setSavePrompt={setSavePrompt}
+            svPrmtDialogRef={svPrmtDialogRef}
+            showSvPrmptDialog={showSvPrmptDialog}
+          />
         </main>
 
         <footer className="text-center p-4">

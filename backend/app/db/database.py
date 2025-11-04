@@ -21,4 +21,4 @@ else:
     print(f"INFO: Running in '{app_env}' mode, using default QueuePool.")
 
 engine = create_engine(DATABASE_URL, **engine_args)
-Session = sessionmaker(bind=engine)
+DBSession = sessionmaker(bind=engine)
