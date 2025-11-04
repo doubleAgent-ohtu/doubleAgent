@@ -209,7 +209,7 @@ def get_db():
 def save_prompt(
     data: schemas.SavePrompt,
     user: dict = Depends(get_user_id),
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
 ):
     data.user = user
     prompt = models.Prompt(**data.model_dump())
