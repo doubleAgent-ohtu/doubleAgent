@@ -93,6 +93,18 @@ class ChatResponse(BaseModel):
     chatbot: str
 
 
+class ConversationStart(BaseModel):
+    initial_message: str
+    system_prompt_a: str | None = None
+    system_prompt_b: str | None = None
+    thread_id: str = "default"
+    turns: int = 6
+
+
+class ConversationResponse(BaseModel):
+    messages: list[dict]
+
+
 # Logout route is not in oidc_uni_login.py because
 # local testing needs it aswell and oidc_router is
 # included only in production env.
@@ -121,6 +133,35 @@ def chat_with_bot(
         thread_id=chat_msg.thread_id,
         chatbot=chat_msg.chatbot,
     )
+
+
+@app.post("/conversation", response_model=ConversationResponse)
+def start_conversation(
+    conv: ConversationStart, current_user: dict = Depends(get_current_user)
+):
+    conversation_messages = []
+    current_message = conv.initial_message
+    current_bot = "a"
+
+    # Set system prompts if provided
+    if conv.system_prompt_a:
+        chatbot_a.set_system_prompt(conv.system_prompt_a)
+    if conv.system_prompt_b:
+        chatbot_b.set_system_prompt(conv.system_prompt_b)
+
+    for i in range(conv.turns):
+        if current_bot == "a":
+            response = chatbot_a.chat(current_message, conv.thread_id)
+            conversation_messages.append({"chatbot": "a", "message": response})
+            current_message = response
+            current_bot = "b"
+        else:
+            response = chatbot_b.chat(current_message, conv.thread_id)
+            conversation_messages.append({"chatbot": "b", "message": response})
+            current_message = response
+            current_bot = "a"
+
+    return ConversationResponse(messages=conversation_messages)
 
 
 @app.get("/messages")
