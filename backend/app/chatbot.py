@@ -40,6 +40,13 @@ class ChatbotService:
     def _call_model(self, state: MessagesState):
         prompt = self.prompt_template.invoke(state)
         response = self.model.invoke(prompt)
+
+        try:
+            actual_model = response.response_metadata.get("model_name", "unknown")
+            print(f"[ChatbotService] ✅ Actual model that responded: {actual_model}")
+        except Exception:
+            print("[ChatbotService] ⚠️ Could not extract actual model from response")
+
         return {"messages": response}
 
     def set_system_prompt(self, system_prompt: str):
