@@ -1,0 +1,25 @@
+# Start from the same base image as the production build for consistency
+FROM python:3.11-slim
+
+WORKDIR /app
+
+# Install system dependencies
+RUN apt-get update \
+ && apt-get install -y build-essential libpq-dev \
+ && apt-get clean \
+ && rm -rf /var/lib/apt/lists/*
+
+# Install Poetry
+RUN pip install --no-cache-dir "poetry==1.8.3"
+ENV POETRY_VIRTUALENVS_CREATE=false
+
+# Copy only the dependency files
+COPY pyproject.toml poetry.lock ./
+
+# Install ALL dependencies (including dev groups)
+# We don't use --only main here
+RUN poetry install --no-root --no-interaction --no-ansi
+
+# We will mount the application code using a volume,
+# so we don't need to COPY code here.
+# (The command will be specified in docker-compose.yml)

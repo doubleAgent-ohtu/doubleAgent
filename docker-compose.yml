@@ -2,16 +2,35 @@ services:
   backend:
     build:
       context: ./backend
+      dockerfile: Dockerfile.dev
     ports:
       - "8000:8000"
-    environment: # Setting PYTHONUNBUFFERED=1 tells Python not to buffer output, so all print() and logging statements appear in real-time in the Docker logs.
-      - PYTHONUNBUFFERED=1
+    environment:
+      - PYTHONUNBUFFERED=1 # Ensures real-time logging
+      - POETRY_VIRTUALENVS_CREATE=false # Tell the 'poetry run' command to NOT use a venv
     env_file:
       - ./backend/.env
+    volumes:
+      # Mounts the entire 'backend' directory into '/app'
+      # Any changes on your host are reflected in the container
+      - ./backend:/app
+      - /app/.venv # Prevent host from overwriting container's virtual environment
+
+    command: python -m app.dev
 
   frontend:
-    build: ./frontend
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile.dev
     ports:
-      - "3000:80"
+      - "5173:5173"
+    environment:
+      - VITE_API_TARGET=http://backend:8000
     depends_on:
       - backend
+    # Add volumes for hot-reloading
+    volumes:
+      - ./frontend:/app # Mount source code
+      - /app/node_modules # Prevent host from overwriting container's node_modules
+
+    command: npm run dev
