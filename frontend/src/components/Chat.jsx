@@ -86,8 +86,8 @@ const Chat = ({ title, threadId, setSavePrompt, showSvPrmptDialog }) => {
         <h3>Conversation:</h3>
         <div className="chat-window">
           {messages.map((msg, idx) => (
-            <div key={idx} className="my-2">
-              <b>{msg.role === 'user' ? 'You' : 'AI'}:</b> {msg.content}
+            <div key={idx} className={`chat ${msg.role === 'user' ? 'chat-start' : 'chat-end'}`}>
+              <div className="chat-bubble">{msg.content}</div>
             </div>
           ))}
         </div>
