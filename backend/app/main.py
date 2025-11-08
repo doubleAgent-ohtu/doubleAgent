@@ -32,8 +32,9 @@ def get_current_user(request: Request) -> dict:
 
 def get_user_id(user: dict = Depends(get_current_user)) -> str:
     try:
-        return user["id"]
+        return user["sub"]
     except KeyError as exc:
+        print("CRITICAL")
         raise HTTPException(
             status_code=404, detail="Unable to identify the user"
         ) from exc
