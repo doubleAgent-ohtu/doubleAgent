@@ -27,7 +27,7 @@ const HomePage = () => {
           <div className="flex flex-col md:flex-row md:justify-between gap-8">
             <div className="flex-1">
               <Chat
-                title="Chatbot A"
+                chatbot="A"
                 threadId="chatbot_a"
                 setSavePrompt={setSavePrompt}
                 showSvPrmptDialog={showSvPrmptDialog}
@@ -36,7 +36,7 @@ const HomePage = () => {
             <div className="flex-1"></div>
             <div className="flex-1">
               <Chat
-                title="Chatbot B"
+                chatbot="B"
                 threadId="chatbot_b"
                 setSavePrompt={setSavePrompt}
                 showSvPrmptDialog={showSvPrmptDialog}

@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
 import axios from 'axios';
+import SelectPrompt from './SelectPrompt';
 
-const Chat = ({ title, threadId, setSavePrompt, showSvPrmptDialog }) => {
+const Chat = ({ chatbot, threadId, setSavePrompt, showSvPrmptDialog }) => {
   // Luodaan kaksi react statea
   const [input, setInput] = useState('');
   const [messages, setMessages] = useState([]);
@@ -43,7 +44,12 @@ const Chat = ({ title, threadId, setSavePrompt, showSvPrmptDialog }) => {
 
   return (
     <div className="flex-1 p-4">
-      <h2 className="text-2xl font-bold mb-4">{title}</h2>
+      <h2 className="text-2xl font-bold mb-4">Chatbot {chatbot}</h2>
+
+      <div className="mb-4">
+        <SelectPrompt chatbot={chatbot} setPromptInput={setPromptInput} />
+      </div>
+
       <div className="mb-4">
         <textarea
           value={promptInput}

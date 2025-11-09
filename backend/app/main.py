@@ -9,8 +9,9 @@ from app.chatbot import ChatbotService
 from app.oidc_uni_login import router as oidc_router
 from app.db.database import DBSession
 from sqlalchemy.orm import Session
+from sqlalchemy import select, desc, or_, func
 from app import schemas
-from app.db import models
+from app.db.models import Prompt
 
 
 load_dotenv()
@@ -206,15 +207,40 @@ def get_db():
 
 
 @app.post("/save_prompt", response_model=schemas.Prompt)
-def save_prompt(
+async def save_prompt(
     data: schemas.SavePrompt,
     user: dict = Depends(get_user_id),
     db: Session = Depends(get_db),
 ):
     data.user = user
-    prompt = models.Prompt(**data.model_dump())
+    if data.agent_name.strip() == "":
+        data.agent_name = None
+    prompt = Prompt(**data.model_dump())
     db.add(prompt)
     db.commit()
     db.refresh(prompt)
 
     return prompt
+
+
+@app.get("/get_user_prompts/", response_model=list[schemas.Prompt])
+async def get_user_prompts(
+    user: dict = Depends(get_user_id),
+    db: Session = Depends(get_db),
+    query: str = "",
+    offset: int = 0,
+    limit: int = 15,
+):
+    prompts = db.scalars(
+        select(Prompt)
+        .where(
+            Prompt.user == user, or_(
+                Prompt.agent_name.icontains(query), Prompt.prompt.icontains(query)
+            )
+        )
+        .order_by(desc(Prompt.created_at))
+        .limit(limit)
+        .offset(offset)
+    ).all()
+
+    return prompts
