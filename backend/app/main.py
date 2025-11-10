@@ -242,5 +242,5 @@ async def get_user_prompts(
         .limit(limit)
         .offset(offset)
     ).all()
-
+    
     return prompts

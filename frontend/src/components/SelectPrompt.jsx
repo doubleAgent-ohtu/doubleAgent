@@ -1,65 +1,71 @@
 import { useState, useEffect } from 'react';
 import axios from 'axios';
-import AsyncSelect from 'react-select/async';
-
+import Select from 'react-select';
 
 const SelectPrompt = ({ chatbot, setPromptInput }) => {
   const [prompts, setPrompts] = useState([]);
-  const [query, setQuery] = useState('');
+  const [selectedAgent, setSelectedAgent] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+  const [morePrompts, setMorePrompts] = useState(true);
 
-  const loadPrompts = async () => {
-    try {
-      const res = await axios.get(
-        `api/get_user_prompts/?query=${query}&offset=0&limit=25`
-      );
-      return res.data.map(
-        prompt => ({value: prompt.prompt, label: prompt.agent_name})
-      );
-    } catch (err) {
-      console.log(err);
+  const loadPrompts = async (query, offset, limit) => {
+    if (isLoading || !morePrompts) {
+      return;
     }
-  };
+    setIsLoading(true);
 
-  const handlePromptSelect = (prompt) => {
-    console.log(prompt);
-    setPromptInput(prompt.value);
-  }
-
-  {/*
-  const updatePrompts = async (offset, limit, append) => {
     try {
       const res = await axios.get(
-        `api/get_user_prompts/?search=${search}&offset=${offset}&limit=${limit}`
+        `api/get_user_prompts/?query=${query}&offset=${offset}&limit=${limit}`
       );
       const data = res.data.map(
         prompt => ({value: prompt.prompt, label: prompt.agent_name})
       );
 
-      if (append) {
-        setPrompts(prev => ([...prev, ...data]));
+      if (data.length < limit) {
+        setMorePrompts(false);
+      }
+      if (offset > 0) {
+        setPrompts((prev) => [...prev, ...data]);
       } else {
         setPrompts(data);
       }
     } catch (err) {
       console.log(err);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handlePromptSelect = (prompt) => {
+    if (prompt) {
+      setPromptInput(prompt.value);
+      setSelectedAgent(prompt.agent_name);
     }
   }
 
-  useEffect(() => {updatePrompts(0, 25)}, []);
-  */}
+  useEffect(() => {loadPrompts('', 0, 25)}, []);
 
-  
   return (
     <div>
       <button>
         <h3>Prompt {chatbot}</h3>
     </button>
       <div>
-        <AsyncSelect
-         defaultValue="Select prompt"
-         onInputChange={value => setQuery(value)}
-         loadOptions={loadPrompts}
+        <Select 
+         value={selectedAgent}
+         options={prompts}
          onChange={handlePromptSelect}
+         onMenuScrollToBottom={() => loadPrompts('', prompts.length, 25)}
+         isSearchable={false}
+         isLoading={isLoading}
+         placeholder="Select prompt"
+         styles={{
+          option: (provided, state) => ({
+            ...provided,
+            color: 'black'
+          })
+         }}
         />
       </div>
     </div>
