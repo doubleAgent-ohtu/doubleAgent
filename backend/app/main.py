@@ -77,13 +77,8 @@ else:
     # 1. Include the REAL OIDC router (which has /login and /auth/callback)
     app.include_router(oidc_router)
 
-chatbot_a = ChatbotService(
-    system_prompt="You are a helpful assistant. Answer questions clearly."
-)
-chatbot_b = ChatbotService(
-    system_prompt="You are a helpful assistant. Answer questions clearly."
-)
-
+chatbot_a = ChatbotService()
+chatbot_b = ChatbotService()
 
 # TODO!!!! local list
 messages: list[str] = []
@@ -97,6 +92,7 @@ class ChatMessage(BaseModel):
     message: str
     thread_id: str = "default"
     system_prompt: str | None = None
+    model: str | None = None
     chatbot: str = "a"  # "a" or "b"
 
 
@@ -105,6 +101,7 @@ class ChatResponse(BaseModel):
     ai_response: str
     thread_id: str
     chatbot: str
+    model_used: str | None = None
 
 
 class ConversationStart(BaseModel):
@@ -139,7 +136,10 @@ def chat_with_bot(
         chatbot = chatbot_a
 
     ai_response = chatbot.chat(
-        chat_msg.message, chat_msg.thread_id, chat_msg.system_prompt
+        chat_msg.message,
+        chat_msg.thread_id,
+        chat_msg.system_prompt,
+        chat_msg.model,
     )
     return ChatResponse(
         user_message=chat_msg.message,

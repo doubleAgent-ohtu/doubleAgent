@@ -12,13 +12,20 @@ load_dotenv()
 
 
 class ChatbotService:
-    def __init__(self, system_prompt: str):
-        self.model = ChatOpenAI(
-            model="gpt-4o-mini",
-            openai_api_key=os.getenv("DA_OPENAI_API_KEY"),
-            openai_api_base="https://doubleagents.openai.azure.com/openai/v1",
-            temperature=1.0,
-        )
+    DEFAULT_SYSTEM_PROMPT = "You are a helpful assistant. Answer questions clearly."
+
+    def __init__(self, system_prompt: str = DEFAULT_SYSTEM_PROMPT):
+        self.allowed_models = {"gpt-4o", "gpt-4o-mini", "gpt-4.1", "gpt-5"}
+
+        self.model_name = None
+        self.model = None
+
+        # Determine the initial model to use
+        initial_model_name = os.getenv("DA_OPENAI_MODEL", "gpt-4o")
+        if initial_model_name not in self.allowed_models:
+            initial_model_name = "gpt-4o"
+
+        self._initialize_model(initial_model_name)
 
         self.workflow = StateGraph(state_schema=MessagesState)
         self.workflow.add_edge(START, "model")
@@ -32,14 +39,67 @@ class ChatbotService:
         self.current_system_prompt = system_prompt
         self.set_system_prompt(system_prompt)
 
+    def _initialize_model(self, model_name: str):
+        """
+        Private helper method to initialize or update the ChatOpenAI model.
+        This consolidates the model creation logic in one place.
+        """
+        is_update = self.model_name is not None  # Is this an update or initial setup?
+
+        self.model_name = model_name
+        self.model = ChatOpenAI(
+            model=self.model_name,
+            openai_api_key=os.getenv("DA_OPENAI_API_KEY"),
+            openai_api_base="https://doubleagents.openai.azure.com/openai/v1",
+            temperature=1.0,
+        )
+        if is_update:
+            print(f"[ChatbotService] 🔄 Model updated to: {self.model_name}")
+        else:
+            print(f"[ChatbotService] ✅ Model initialized: {self.model_name}")
+
     def _call_model(self, state: MessagesState):
         prompt = self.prompt_template.invoke(state)
         response = self.model.invoke(prompt)
+
+        # Debugging calls, can be removed later if logs are getting too verbose
+        try:
+            actual_model = response.response_metadata.get("model_name", "unknown")
+            print(f"[ChatbotService] ✅ Actual model that responded: {actual_model}")
+        except Exception:
+            print("[ChatbotService] ⚠️ Could not extract actual model from response")
+
         return {"messages": response}
 
+    def set_system_prompt(self, system_prompt: str):
+        self.current_system_prompt = system_prompt
+        self.prompt_template = ChatPromptTemplate.from_messages(
+            [
+                ("system", system_prompt),
+                MessagesPlaceholder(variable_name="messages"),
+            ]
+        )
+
+    def set_model(self, model_name: str):
+        """
+        Validates the model name against the allowed list and re-initializes
+        the model instance if the name is valid and different from the current one.
+        """
+
+        if model_name not in self.allowed_models:
+            raise ValueError(f"Unsupported model: {model_name}")
+        if model_name != self.model_name:
+            self._initialize_model(model_name)
+
     def chat(
-        self, message: str, thread_id: str = "default", system_prompt: str = None
+        self,
+        message: str,
+        thread_id: str = "default",
+        system_prompt: str = None,
+        model: str = None,
     ) -> str:
+        if model:
+            self.set_model(model)
         try:
             if system_prompt and system_prompt.strip():
                 self.set_system_prompt(system_prompt)
@@ -55,16 +115,11 @@ class ChatbotService:
         except Exception as e:
             return f"Error: {str(e)}"
 
-    def set_system_prompt(self, system_prompt: str):
-        self.current_system_prompt = system_prompt
-        self.prompt_template = ChatPromptTemplate.from_messages(
-            [
-                ("system", system_prompt),
-                MessagesPlaceholder(variable_name="messages"),
-            ]
-        )
-
-    async def stream_chat(self, message: str, thread_id: str = "default"):
+    async def stream_chat(
+        self, message: str, thread_id: str = "default", model: str = None
+    ):
+        if model:
+            self.set_model(model)
         try:
             config = {"configurable": {"thread_id": thread_id}}
             input_messages = [HumanMessage(content=message)]
