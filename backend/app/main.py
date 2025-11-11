@@ -141,7 +141,10 @@ def chat_with_bot(
         chatbot = chatbot_a
 
     ai_response = chatbot.chat(
-        chat_msg.message, chat_msg.thread_id, chat_msg.system_prompt, chat_msg.model,
+        chat_msg.message,
+        chat_msg.thread_id,
+        chat_msg.system_prompt,
+        chat_msg.model,
     )
     return ChatResponse(
         user_message=chat_msg.message,
