@@ -77,13 +77,8 @@ else:
     # 1. Include the REAL OIDC router (which has /login and /auth/callback)
     app.include_router(oidc_router)
 
-chatbot_a = ChatbotService(
-    system_prompt="You are a helpful assistant. Answer questions clearly."
-)
-chatbot_b = ChatbotService(
-    system_prompt="You are a helpful assistant. Answer questions clearly."
-)
-
+chatbot_a = ChatbotService()
+chatbot_b = ChatbotService()
 
 # TODO!!!! local list
 messages: list[str] = []
