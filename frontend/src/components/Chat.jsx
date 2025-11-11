@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import axios from 'axios';
 
-const Chat = ({ title, threadId, model }) => {
+const Chat = ({ title, threadId, model, setSavePrompt, showSvPrmptDialog }) => {
   // Luodaan kaksi react statea
   const [input, setInput] = useState('');
   const [messages, setMessages] = useState([]);
@@ -53,12 +53,24 @@ const Chat = ({ title, threadId, model }) => {
           className="textarea textarea-bordered w-full mb-2"
         />
         <button onClick={handlePromptSet} className="btn btn-primary">
-          Set prompt
+          Create prompt
         </button>
       </div>
       <div className="mb-4 text-base-content/70">
         <b>Current prompt:</b> {prompt || 'No prompt set'}
       </div>
+
+      <button
+        type="button"
+        onClick={() => {
+          setSavePrompt(prompt);
+          showSvPrmptDialog(true);
+        }}
+        className="btn btn-primary mb-2"
+      >
+        Save prompt
+      </button>
+
       <form onSubmit={handleSubmit}>
         <input
           value={input}
@@ -75,8 +87,8 @@ const Chat = ({ title, threadId, model }) => {
         <h3>Conversation:</h3>
         <div className="chat-window">
           {messages.map((msg, idx) => (
-            <div key={idx} className="my-2">
-              <b>{msg.role === 'user' ? 'You' : 'AI'}:</b> {msg.content}
+            <div key={idx} className={`chat ${msg.role === 'user' ? 'chat-start' : 'chat-end'}`}>
+              <div className="chat-bubble">{msg.content}</div>
             </div>
           ))}
         </div>

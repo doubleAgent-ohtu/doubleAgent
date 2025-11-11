@@ -1,0 +1,42 @@
+# === Node-related ===
+node_modules
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# === Build output ===
+dist
+build
+.cache
+.vite
+
+# === Environment files ===
+.env
+.env.*.local
+
+# === OS / Editor junk ===
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+.idea
+.vscode
+*.iml
+.prettierrc
+.prettierignore
+
+# === Git files ===
+.git
+.gitignore
+.gitattributes
+
+# === Docker files ===
+Dockerfile*
+.dockerignore
+
+# === Tests and local scripts ===
+coverage
+*.spec.*
+*.test.*
+scripts/local-*

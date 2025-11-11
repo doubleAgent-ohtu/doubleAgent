@@ -10,14 +10,13 @@ This README explains how to run the project manually during development and also
 
 ---
 
-## 1. Manual Development Setup
+## 1. Docker-compose Development Setup (new & preferred)
 
-You can run the backend and frontend dev servers manually for faster development and hot reload.
+Docker-compose makes development easier and faster.
 
 ### Prerequisites
 
-- Python 3.11+ and Poetry installed
-- Node.js 20+ and npm installed
+- Docker & docker-compose installed
 - `.env` file in the `backend/` folder containing your OpenAI API key
 
 To create the `.env` file:
@@ -35,50 +34,18 @@ OPENAI_API_KEY=your_secret_key
 
 ---
 
-### 1.1 Backend
+### Running
 
-1. Enter the backend folder:
-
-```bash
-cd backend
-poetry install
-poetry run dev
-```
-
-### 1.2 Frontend
-
-1. Enter the frontend folder
-
-```bash
-cd frontend
-npm install
-npm run dev
-```
-
-### 1.3 Connecting
-
-To reach the frontend go to URL <localhost:5173>
-
-To reach the backend go to URL <localhost:3000>
-
-## 2. Docker compose
-
-Docker Compose can be used to start both services together in containers
-
-### 2.1 Prerequisites
-
-- Docker and Docker compose installed
-
-### 2.2 Start services
-
-From the project root:
+In the project root simply run:
 
 ```bash
 docker-compose up --build
 ```
 
-## 3. Notes
+**Tip:** After the first run you can leave out the "--build" flag (faster initialization)
 
-> **Tip:** For active development, it’s recommended to run the backend and frontend manually with hot reload.
->
-> Docker Compose is mainly useful for integration testing or quickly spinning up a fully containerized environment.
+## 2. Notes
+
+> Docker-compose now supports hot-reloading for both back- and frontend.
+
+> It is still possible to run the program old fashioned way of starting backend and frontend in separate terminals, but it is no longer recommended.

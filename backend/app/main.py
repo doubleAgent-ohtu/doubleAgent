@@ -7,6 +7,11 @@ from pydantic import BaseModel
 from starlette.middleware.sessions import SessionMiddleware
 from app.chatbot import ChatbotService
 from app.oidc_uni_login import router as oidc_router
+from app.db.database import DBSession
+from sqlalchemy.orm import Session
+from app import schemas
+from app.db import models
+
 
 load_dotenv()
 
@@ -17,13 +22,22 @@ app.add_middleware(SessionMiddleware, secret_key=os.getenv("DA_SESSION_SECRET"))
 
 def get_current_user(request: Request) -> dict:
     user = request.session.get("user")
-
     if not user:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED, detail="Not authenticated"
         )
 
     return user
+
+
+def get_user_id(user: dict = Depends(get_current_user)) -> str:
+    try:
+        return user["sub"]
+    except KeyError as exc:
+        print("CRITICAL")
+        raise HTTPException(
+            status_code=404, detail="Unable to identify the user"
+        ) from exc
 
 
 env = os.getenv("DA_ENVIRONMENT", "not_set")
@@ -95,6 +109,18 @@ class ChatResponse(BaseModel):
     model_used: str | None = None
 
 
+class ConversationStart(BaseModel):
+    initial_message: str
+    system_prompt_a: str | None = None
+    system_prompt_b: str | None = None
+    thread_id: str = "default"
+    turns: int = 6
+
+
+class ConversationResponse(BaseModel):
+    messages: list[dict]
+
+
 # Logout route is not in oidc_uni_login.py because
 # local testing needs it aswell and oidc_router is
 # included only in production env.
@@ -125,6 +151,35 @@ def chat_with_bot(
     )
 
 
+@app.post("/conversation", response_model=ConversationResponse)
+def start_conversation(
+    conv: ConversationStart, current_user: dict = Depends(get_current_user)
+):
+    conversation_messages = []
+    current_message = conv.initial_message
+    current_bot = "a"
+
+    # Set system prompts if provided
+    if conv.system_prompt_a:
+        chatbot_a.set_system_prompt(conv.system_prompt_a)
+    if conv.system_prompt_b:
+        chatbot_b.set_system_prompt(conv.system_prompt_b)
+
+    for i in range(conv.turns):
+        if current_bot == "a":
+            response = chatbot_a.chat(current_message, conv.thread_id)
+            conversation_messages.append({"chatbot": "a", "message": response})
+            current_message = response
+            current_bot = "b"
+        else:
+            response = chatbot_b.chat(current_message, conv.thread_id)
+            conversation_messages.append({"chatbot": "b", "message": response})
+            current_message = response
+            current_bot = "a"
+
+    return ConversationResponse(messages=conversation_messages)
+
+
 @app.get("/messages")
 def get_messages(current_user: dict = Depends(get_current_user)):
     return {"messages": messages}
@@ -143,3 +198,26 @@ def get_current_user_from_session(current_user: dict = Depends(get_current_user)
 @app.get("/")
 def read_root():
     return {"message": "Chatbot API is running"}
+
+
+def get_db():
+    db = DBSession()
+    try:
+        yield db
+    finally:
+        db.close()
+
+
+@app.post("/save_prompt", response_model=schemas.Prompt)
+def save_prompt(
+    data: schemas.SavePrompt,
+    user: dict = Depends(get_user_id),
+    db: Session = Depends(get_db),
+):
+    data.user = user
+    prompt = models.Prompt(**data.model_dump())
+    db.add(prompt)
+    db.commit()
+    db.refresh(prompt)
+
+    return prompt

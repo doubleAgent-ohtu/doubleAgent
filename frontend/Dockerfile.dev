@@ -1,0 +1,13 @@
+# Start from the same Node.js build image as production image for consistency
+FROM node:20-alpine
+WORKDIR /app
+
+# Copy package files
+COPY package*.json ./
+
+# Install all npm dependencies
+RUN npm install
+
+# We will mount the source code via a volume,
+# so we don't need to COPY source code here.
+# The command (npm run dev) will be specified in docker-compose.yml
