@@ -13,10 +13,10 @@ load_dotenv()
 
 class ChatbotService:
     def __init__(self, system_prompt: str):
-        self.allowed_models = {"gpt-4o-mini", "gpt-5"}
-        self.model_name = os.getenv("DA_OPENAI_MODEL", "gpt-4o-mini")
+        self.allowed_models = {"gpt-4o", "gpt-4o-mini", "gpt-4.1", "gpt-5"}
+        self.model_name = os.getenv("DA_OPENAI_MODEL", "gpt-4o")
         if self.model_name not in self.allowed_models:
-            self.model_name = "gpt-4o-mini"
+            self.model_name = "gpt-4o"
 
         self.model = ChatOpenAI(
             model=self.model_name,

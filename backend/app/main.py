@@ -83,6 +83,7 @@ class ChatMessage(BaseModel):
     message: str
     thread_id: str = "default"
     system_prompt: str | None = None
+    model: str | None = None
     chatbot: str = "a"  # "a" or "b"
 
 
@@ -91,6 +92,7 @@ class ChatResponse(BaseModel):
     ai_response: str
     thread_id: str
     chatbot: str
+    model_used: str | None = None
 
 
 # Logout route is not in oidc_uni_login.py because
@@ -113,7 +115,7 @@ def chat_with_bot(
         chatbot = chatbot_a
 
     ai_response = chatbot.chat(
-        chat_msg.message, chat_msg.thread_id, chat_msg.system_prompt
+        chat_msg.message, chat_msg.thread_id, chat_msg.system_prompt, chat_msg.model,
     )
     return ChatResponse(
         user_message=chat_msg.message,

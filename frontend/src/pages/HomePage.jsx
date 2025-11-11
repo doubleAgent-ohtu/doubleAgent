@@ -3,7 +3,7 @@ import Menu from '../components/Menu';
 import { useState } from 'react';
 
 const HomePage = () => {
-  const [selectedModel, setSelectedModel] = useState('gpt-4o-mini');
+  const [selectedModel, setSelectedModel] = useState('gpt-4o');
 
   return (
     <div className="drawer lg:drawer-open">
@@ -31,7 +31,9 @@ const HomePage = () => {
                 onChange={(e) => setSelectedModel(e.target.value)}
                 className="select select-bordered w-40 p-1 text-sm rounded-md"
               >
+                <option value="gpt-4o">GPT-4o</option>
                 <option value="gpt-4o-mini">GPT-4o-mini</option>
+                <option value="gpt-4.1">GPT-4.1</option>
                 <option value="gpt-5">GPT-5</option>
               </select>
             </div>
