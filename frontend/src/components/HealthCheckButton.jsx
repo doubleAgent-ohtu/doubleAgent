@@ -1,13 +1,13 @@
 import { useState } from 'react';
+import axios from 'axios';
 
 export const HealthCheckButton = () => {
   const [status, setStatus] = useState(null);
 
   const checkHealth = async () => {
     try {
-      const res = await fetch('/api/health');
-      const data = await res.json();
-      setStatus(data.status);
+      const res = await axios.get('/api/health');
+      setStatus(res.data.status);
     } catch (err) {
       console.error(err);
       setStatus('error');

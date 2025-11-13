@@ -9,9 +9,11 @@ const Chat = ({ title, threadId, model, setSavePrompt, showSvPrmptDialog }) => {
   const [promptInput, setPromptInput] = useState('');
 
   useEffect(() => {
-    fetch('/api/messages')
-      .then((res) => res.json())
-      .then((data) => setMessages(data.messages.map((text) => ({ role: 'user', content: text }))));
+    axios
+      .get('/api/messages')
+      .then((res) =>
+        setMessages(res.data.messages.map((text) => ({ role: 'user', content: text }))),
+      );
   }, []); // useEffect hook hakee viestit backendistä vain kerran, kun komponentti mountataan eli kun sivu ladataan
 
   const handleSubmit = async (e) => {

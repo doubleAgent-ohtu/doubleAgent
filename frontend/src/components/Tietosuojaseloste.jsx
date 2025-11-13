@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import axios from 'axios';
 import ReactMarkdown from 'react-markdown';
 
 const Tietosuojaseloste = () => {
@@ -6,15 +7,10 @@ const Tietosuojaseloste = () => {
 
   useEffect(() => {
     // Fetch the file from the public folder
-    fetch('/tietosuojaseloste.md')
+    axios
+      .get('/tietosuojaseloste.md')
       .then((response) => {
-        if (response.ok) {
-          return response.text();
-        }
-        throw new Error('Network response was not ok');
-      })
-      .then((text) => {
-        setMarkdown(text);
+        setMarkdown(response.data);
       })
       .catch((error) => {
         console.error('Error fetching the file:', error);
