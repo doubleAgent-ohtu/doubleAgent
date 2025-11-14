@@ -34,7 +34,7 @@ def get_user_id(user: dict = Depends(get_current_user)) -> str:
     try:
         return user["sub"]
     except KeyError as exc:
-        print("CRITICAL")
+        print("CRITICAL: 'sub' not found in user session data")
         raise HTTPException(
             status_code=404, detail="Unable to identify the user"
         ) from exc
@@ -60,7 +60,7 @@ if env == "development":
         """Sets the mock session key."""
         # Set a mock user object directly in the session
         request.session["user"] = {
-            "id": "2Q6XGZP4DNWAEYVIDZV2KLXKO3Z4QEBM",
+            "sub": "2Q6XGZP4DNWAEYVIDZV2KLXKO3Z4QEBM",
             "username": "pate",
             "name": "Patrick Bateman",
         }
