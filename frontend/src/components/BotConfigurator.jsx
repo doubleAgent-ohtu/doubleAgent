@@ -1,13 +1,28 @@
-const BotConfigurator = ({ title, prompt, onSetPrompt }) => {
+const BotConfigurator = ({ title, prompt, onSetPrompt, onActivate }) => {
   return (
-    <div className="flex-1 p-4 rounded-lg border bg-base-100">
-      <h2 className="text-2xl font-bold mb-4">{title}</h2>
-      <div className="mb-4 text-base-content/70 h-16">
+    <div
+      className="p-4 rounded-lg border bg-base-100 flex flex-col h-70 lg:h-190"
+      onClick={(e) => {
+        e.stopPropagation();
+        onActivate();
+      }}
+    >
+      <h2 className="text-2xl font-bold mb-4 shrink-0 text-center tracking-wider">{title}</h2>
+
+      <div className="mb-2 text-base-content/70 shrink-0">
         <b>Current prompt:</b>
-        <p className="line-clamp-2 italic opacity-80">{prompt || 'No prompt set'}</p>
       </div>
-      <button onClick={onSetPrompt} className="btn btn-primary">
-        Set Prompt
+
+      <div className="grow min-h-0 mb-4">
+        <div className="h-full overflow-y-auto whitespace-pre-wrap p-2">
+          <p className="italic text-pretty tracking-wide opacity-80 text-sm">
+            {prompt || 'No prompt set'}
+          </p>
+        </div>
+      </div>
+
+      <button onClick={onSetPrompt} className={`btn btn-primary shrink-0 ${prompt && 'btn-soft'}`}>
+        {prompt ? 'Edit Prompt' : 'Set Prompt'}
       </button>
     </div>
   );
