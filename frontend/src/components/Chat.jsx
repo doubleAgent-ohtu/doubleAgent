@@ -1,10 +1,10 @@
 import { useState, useEffect } from 'react';
 import axios from 'axios';
 
-const Chat = ({ title, threadId, model, setSavePrompt, showSvPrmptDialog }) => {
+const Chat = ({ title, threadId, model, setSavePrompt, showSvPrmptDialog, prompt, setPrompt }) => {
   const [input, setInput] = useState('');
   const [messages, setMessages] = useState([]);
-  const [prompt, setPrompt] = useState('');
+
   const [promptInput, setPromptInput] = useState('');
 
   useEffect(() => {

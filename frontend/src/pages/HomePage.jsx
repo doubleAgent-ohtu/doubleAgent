@@ -3,13 +3,15 @@ import Chat from '../components/Chat';
 import Menu from '../components/Menu';
 import SavePrompt from '../components/SavePrompt';
 import Tietosuojaseloste from '../components/Tietosuojaseloste.jsx';
-import ModelSelection from '../components/ModelSelection.jsx';
 import Conversation from '../components/Conversation.jsx';
 
 const HomePage = () => {
   const [selectedModel, setSelectedModel] = useState('gpt-4o');
   const [savePrompt, setSavePrompt] = useState('');
   const svPrmtDialogRef = useRef(null);
+
+  const [promptA, setPromptA] = useState('');
+  const [promptB, setPromptB] = useState('');
 
   function showSvPrmptDialog(show) {
     show ? svPrmtDialogRef.current.showModal() : svPrmtDialogRef.current.close();
@@ -35,9 +37,11 @@ const HomePage = () => {
                 model={selectedModel}
                 setSavePrompt={setSavePrompt}
                 showSvPrmptDialog={showSvPrmptDialog}
+                prompt={promptA}
+                setPrompt={setPromptA}
               />
             </div>
-            <ModelSelection selectedModel={selectedModel} setSelectedModel={setSelectedModel} />
+
             <div className="flex-1">
               <Chat
                 title="Chatbot B"
@@ -45,6 +49,8 @@ const HomePage = () => {
                 model={selectedModel}
                 setSavePrompt={setSavePrompt}
                 showSvPrmptDialog={showSvPrmptDialog}
+                prompt={promptB}
+                setPrompt={setPromptB}
               />
             </div>
           </div>
@@ -54,7 +60,7 @@ const HomePage = () => {
             svPrmtDialogRef={svPrmtDialogRef}
             showSvPrmptDialog={showSvPrmptDialog}
           />
-          <Conversation />
+          <Conversation promptA={promptA} promptB={promptB} />
         </main>
 
         <footer className="text-center p-4">

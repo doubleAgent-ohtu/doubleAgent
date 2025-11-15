@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import ModelSelection from './ModelSelection.jsx';
 
-const Conversation = () => {
+const Conversation = ({ promptA, promptB }) => {
   const [input, setInput] = useState('');
   const [messages, setMessages] = useState(null);
   const messagesRef = useRef(null);
@@ -33,6 +33,8 @@ const Conversation = () => {
       initial_message: input,
       turns: turns,
       model: selectedModel,
+      system_prompt_a: promptA,
+      system_prompt_b: promptB,
     };
     setInput('');
 
