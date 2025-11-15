@@ -1,10 +1,12 @@
 import { useState, useEffect, useRef } from 'react';
+import ModelSelection from './ModelSelection.jsx';
 
 const Conversation = () => {
   const [input, setInput] = useState('');
   const [messages, setMessages] = useState(null);
   const messagesRef = useRef(null);
   const [turns, setTurns] = useState(3);
+  const [selectedModel, setSelectedModel] = useState('gpt-4o');
 
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -30,11 +32,12 @@ const Conversation = () => {
     const conversationData = {
       initial_message: input,
       turns: turns,
+      model: selectedModel,
     };
     setInput('');
 
     try {
-      // Have to use fetch here to handle the streaming response
+      // Has to be fetch, not axios for streaming
       const response = await fetch('/api/conversation', {
         method: 'POST',
         headers: {
@@ -44,12 +47,7 @@ const Conversation = () => {
         body: JSON.stringify(conversationData),
       });
 
-      if (!response.ok) {
-        if (response.status === 401) {
-          throw new Error('Not authorized. Please log in again.');
-        }
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
+      if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
 
       const reader = response.body.getReader();
       const decoder = new TextDecoder();
@@ -65,21 +63,34 @@ const Conversation = () => {
 
         buffer += decoder.decode(value, { stream: true });
 
-        // Find and process all complete messages in the buffer
         let eolIndex;
         while ((eolIndex = buffer.indexOf('\n\n')) >= 0) {
           const line = buffer.substring(0, eolIndex).trim();
-          buffer = buffer.substring(eolIndex + 2); // Remove processed message
+          buffer = buffer.substring(eolIndex + 2);
 
           if (line.startsWith('data: ')) {
             try {
-              const jsonData = line.substring(6); // Get the JSON part
+              const jsonData = line.substring(6);
               const data = JSON.parse(jsonData);
 
-              if (data.error) throw new Error(`Server error: ${data.error}`);
-              if (data.status === 'done') continue; // Just stop processing
+              if (data.type === 'start') {
+                setMessages((prev) => [...(prev || []), { chatbot: data.chatbot, message: '' }]);
+              } else if (data.type === 'token') {
+                setMessages((prev) => {
+                  const allButLast = prev.slice(0, -1);
+                  const lastMessage = prev[prev.length - 1];
+                  const newLastMessage = {
+                    ...lastMessage,
+                    message: lastMessage.message + data.content,
+                  };
 
-              setMessages((prev) => [...prev, data]);
+                  return [...allButLast, newLastMessage];
+                });
+              } else if (data.type === 'end') {
+                console.log('Message stream complete.');
+              } else if (data.type === 'error') {
+                throw new Error(`Server error: ${data.content}`);
+              }
             } catch (e) {
               console.warn('Error parsing JSON from stream:', e, line);
             }
@@ -135,8 +146,9 @@ const Conversation = () => {
 
         <form
           onSubmit={handleSubmit}
-          className="flex gap-2 p-4 w-full absolute bottom-0 left-0 bg-base-200 border-t rounded-b-xl"
+          className="flex flex-col sm:flex-row gap-2 p-4 w-full absolute bottom-0 left-0 bg-base-200 border-t rounded-b-xl"
         >
+          <ModelSelection selectedModel={selectedModel} setSelectedModel={setSelectedModel} />
           <input
             value={input}
             onChange={(e) => setInput(e.target.value)}
