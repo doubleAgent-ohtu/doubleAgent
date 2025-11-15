@@ -3,6 +3,7 @@ import Chat from '../components/Chat';
 import Menu from '../components/Menu';
 import SavePrompt from '../components/SavePrompt';
 import Tietosuojaseloste from '../components/Tietosuojaseloste.jsx';
+import ModelSelection from '../components/ModelSelection.jsx';
 
 const HomePage = () => {
   const [selectedModel, setSelectedModel] = useState('gpt-4o');
@@ -35,22 +36,7 @@ const HomePage = () => {
                 showSvPrmptDialog={showSvPrmptDialog}
               />
             </div>
-            <div className="flex-1 text-center">
-              <label htmlFor="model-select" className="block mb-2 text-sm font-medium">
-                Model:
-              </label>
-              <select
-                id="model-select"
-                value={selectedModel}
-                onChange={(e) => setSelectedModel(e.target.value)}
-                className="select select-bordered w-40 p-1 text-sm rounded-md"
-              >
-                <option value="gpt-4o">GPT-4o</option>
-                <option value="gpt-4o-mini">GPT-4o-mini</option>
-                <option value="gpt-4.1">GPT-4.1</option>
-                <option value="gpt-5">GPT-5</option>
-              </select>
-            </div>
+            <ModelSelection selectedModel={selectedModel} setSelectedModel={setSelectedModel} />
             <div className="flex-1">
               <Chat
                 title="Chatbot B"
