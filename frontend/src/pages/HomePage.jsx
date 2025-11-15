@@ -1,21 +1,34 @@
-import { useState, useRef } from 'react';
-import Chat from '../components/Chat';
+import { useState, useRef, useEffect } from 'react';
+import BotConfigurator from '../components/BotConfigurator';
 import Menu from '../components/Menu';
-import SavePrompt from '../components/SavePrompt';
+import PromptEditorModal from '../components/PromptEditorModal';
 import Tietosuojaseloste from '../components/Tietosuojaseloste.jsx';
 import Conversation from '../components/Conversation.jsx';
 
 const HomePage = () => {
-  const [selectedModel, setSelectedModel] = useState('gpt-4o');
-  const [savePrompt, setSavePrompt] = useState('');
-  const svPrmtDialogRef = useRef(null);
-
   const [promptA, setPromptA] = useState('');
   const [promptB, setPromptB] = useState('');
 
-  function showSvPrmptDialog(show) {
-    show ? svPrmtDialogRef.current.showModal() : svPrmtDialogRef.current.close();
-  }
+  const [promptToEdit, setPromptToEdit] = useState(null);
+  const promptEditorRef = useRef(null);
+
+  const openPromptEditor = (prompt, setPrompt) => {
+    // This will trigger the useEffect.
+    setPromptToEdit({ currentPrompt: prompt, onSetPrompt: setPrompt });
+  };
+
+  const closePromptEditor = () => {
+    if (promptEditorRef.current) {
+      promptEditorRef.current.close();
+    }
+    setPromptToEdit(null);
+  };
+
+  useEffect(() => {
+    if (promptToEdit && promptEditorRef.current) {
+      promptEditorRef.current.showModal();
+    }
+  }, [promptToEdit]);
 
   return (
     <div className="drawer lg:drawer-open">
@@ -31,35 +44,20 @@ const HomePage = () => {
           <h1 className="text-center text-2xl mb-8">Our little chatbots</h1>
           <div className="flex flex-col md:flex-row md:justify-between gap-8">
             <div className="flex-1">
-              <Chat
+              <BotConfigurator
                 title="Chatbot A"
-                threadId="chatbot_a"
-                model={selectedModel}
-                setSavePrompt={setSavePrompt}
-                showSvPrmptDialog={showSvPrmptDialog}
                 prompt={promptA}
-                setPrompt={setPromptA}
+                onSetPrompt={() => openPromptEditor(promptA, setPromptA)}
               />
             </div>
-
             <div className="flex-1">
-              <Chat
+              <BotConfigurator
                 title="Chatbot B"
-                threadId="chatbot_b"
-                model={selectedModel}
-                setSavePrompt={setSavePrompt}
-                showSvPrmptDialog={showSvPrmptDialog}
                 prompt={promptB}
-                setPrompt={setPromptB}
+                onSetPrompt={() => openPromptEditor(promptB, setPromptB)}
               />
             </div>
           </div>
-          <SavePrompt
-            savePrompt={savePrompt}
-            setSavePrompt={setSavePrompt}
-            svPrmtDialogRef={svPrmtDialogRef}
-            showSvPrmptDialog={showSvPrmptDialog}
-          />
           <Conversation promptA={promptA} promptB={promptB} />
         </main>
 
@@ -77,6 +75,15 @@ const HomePage = () => {
         <label htmlFor="my-drawer-4" aria-label="close sidebar" className="drawer-overlay"></label>
         <Menu />
       </div>
+
+      {promptToEdit && (
+        <PromptEditorModal
+          modalRef={promptEditorRef}
+          currentPrompt={promptToEdit.currentPrompt}
+          onSetPrompt={promptToEdit.onSetPrompt}
+          onClose={closePromptEditor}
+        />
+      )}
 
       <dialog id="privacy_modal" className="modal">
         <div className="modal-box w-11/12 max-w-4xl">
