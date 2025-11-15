@@ -8,9 +8,9 @@ import Conversation from '../components/Conversation.jsx';
 const HomePage = () => {
   const [promptA, setPromptA] = useState('');
   const [promptB, setPromptB] = useState('');
-
   const [promptToEdit, setPromptToEdit] = useState(null);
   const promptEditorRef = useRef(null);
+  const [isConvoActive, setIsConvoActive] = useState(false);
 
   const openPromptEditor = (prompt, setPrompt) => {
     // This will trigger the useEffect.
@@ -40,25 +40,39 @@ const HomePage = () => {
         aria-controls="sidebar"
       />
       <div className="drawer-content flex flex-col min-h-screen">
-        <main className="p-8 grow">
-          <h1 className="text-center text-2xl mb-8">Our little chatbots</h1>
-          <div className="flex flex-col md:flex-row md:justify-between gap-8">
-            <div className="flex-1">
-              <BotConfigurator
-                title="Chatbot A"
-                prompt={promptA}
-                onSetPrompt={() => openPromptEditor(promptA, setPromptA)}
+        <main className="p-8 grow" onClick={() => setIsConvoActive(false)}>
+          <h1 className="text-center text-4xl font-bold mb-8 tracking-widest">Double Agent AI</h1>
+          <div
+            className={`grid grid-cols-1 gap-6 transition-all duration-300 ${
+              isConvoActive
+                ? 'lg:grid-cols-[1fr_6fr_1fr]' // Convo is active
+                : 'lg:grid-cols-[1fr_1.9fr_1fr]' // Default
+            }`}
+          >
+            <BotConfigurator
+              title="Chatbot A"
+              prompt={promptA}
+              onSetPrompt={() => openPromptEditor(promptA, setPromptA)}
+              onActivate={() => setIsConvoActive(false)}
+            />
+
+            <div className="order-3 lg:order-2">
+              <Conversation
+                promptA={promptA}
+                promptB={promptB}
+                onActivate={() => setIsConvoActive(true)}
               />
             </div>
-            <div className="flex-1">
+
+            <div className="order-2 lg:order-3">
               <BotConfigurator
                 title="Chatbot B"
                 prompt={promptB}
                 onSetPrompt={() => openPromptEditor(promptB, setPromptB)}
+                onActivate={() => setIsConvoActive(false)}
               />
             </div>
           </div>
-          <Conversation promptA={promptA} promptB={promptB} />
         </main>
 
         <footer className="text-center p-4">

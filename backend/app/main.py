@@ -151,7 +151,7 @@ def chat_with_bot(
         chatbot=chat_msg.chatbot,
     )
 
-async def conversation_generator(conv: ConversationStart):
+async def conversation_generator(conv: ConversationStart, request: Request):
     print(f"\n--- 🚀 STARTING TOKEN STREAM for {conv.turns} turns ---")
     current_message = conv.initial_message
     current_bot = "a"
@@ -164,6 +164,10 @@ async def conversation_generator(conv: ConversationStart):
     
     try:
         for i in range(conv.turns):
+            if await request.is_disconnected():
+                print("--- 🛑 Client disconnected, stopping stream. ---")
+                break
+
             print(f"--- Stream Turn {i+1} ---")
             
             # Select the correct chatbot
@@ -205,7 +209,9 @@ async def conversation_generator(conv: ConversationStart):
 
 @app.post("/conversation")
 async def start_conversation(
-    conv: ConversationStart, current_user: dict = Depends(get_current_user)
+    conv: ConversationStart, 
+    request: Request,
+    current_user: dict = Depends(get_current_user)
 ):
     if conv.turns < 1 or conv.turns > 10:
         raise HTTPException(
@@ -213,7 +219,7 @@ async def start_conversation(
             detail="Turns must be between 1 and 10"
         )
     return StreamingResponse(
-        conversation_generator(conv),
+        conversation_generator(conv, request),
         media_type="text/event-stream"
     )
 

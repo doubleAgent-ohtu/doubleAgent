@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import ModelSelection from './ModelSelection.jsx';
 
-const Conversation = ({ promptA, promptB }) => {
+const Conversation = ({ promptA, promptB, onActivate }) => {
   const [input, setInput] = useState('');
   const [messages, setMessages] = useState(null);
   const messagesRef = useRef(null);
@@ -10,6 +10,8 @@ const Conversation = ({ promptA, promptB }) => {
 
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
+
+  const abortControllerRef = useRef(null);
 
   useEffect(() => {
     if (messagesRef.current) {
@@ -20,11 +22,21 @@ const Conversation = ({ promptA, promptB }) => {
     }
   }, [messages]);
 
+  const handleStopConversation = () => {
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort(); // Send the cancel signal
+      console.log('--- 🛑 Stream aborted by user ---');
+      setIsLoading(false);
+    }
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
 
     setIsLoading(true);
     setError(null);
+
+    abortControllerRef.current = new AbortController();
 
     const userMsg = { chatbot: 'user', message: input };
     setMessages((prev) => [...(prev || []), userMsg]);
@@ -47,6 +59,7 @@ const Conversation = ({ promptA, promptB }) => {
           Accept: 'text/event-stream',
         },
         body: JSON.stringify(conversationData),
+        signal: abortControllerRef.current.signal,
       });
 
       if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
@@ -100,16 +113,28 @@ const Conversation = ({ promptA, promptB }) => {
         }
       }
     } catch (err) {
-      console.error('Fetch stream error:', err);
-      setError(err.message);
+      if (err.name === 'AbortError') {
+        console.log('Fetch aborted as expected.');
+        setError(null); // It's not a real error
+      } else {
+        console.error('Fetch stream error:', err);
+        setError(err.message);
+      }
     } finally {
       setIsLoading(false);
+      abortControllerRef.current = null;
     }
   };
 
   return (
-    <div className="mt-4 justify-center items-center flex flex-col">
-      <div className="chat-window lg:w-11/17 w-full h-[500px] mb-20 relative border rounded-xl px-4 pb-24 overflow-hidden">
+    <div
+      className="justify-center items-center flex flex-col"
+      onClick={(e) => {
+        e.stopPropagation();
+        onActivate();
+      }}
+    >
+      <div className="chat-window w-full h-[900px] mb-20 relative border rounded-xl px-4 pb-56 sm:pb-24 overflow-hidden">
         <div ref={messagesRef} className="messages-container overflow-y-auto h-full pr-2">
           <div className="absolute top-0 left-0 w-full h-16 pointer-events-none z-20 bg-linear-to-b from-base-200 to-[rgba(243,244,246,0)]"></div>
 
@@ -170,8 +195,20 @@ const Conversation = ({ promptA, promptB }) => {
               disabled={isLoading}
             />
           </label>
-          <button type="submit" className="btn btn-primary" disabled={isLoading || !input}>
-            Start
+          <button
+            type={isLoading ? 'button' : 'submit'}
+            className={`btn ${isLoading ? 'btn-error' : 'btn-primary'}`}
+            disabled={!isLoading && !input}
+            onClick={isLoading ? handleStopConversation : undefined}
+          >
+            {isLoading ? (
+              <>
+                <span className="loading loading-spinner loading-xs"></span>
+                STOP
+              </>
+            ) : (
+              'Start'
+            )}
           </button>
         </form>
       </div>
