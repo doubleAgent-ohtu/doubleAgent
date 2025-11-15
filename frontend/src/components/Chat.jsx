@@ -2,7 +2,6 @@ import { useState, useEffect } from 'react';
 import axios from 'axios';
 
 const Chat = ({ title, threadId, model, setSavePrompt, showSvPrmptDialog }) => {
-  // Luodaan kaksi react statea
   const [input, setInput] = useState('');
   const [messages, setMessages] = useState([]);
   const [prompt, setPrompt] = useState('');
@@ -12,24 +11,24 @@ const Chat = ({ title, threadId, model, setSavePrompt, showSvPrmptDialog }) => {
     fetch('/api/messages')
       .then((res) => res.json())
       .then((data) => setMessages(data.messages.map((text) => ({ role: 'user', content: text }))));
-  }, []); // useEffect hook hakee viestit backendistä vain kerran, kun komponentti mountataan eli kun sivu ladataan
+  }, []);
 
   const handleSubmit = async (e) => {
-    e.preventDefault(); // Tämä estää html form elementin oletuskäyttäytymisen (sivun uudelleenlataus)
+    e.preventDefault();
     try {
       const res = await axios.post('/api/chat', {
         message: input,
         thread_id: threadId,
         system_prompt: prompt,
         model: model,
-      }); // Lähetetään POST pyyntö backendille axios kirjaston avulla
+      });
 
       setMessages((prev) => [
         ...prev,
         { role: 'user', content: res.data.user_message },
         { role: 'ai', content: res.data.ai_response },
       ]);
-      setInput(''); // Tyhjennetään input kenttä
+      setInput('');
     } catch (err) {
       console.error(err);
     }
@@ -71,7 +70,7 @@ const Chat = ({ title, threadId, model, setSavePrompt, showSvPrmptDialog }) => {
         Save prompt
       </button>
 
-      <form onSubmit={handleSubmit}>
+      {/* <form onSubmit={handleSubmit}>
         <input
           value={input}
           onChange={(e) => setInput(e.target.value)}
@@ -92,7 +91,7 @@ const Chat = ({ title, threadId, model, setSavePrompt, showSvPrmptDialog }) => {
             </div>
           ))}
         </div>
-      </div>
+      </div> */}
     </div>
   );
 };

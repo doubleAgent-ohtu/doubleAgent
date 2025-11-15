@@ -4,6 +4,7 @@ import Menu from '../components/Menu';
 import SavePrompt from '../components/SavePrompt';
 import Tietosuojaseloste from '../components/Tietosuojaseloste.jsx';
 import ModelSelection from '../components/ModelSelection.jsx';
+import Conversation from '../components/Conversation.jsx';
 
 const HomePage = () => {
   const [selectedModel, setSelectedModel] = useState('gpt-4o');
@@ -24,7 +25,7 @@ const HomePage = () => {
         aria-controls="sidebar"
       />
       <div className="drawer-content flex flex-col min-h-screen">
-        <main className="p-8 flex-grow">
+        <main className="p-8 grow">
           <h1 className="text-center text-2xl mb-8">Our little chatbots</h1>
           <div className="flex flex-col md:flex-row md:justify-between gap-8">
             <div className="flex-1">
@@ -53,6 +54,7 @@ const HomePage = () => {
             svPrmtDialogRef={svPrmtDialogRef}
             showSvPrmptDialog={showSvPrmptDialog}
           />
+          <Conversation />
         </main>
 
         <footer className="text-center p-4">
