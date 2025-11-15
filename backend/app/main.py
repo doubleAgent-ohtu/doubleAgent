@@ -151,17 +151,18 @@ def chat_with_bot(
         chatbot=chat_msg.chatbot,
     )
 
+
 async def conversation_generator(conv: ConversationStart, request: Request):
     print(f"\n--- 🚀 STARTING TOKEN STREAM for {conv.turns} turns ---")
     current_message = conv.initial_message
     current_bot = "a"
-    
+
     # Set system prompts if provided
     if conv.system_prompt_a:
         chatbot_a.set_system_prompt(conv.system_prompt_a)
     if conv.system_prompt_b:
         chatbot_b.set_system_prompt(conv.system_prompt_b)
-    
+
     try:
         for i in range(conv.turns):
             if await request.is_disconnected():
@@ -169,24 +170,26 @@ async def conversation_generator(conv: ConversationStart, request: Request):
                 break
 
             print(f"--- Stream Turn {i+1} ---")
-            
+
             # Select the correct chatbot
             chatbot_instance = chatbot_a if current_bot == "a" else chatbot_b
-            
+
             # 1. YIELD a "start" message
             # This tells the frontend to create a new, empty bubble
             start_data = {"type": "start", "chatbot": current_bot}
             yield f"data: {json.dumps(start_data)}\n\n"
-            
+
             full_response_for_next_turn = ""
-            
+
             # 2. YIELD the "token" stream
             async for token in chatbot_instance.stream_chat(
-                current_message, conv.thread_id, model=conv.model # Pass model if you have it
+                current_message,
+                conv.thread_id,
+                model=conv.model,  # Pass model if you have it
             ):
                 token_data = {"type": "token", "content": token}
                 yield f"data: {json.dumps(token_data)}\n\n"
-                
+
                 # We must build up the full response to feed to the next bot
                 full_response_for_next_turn += token
 
@@ -194,12 +197,12 @@ async def conversation_generator(conv: ConversationStart, request: Request):
             # This tells the frontend this message is complete
             end_data = {"type": "end"}
             yield f"data: {json.dumps(end_data)}\n\n"
-            
+
             # Prepare for the next turn
             current_message = full_response_for_next_turn
             current_bot = "b" if current_bot == "a" else "a"
-            
-            await asyncio.sleep(0.01) # Small sleep
+
+            await asyncio.sleep(0.01)  # Small sleep
 
     except Exception as e:
         print(f"--- ❌ ERROR IN STREAM ---: {e}")
@@ -207,20 +210,17 @@ async def conversation_generator(conv: ConversationStart, request: Request):
     finally:
         print("--- 🏁 TOKEN STREAM FINISHED ---")
 
+
 @app.post("/conversation")
 async def start_conversation(
-    conv: ConversationStart, 
+    conv: ConversationStart,
     request: Request,
-    current_user: dict = Depends(get_current_user)
+    current_user: dict = Depends(get_current_user),
 ):
     if conv.turns < 1 or conv.turns > 10:
-        raise HTTPException(
-            status_code=400,
-            detail="Turns must be between 1 and 10"
-        )
+        raise HTTPException(status_code=400, detail="Turns must be between 1 and 10")
     return StreamingResponse(
-        conversation_generator(conv, request),
-        media_type="text/event-stream"
+        conversation_generator(conv, request), media_type="text/event-stream"
     )
 
 
