@@ -11,7 +11,9 @@ from app.db.database import DBSession
 from sqlalchemy.orm import Session
 from app import schemas
 from app.db import models
-
+import asyncio
+from fastapi.responses import StreamingResponse
+import json
 
 load_dotenv()
 
@@ -148,34 +150,65 @@ def chat_with_bot(
         chatbot=chat_msg.chatbot,
     )
 
-
-@app.post("/conversation", response_model=ConversationResponse)
-def start_conversation(
-    conv: ConversationStart, current_user: dict = Depends(get_current_user)
-):
-    conversation_messages = []
+async def conversation_generator(conv: ConversationStart):
+    print(f"\n--- 🚀 STARTING STREAM for {conv.turns} turns ---")
     current_message = conv.initial_message
     current_bot = "a"
-
+    
     # Set system prompts if provided
     if conv.system_prompt_a:
         chatbot_a.set_system_prompt(conv.system_prompt_a)
     if conv.system_prompt_b:
         chatbot_b.set_system_prompt(conv.system_prompt_b)
 
-    for i in range(conv.turns):
-        if current_bot == "a":
-            response = chatbot_a.chat(current_message, conv.thread_id)
-            conversation_messages.append({"chatbot": "a", "message": response})
-            current_message = response
-            current_bot = "b"
-        else:
-            response = chatbot_b.chat(current_message, conv.thread_id)
-            conversation_messages.append({"chatbot": "b", "message": response})
-            current_message = response
-            current_bot = "a"
+    try:
+        for i in range(conv.turns):
+            print(f"--- Stream Turn {i+1} ---")
+            response_data = {}
+            if current_bot == "a":
+                response = await asyncio.to_thread(
+                    chatbot_a.chat, current_message, conv.thread_id
+                )
+                response_data = {"chatbot": "a", "message": response}
+                current_message = response
+                current_bot = "b"
+            else:
+                response = await asyncio.to_thread(
+                    chatbot_b.chat, current_message, conv.thread_id
+                )
+                response_data = {"chatbot": "b", "message": response}
+                current_message = response
+                current_bot = "a"
 
-    return ConversationResponse(messages=conversation_messages)
+            # This is the Server-Sent Event format
+            # The 'data:' prefix and '\n\n' suffix are required
+            json_payload = json.dumps(response_data)
+            yield f"data: {json_payload}\n\n"
+            print(f"📬 Yielded: {json_payload}")
+            
+            await asyncio.sleep(0.01) # Small sleep to help buffer
+
+    except Exception as e:
+        print(f"--- ❌ ERROR IN STREAM ---: {e}")
+        # Send an error to the client
+        yield f"data: {json.dumps({'error': str(e)})}\n\n"
+    finally:
+        print("--- 🏁 STREAM FINISHED ---")
+        yield f"data: {json.dumps({'status': 'done'})}\n\n"
+
+@app.post("/conversation")
+async def start_conversation(
+    conv: ConversationStart, current_user: dict = Depends(get_current_user)
+):
+    if conv.turns < 1 or conv.turns > 10:
+        raise HTTPException(
+            status_code=400,
+            detail="Turns must be between 1 and 10"
+        )
+    return StreamingResponse(
+        conversation_generator(conv),
+        media_type="text/event-stream"
+    )
 
 
 @app.get("/messages")
