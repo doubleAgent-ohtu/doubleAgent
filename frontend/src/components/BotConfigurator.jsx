@@ -21,7 +21,11 @@ const BotConfigurator = ({ title, prompt, onSetPrompt, onActivate }) => {
         </div>
       </div>
 
-      <button onClick={onSetPrompt} className={`btn btn-primary shrink-0 ${prompt && 'btn-soft'}`}>
+      <button
+        onClick={onSetPrompt}
+        onFocus={onActivate}
+        className={`btn btn-primary shrink-0 ${prompt && 'btn-soft'}`}
+      >
         {prompt ? 'Edit Prompt' : 'Set Prompt'}
       </button>
     </div>

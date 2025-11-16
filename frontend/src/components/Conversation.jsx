@@ -174,6 +174,7 @@ const Conversation = ({ promptA, promptB, onActivate }) => {
         <form
           onSubmit={handleSubmit}
           className="flex flex-col sm:flex-row gap-2 p-4 w-full absolute bottom-0 left-0 bg-base-200 border-t rounded-b-xl"
+          onFocus={onActivate}
         >
           <ModelSelection selectedModel={selectedModel} setSelectedModel={setSelectedModel} />
           <input
