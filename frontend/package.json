@@ -4,15 +4,13 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "dev": "vite",
+    "dev": "vite --host 0.0.0.0",
     "build": "vite build",
     "lint": "eslint .",
     "test": "vitest",
     "preview": "vite preview",
     "format": "prettier --write \"{src,tests}/**/*.{js,jsx,ts,tsx,json,css,md,yml,yaml}\"",
-    "format:check": "prettier --check \"{src,tests}/**/*.{js,jsx,ts,tsx,json,css,md,yml,yaml}\"",
-    "format:py": "black \"backend/app/**/*.py\"",
-    "format:py:check": "black --check \"backend/app/**/*.py\""
+    "format:check": "prettier --check \"{src,tests}/**/*.{js,jsx,ts,tsx,json,css,md,yml,yaml}\""
   },
   "dependencies": {
     "axios": "^1.12.2",

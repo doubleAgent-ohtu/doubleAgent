@@ -21,7 +21,9 @@ env/
 Dockerfile
 docker-compose*.yml
 
-# Tests & docs (optional)
+# Tests & docs
+# Tests are mounted in .dev container so it
+# does not matter that we ignore them here
 tests/
 docs/
 

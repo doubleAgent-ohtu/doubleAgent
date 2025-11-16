@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import axios from 'axios';
 
-const Chat = ({ title, threadId, setSavePrompt, showSvPrmptDialog }) => {
+const Chat = ({ title, threadId, model, setSavePrompt, showSvPrmptDialog }) => {
   // Luodaan kaksi react statea
   const [input, setInput] = useState('');
   const [messages, setMessages] = useState([]);
@@ -21,6 +21,7 @@ const Chat = ({ title, threadId, setSavePrompt, showSvPrmptDialog }) => {
         message: input,
         thread_id: threadId,
         system_prompt: prompt,
+        model: model,
       }); // Lähetetään POST pyyntö backendille axios kirjaston avulla
 
       setMessages((prev) => [
@@ -86,8 +87,8 @@ const Chat = ({ title, threadId, setSavePrompt, showSvPrmptDialog }) => {
         <h3>Conversation:</h3>
         <div className="chat-window">
           {messages.map((msg, idx) => (
-            <div key={idx} className="my-2">
-              <b>{msg.role === 'user' ? 'You' : 'AI'}:</b> {msg.content}
+            <div key={idx} className={`chat ${msg.role === 'user' ? 'chat-start' : 'chat-end'}`}>
+              <div className="chat-bubble">{msg.content}</div>
             </div>
           ))}
         </div>
