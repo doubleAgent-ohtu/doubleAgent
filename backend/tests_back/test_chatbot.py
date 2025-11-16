@@ -97,9 +97,7 @@ def test_chat_with_custom_system_prompt(chatbot_service):
     chatbot_service.app.invoke.return_value = {"messages": [mock_ai_message]}
 
     response = chatbot_service.chat(
-        "Test message",
-        thread_id="test-thread",
-        system_prompt="New custom prompt"
+        "Test message", thread_id="test-thread", system_prompt="New custom prompt"
     )
 
     assert response == "Custom prompt response"
@@ -131,10 +129,10 @@ def test_default_thread_id(chatbot_service):
 def test_system_prompt_updates(chatbot_service):
     """Test that system prompt updates correctly"""
     assert chatbot_service.current_system_prompt == "Fake prompt."
-    
+
     chatbot_service.set_system_prompt("Updated prompt")
     assert chatbot_service.current_system_prompt == "Updated prompt"
-    
+
     chatbot_service.set_system_prompt("Another prompt")
     assert chatbot_service.current_system_prompt == "Another prompt"
 
@@ -155,13 +153,13 @@ def test_multiple_messages_in_conversation(chatbot_service):
     mock_responses = [
         AIMessage(content="First response"),
         AIMessage(content="Second response"),
-        AIMessage(content="Third response")
+        AIMessage(content="Third response"),
     ]
-    
+
     chatbot_service.app.invoke.side_effect = [
         {"messages": [mock_responses[0]]},
         {"messages": [mock_responses[1]]},
-        {"messages": [mock_responses[2]]}
+        {"messages": [mock_responses[2]]},
     ]
 
     response1 = chatbot_service.chat("Message 1", thread_id="conversation-1")
@@ -177,11 +175,12 @@ def test_multiple_messages_in_conversation(chatbot_service):
 @pytest.mark.asyncio
 async def test_stream_chat_basic(chatbot_service):
     """Test basic stream_chat functionality"""
+
     async def mock_astream(*args, **kwargs):
         messages = [
             (AIMessage(content="Hello "), {}),
             (AIMessage(content="world"), {}),
-            (AIMessage(content="!"), {})
+            (AIMessage(content="!"), {}),
         ]
         for msg, meta in messages:
             yield msg, meta
@@ -199,9 +198,10 @@ async def test_stream_chat_basic(chatbot_service):
 @pytest.mark.asyncio
 async def test_stream_chat_error_handling(chatbot_service):
     """Test stream_chat error handling"""
+
     async def mock_astream_error(*args, **kwargs):
         raise Exception("Stream error")
-        yield 
+        yield
 
     chatbot_service.app.astream = mock_astream_error
 
