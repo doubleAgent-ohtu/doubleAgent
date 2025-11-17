@@ -44,7 +44,25 @@ docker-compose up --build
 
 **Tip:** After the first run you can leave out the "--build" flag (faster initialization)
 
-## 2. Notes
+## 2. Running tests
+
+To check the test run commands:
+
+Frontend:
+
+```bash
+cd frontend
+npm run test
+```
+
+Backend:
+
+```bash
+cd backend
+pytest
+```
+
+## 3. Notes
 
 > Docker-compose now supports hot-reloading for both back- and frontend.
 
