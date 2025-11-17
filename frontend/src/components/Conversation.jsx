@@ -134,7 +134,7 @@ const Conversation = ({ promptA, promptB, onActivate }) => {
         onActivate();
       }}
     >
-      <div className="chat-window w-full h-[900px] mb-20 relative border rounded-xl px-4 pb-56 sm:pb-24 overflow-hidden">
+      <div className="chat-window w-full h-[80vh] mb-20 relative border rounded-xl px-4 pb-56 sm:pb-24 overflow-hidden">
         <div ref={messagesRef} className="messages-container overflow-y-auto h-full pr-2">
           <div className="absolute top-0 left-0 w-full h-16 pointer-events-none z-20 bg-linear-to-b from-base-200 to-[rgba(243,244,246,0)]"></div>
 

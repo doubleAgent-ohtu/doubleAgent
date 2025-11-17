@@ -1,7 +1,7 @@
 const BotConfigurator = ({ title, prompt, onSetPrompt, onActivate }) => {
   return (
     <div
-      className="p-4 rounded-lg border bg-base-100 flex flex-col h-70 lg:h-190"
+      className="p-4 rounded-lg border bg-base-100 flex flex-col h-[50vh] lg:h-[70vh]"
       onClick={(e) => {
         e.stopPropagation();
         onActivate();
