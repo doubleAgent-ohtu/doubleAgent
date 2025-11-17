@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import axios from 'axios';
 
 const Menu = () => {
   const [isDark, setIsDark] = useState(false);
@@ -21,17 +22,15 @@ const Menu = () => {
   };
   const handleLogout = async () => {
     try {
-      const res = await fetch('/api/logout', {
-        method: 'POST',
-        credentials: 'include',
-      });
-      if (res.redirected) {
-        window.location.href = res.url;
-      } else {
+      const res = await axios.post('/api/logout', {}, { withCredentials: true });
+      // Axios doesn't follow redirects automatically for POST, so check response
+      if (res.status === 200) {
         window.location.href = '/';
       }
     } catch (err) {
       console.error('Logout failed:', err);
+      // Even if there's an error, redirect to home
+      window.location.href = '/';
     }
   };
   // ensures that there is no page jump when toggling
