@@ -44,24 +44,6 @@ docker-compose up --build
 
 **Tip:** After the first run you can leave out the "--build" flag (faster initialization)
 
-### Testing
-
-To check the test run commands:
-
-Frontend:
-
-```bash
-cd frontend
-npm run test
-```
-
-Backend:
-
-```bash
-cd backend
-pytest
-```
-
 ## 2. Running tests
 
 To check the test run commands:
