@@ -226,8 +226,22 @@ async def save_prompt(
 @app.get("/get_all_user_prompts")
 async def get_all_user_prompts():
     text = "Lorem ipsum dolor sit amet, consectetur adipisci elit, sed eiusmod tempor incidunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquid ex ea commodi consequat. Quis aute iure reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint obcaecat cupiditat non provident, sunt in culpa qui official deserunt mollit anim id est laborum."
-    return [{"prompt": f"{text}{i}", "agent_name": f"agent_name{i}"} for i in range(500)]
+    return [{"prompt": f"{text}{i}", "agent_name": f"agent_name{i}", "id": i} for i in range(500)]
 
+"""
+@app.get("/get_all_user_prompts", response_model=list[schemas.Prompt])
+async def get_all_user_prompts(
+    user: dict = Depends(get_user_id),
+    db: Session = Depends(get_db),
+):
+    prompts = db.scalars(
+        select(Prompt)
+        .where(Prompt.user == user)
+        .order_by(desc(Prompt.created_at))
+    ).all()
+    
+    return prompts
+"""
 
 @app.get("/get_user_prompts/", response_model=list[schemas.Prompt])
 async def get_user_prompts(

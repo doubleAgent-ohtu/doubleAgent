@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import axios from 'axios';
 import SelectPrompt from './SelectPrompt';
 
-const Chat = ({ chatbot, threadId, setSavePrompt, showSvPrmptDialog }) => {
+const Chat = ({ chatbot, threadId, setSavePrompt, savePromptDialogRef }) => {
   // Luodaan kaksi react statea
   const [input, setInput] = useState('');
   const [messages, setMessages] = useState([]);
@@ -69,7 +69,7 @@ const Chat = ({ chatbot, threadId, setSavePrompt, showSvPrmptDialog }) => {
         type="button"
         onClick={() => {
           setSavePrompt(prompt);
-          showSvPrmptDialog(true);
+          savePromptDialogRef.current.showModal();
         }}
         className="btn btn-primary mb-2"
       >

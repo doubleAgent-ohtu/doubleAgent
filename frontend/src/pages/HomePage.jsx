@@ -6,11 +6,7 @@ import Tietosuojaseloste from '../components/Tietosuojaseloste.jsx';
 
 const HomePage = () => {
   const [savePrompt, setSavePrompt] = useState('');
-  const svPrmtDialogRef = useRef(null);
-
-  function showSvPrmptDialog(show) {
-    show ? svPrmtDialogRef.current.showModal() : svPrmtDialogRef.current.close();
-  }
+  const savePromptDialogRef = useRef(null);
 
   return (
     <div className="drawer lg:drawer-open">
@@ -30,7 +26,7 @@ const HomePage = () => {
                 chatbot="A"
                 threadId="chatbot_a"
                 setSavePrompt={setSavePrompt}
-                showSvPrmptDialog={showSvPrmptDialog}
+                savePromptDialogRef={savePromptDialogRef}
               />
             </div>
             <div className="flex-1"></div>
@@ -39,15 +35,14 @@ const HomePage = () => {
                 chatbot="B"
                 threadId="chatbot_b"
                 setSavePrompt={setSavePrompt}
-                showSvPrmptDialog={showSvPrmptDialog}
+                savePromptDialogRef={savePromptDialogRef}
               />
             </div>
           </div>
           <SavePrompt
             savePrompt={savePrompt}
             setSavePrompt={setSavePrompt}
-            svPrmtDialogRef={svPrmtDialogRef}
-            showSvPrmptDialog={showSvPrmptDialog}
+            savePromptDialogRef={savePromptDialogRef}
           />
         </main>
 

@@ -1,12 +1,12 @@
 import axios from 'axios';
 import { useState } from 'react';
 
-const SavePrompt = ({ savePrompt, setSavePrompt, svPrmtDialogRef, showSvPrmptDialog }) => {
+const SavePrompt = ({ savePrompt, setSavePrompt, savePromptDialogRef }) => {
   const [agentName, setAgentName] = useState('');
 
   const closeSavePromptModal = () => {
     setAgentName('');
-    showSvPrmptDialog(false);
+    savePromptDialogRef.current.close();
   };
 
   const handleSavePrompt = async (e) => {
@@ -17,7 +17,6 @@ const SavePrompt = ({ savePrompt, setSavePrompt, svPrmtDialogRef, showSvPrmptDia
         agent_name: agentName,
         prompt: savePrompt,
       });
-      console.log(res.data);
       closeSavePromptModal();
     } catch (err) {
       console.log(err);
@@ -26,7 +25,7 @@ const SavePrompt = ({ savePrompt, setSavePrompt, svPrmtDialogRef, showSvPrmptDia
 
   return (
     <div>
-      <dialog ref={svPrmtDialogRef} className="modal">
+      <dialog ref={savePromptDialogRef} className="modal">
         <form method="dialog" className="modal-box flex flex-col gap-4" onSubmit={handleSavePrompt}>
           <div>
             <label htmlFor="savePromptAgentName" className="label">
