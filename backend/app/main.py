@@ -11,7 +11,9 @@ from app.db.database import DBSession
 from sqlalchemy.orm import Session
 from app import schemas
 from app.db import models
-
+import asyncio
+from fastapi.responses import StreamingResponse
+import json
 
 load_dotenv()
 
@@ -110,6 +112,7 @@ class ConversationStart(BaseModel):
     system_prompt_b: str | None = None
     thread_id: str = "default"
     turns: int = 6
+    model: str | None = None
 
 
 class ConversationResponse(BaseModel):
@@ -149,11 +152,8 @@ def chat_with_bot(
     )
 
 
-@app.post("/conversation", response_model=ConversationResponse)
-def start_conversation(
-    conv: ConversationStart, current_user: dict = Depends(get_current_user)
-):
-    conversation_messages = []
+async def conversation_generator(conv: ConversationStart, request: Request):
+    print(f"\n--- 🚀 STARTING TOKEN STREAM for {conv.turns} turns ---")
     current_message = conv.initial_message
     current_bot = "a"
 
@@ -163,19 +163,65 @@ def start_conversation(
     if conv.system_prompt_b:
         chatbot_b.set_system_prompt(conv.system_prompt_b)
 
-    for i in range(conv.turns):
-        if current_bot == "a":
-            response = chatbot_a.chat(current_message, conv.thread_id)
-            conversation_messages.append({"chatbot": "a", "message": response})
-            current_message = response
-            current_bot = "b"
-        else:
-            response = chatbot_b.chat(current_message, conv.thread_id)
-            conversation_messages.append({"chatbot": "b", "message": response})
-            current_message = response
-            current_bot = "a"
+    try:
+        for i in range(conv.turns):
+            if await request.is_disconnected():
+                print("--- 🛑 Client disconnected, stopping stream. ---")
+                break
 
-    return ConversationResponse(messages=conversation_messages)
+            print(f"--- Stream Turn {i+1} ---")
+
+            # Select the correct chatbot
+            chatbot_instance = chatbot_a if current_bot == "a" else chatbot_b
+
+            # 1. YIELD a "start" message
+            # This tells the frontend to create a new, empty bubble
+            start_data = {"type": "start", "chatbot": current_bot}
+            yield f"data: {json.dumps(start_data)}\n\n"
+
+            full_response_for_next_turn = ""
+
+            # 2. YIELD the "token" stream
+            async for token in chatbot_instance.stream_chat(
+                current_message,
+                conv.thread_id,
+                model=conv.model,  # Pass model if you have it
+            ):
+                token_data = {"type": "token", "content": token}
+                yield f"data: {json.dumps(token_data)}\n\n"
+
+                # We must build up the full response to feed to the next bot
+                full_response_for_next_turn += token
+
+            # 3. YIELD an "end" message
+            # This tells the frontend this message is complete
+            end_data = {"type": "end"}
+            yield f"data: {json.dumps(end_data)}\n\n"
+
+            # Prepare for the next turn
+            current_message = full_response_for_next_turn
+            current_bot = "b" if current_bot == "a" else "a"
+
+            await asyncio.sleep(0.01)  # Small sleep
+
+    except Exception as e:
+        print(f"--- ❌ ERROR IN STREAM ---: {e}")
+        yield f"data: {json.dumps({'type': 'error', 'content': str(e)})}\n\n"
+    finally:
+        print("--- 🏁 TOKEN STREAM FINISHED ---")
+
+
+@app.post("/conversation")
+async def start_conversation(
+    conv: ConversationStart,
+    request: Request,
+    current_user: dict = Depends(get_current_user),
+):
+    if conv.turns < 1 or conv.turns > 10:
+        raise HTTPException(status_code=400, detail="Turns must be between 1 and 10")
+    return StreamingResponse(
+        conversation_generator(conv, request), media_type="text/event-stream"
+    )
 
 
 @app.get("/messages")
