@@ -2,6 +2,8 @@
 
 [![CI](https://github.com/doubleAgent-ohtu/doubleAgent/actions/workflows/CI.yml/badge.svg?branch=main)](https://github.com/doubleAgent-ohtu/doubleAgent/actions/workflows/CI.yml)
 
+Find it online: https://double-agent-ohtuprojekti-staging.ext.ocp-prod-0.k8s.it.helsinki.fi/
+
 # DoubleAgent Monorepo
 
 This repository contains a **FastAPI backend** and a **React + Vite frontend** in a monorepo setup.
