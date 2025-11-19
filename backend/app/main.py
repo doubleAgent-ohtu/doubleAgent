@@ -258,9 +258,8 @@ def save_prompt(
     user: dict = Depends(get_user_id),
     db: Session = Depends(get_db),
 ):
-    print(f'TAALLA OLEEEEN {user}')
 
-    prompt = models.Prompt(**data.model_dump(), user = user)
+    prompt = models.Prompt(**data.model_dump(), user=user)
     db.add(prompt)
     db.commit()
     db.refresh(prompt)
