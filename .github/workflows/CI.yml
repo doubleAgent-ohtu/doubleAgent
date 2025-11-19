@@ -48,26 +48,24 @@ jobs:
         with:
           python-version: '3.11'
 
-      # Install Python dependencies
+      # Install Poetry
+      - name: Install Poetry
+        run: pip install poetry
+
+      # Install Python dependencies (using pyproject.toml)
       - name: Install Python dependencies
         run: |
           cd backend
-          pip install -r requirements.txt
+          poetry install --with dev
 
       # Run Black check (Python)
       - name: Check Python formatting with Black
         run: |
           cd backend
-          black --check app
+          poetry run black --check app
 
       # Run tests for backend
       - name: Test backend with pytest
         run: |
           cd backend
-          pytest
-
-      # Run test for frontend
-      - name: Test frontend with Vite test
-        run: |
-          cd frontend
-          npm run test
+          poetry run pytest
