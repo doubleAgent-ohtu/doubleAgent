@@ -8,7 +8,9 @@ test('1. Renders hamburger menu label', () => {
   render(<HamburgerMenu />);
 
   const label = screen.getByText((content, element) => {
-    return element.tagName.toLowerCase() === 'label' && element.getAttribute('for') === 'my-drawer-4';
+    return (
+      element.tagName.toLowerCase() === 'label' && element.getAttribute('for') === 'my-drawer-4'
+    );
   });
   expect(label).toBeInTheDocument();
   expect(label).toHaveClass('btn', 'btn-ghost', 'btn-circle', 'drawer-button');
