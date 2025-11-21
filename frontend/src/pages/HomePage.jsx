@@ -4,6 +4,7 @@ import Menu from '../components/Menu';
 import PromptEditorModal from '../components/PromptEditorModal';
 import Tietosuojaseloste from '../components/Tietosuojaseloste.jsx';
 import Conversation from '../components/Conversation.jsx';
+import HamburgerMenu from '../components/HamburgerMenu';
 
 const HomePage = () => {
   const [promptA, setPromptA] = useState('');
@@ -41,6 +42,7 @@ const HomePage = () => {
       />
       <div className="drawer-content flex flex-col min-h-screen">
         <main className="p-8 grow" onClick={() => setIsConvoActive(false)}>
+          <HamburgerMenu />
           <h1 className="text-center text-4xl font-bold mb-8 tracking-widest">Double Agent AI</h1>
           <div
             className={`grid grid-cols-1 gap-6 transition-all duration-300 ${
