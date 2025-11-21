@@ -38,6 +38,6 @@
     "tailwindcss": "^4.0.0",
     "vite": "^7.1.2",
     "vitest": "^4.0.8",
-    "@vitest/coverage-v8": "^1.1.0"
+    "@vitest/coverage-v8": "^4.0.8"
   }
 }
