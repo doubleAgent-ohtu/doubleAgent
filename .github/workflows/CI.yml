@@ -36,12 +36,6 @@ jobs:
           cd frontend
           npm run format:check
 
-      # Run frontend tests with coverage (Vitest)
-      - name: Run frontend tests with coverage
-        run: |
-          cd frontend
-          npm test -- --coverage
-
       # Setup Python for backend
       - name: Set up Python
         uses: actions/setup-python@v4
@@ -69,6 +63,12 @@ jobs:
         run: |
           cd backend
           poetry run pytest --cov=app --cov-report=xml
+
+      # Run frontend tests with coverage (Vitest)
+      - name: Run frontend tests with coverage
+        run: |
+          cd frontend
+          npm test -- --coverage
 
       # Upload coverage to Codecov
       - name: Upload coverage reports to Codecov
