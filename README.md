@@ -1,6 +1,7 @@
 # doubleAgent
 
 [![CI](https://github.com/doubleAgent-ohtu/doubleAgent/actions/workflows/CI.yml/badge.svg?branch=main)](https://github.com/doubleAgent-ohtu/doubleAgent/actions/workflows/CI.yml)
+[![codecov](https://codecov.io/gh/doubleAgent-ohtu/doubleAgent/graph/badge.svg?token=9PQ7TB9IBC)](https://codecov.io/gh/doubleAgent-ohtu/doubleAgent)
 
 Find it online: https://double-agent-ohtuprojekti-staging.ext.ocp-prod-0.k8s.it.helsinki.fi/
 
