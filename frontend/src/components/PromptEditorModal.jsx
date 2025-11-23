@@ -1,7 +1,7 @@
 import axios from 'axios';
 import { useState, useEffect } from 'react';
 
-const PromptEditorModal = ({ modalRef, currentPrompt, onSetPrompt, onClose }) => {
+const PromptEditorModal = ({ modalRef, currentPrompt, onSetPrompt, onClose, userPrompts, setUserPrompts }) => {
   const [text, setText] = useState(currentPrompt);
   const [agentName, setAgentName] = useState('');
 
@@ -17,10 +17,12 @@ const PromptEditorModal = ({ modalRef, currentPrompt, onSetPrompt, onClose }) =>
   const handleSaveToDB = async (e) => {
     e.preventDefault();
     try {
-      await axios.post('/api/save_prompt', {
+      const res = await axios.post('/api/save_prompt', {
         agent_name: agentName || 'Unnamed Agent',
         prompt: text,
       });
+      const new_prompt = res.data;
+      setPrompts((prev) => ({...prev, [new_prompt.id]: new_prompt}));
       handleSet();
     } catch (err) {
       console.log(err);

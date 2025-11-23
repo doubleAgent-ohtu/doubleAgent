@@ -10,7 +10,21 @@ const HomePage = () => {
   const [promptB, setPromptB] = useState('');
   const [promptToEdit, setPromptToEdit] = useState(null);
   const promptEditorRef = useRef(null);
+  const [userPrompts, setUserPrompts] = useState({});
   const [isConvoActive, setIsConvoActive] = useState(false);
+
+  const loadPrompts = async () => {
+    try {
+      const res = await axios.get(`api/get_all_user_prompts`);
+      const promptData = {};
+      for (const prompt of res.data) {
+        promptData[prompt.id] = prompt;
+      }
+      setUserPrompts(promptData);
+    } catch (err) {
+      console.log(err);
+    }
+  };
 
   const openPromptEditor = (prompt, setPrompt) => {
     // This will trigger the useEffect.
@@ -23,6 +37,10 @@ const HomePage = () => {
     }
     setPromptToEdit(null);
   };
+
+  useEffect(() => {
+    loadPrompts();
+  }, []);
 
   useEffect(() => {
     if (promptToEdit && promptEditorRef.current) {
@@ -96,6 +114,8 @@ const HomePage = () => {
           currentPrompt={promptToEdit.currentPrompt}
           onSetPrompt={promptToEdit.onSetPrompt}
           onClose={closePromptEditor}
+          userPrompts={userPrompts}
+          setUserPrompts={setUserPrompts}
         />
       )}
 
