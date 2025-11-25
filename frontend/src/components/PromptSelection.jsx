@@ -1,62 +1,56 @@
 import { useState, useEffect } from 'react';
-import axios from 'axios';
 import Select, { createFilter } from 'react-select';
 
 
-const SelectPrompt = ({ chatbot, setPromptInput }) => {
-  const [prompts, setPrompts] = useState({});
+const SelectPrompt = ({ savedPrompts, setText }) => {
   const [promptOptions, setPromptOptions] = useState([]);
 
-  const loadPrompts = async () => {
+  const handlePromptSelect = (option) => {
     try {
-      const res = await axios.get(`api/get_all_user_prompts`);
-
-      const promptData = {};
-      for (const prompt of res.data) {
-        promptData[prompt.id] = prompt;
-      }
-      setPrompts(promptData);
-
-      setPromptOptions(
-        res.data.map(
-          prompt => ({value: prompt.id, label: prompt.agent_name,})
-        )
-      );
+      const promptId = option.value;
+      setText(savedPrompts.get(promptId).prompt);
     } catch (err) {
       console.log(err);
-    }
-  };
-
-  const handlePromptSelect = (option) => {
-    if (option) {
-      const promptId = option.value;
-      const promptText = prompts[promptId].prompt;
-      setPromptInput(promptText);
+      setText('');
     }
   }
 
-  useEffect(() => {loadPrompts()}, []);
+  useEffect(() => {
+    setPromptOptions(() => {
+      let newPromptOptions = [];
+      try {
+        const promptData = Array.from(savedPrompts);
+        let i = promptData.length;
+
+        while (--i >= 0) {
+          const [prompId, prompt] = promptData[i];
+          newPromptOptions.push({value: prompId, label: prompt.agent_name});
+        };
+      } catch (err) {
+        console.log(err);
+      } finally {
+        return newPromptOptions;
+      }
+    });
+  }, [savedPrompts]);
 
   return (
     <div>
-      <h3>Prompt {chatbot}</h3>
-      <div>
-        <Select 
-         options={promptOptions}
-         onChange={handlePromptSelect}
-         isClearable
-         placeholder="Select prompt"
-         noOptionsMessage="No saved prompts."
-         filterOption={createFilter({
-           ignoreCase: true,
-           ignoreAccents: true,
-           matchFrom: 'any',
-           stringify: option => `${option.label}`,
-           trim: true,
-         })}
-         styles={customStyles}
-        />
-      </div>
+      <Select 
+       options={promptOptions}
+       onChange={handlePromptSelect}
+       placeholder="Select prompt"
+       noOptionsMessage={() => "No prompts found"}
+       filterOption={createFilter({
+         ignoreCase: true,
+         ignoreAccents: true,
+         matchFrom: 'any',
+         stringify: option => `${option.label}`,
+         trim: true,
+       })}
+       unstyled
+       styles={customStyles}
+      />
     </div>
   )
 };

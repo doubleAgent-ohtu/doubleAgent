@@ -4,23 +4,23 @@ import Menu from '../components/Menu';
 import PromptEditorModal from '../components/PromptEditorModal';
 import Tietosuojaseloste from '../components/Tietosuojaseloste.jsx';
 import Conversation from '../components/Conversation.jsx';
+import axios from 'axios';
+
 
 const HomePage = () => {
   const [promptA, setPromptA] = useState('');
   const [promptB, setPromptB] = useState('');
   const [promptToEdit, setPromptToEdit] = useState(null);
   const promptEditorRef = useRef(null);
-  const [userPrompts, setUserPrompts] = useState({});
   const [isConvoActive, setIsConvoActive] = useState(false);
+  const [savedPrompts, setSavedPrompts] = useState(new Map());
 
-  const loadPrompts = async () => {
+  const loadSavedPrompts = async () => {
     try {
-      const res = await axios.get(`api/get_all_user_prompts`);
-      const promptData = {};
-      for (const prompt of res.data) {
-        promptData[prompt.id] = prompt;
-      }
-      setUserPrompts(promptData);
+      const { data } = await axios.get(`api/get_all_saved_prompts`);
+      setSavedPrompts(data.reduce(
+        (promptMap, prompt) => promptMap.set(prompt.id, prompt), new Map()
+      ));
     } catch (err) {
       console.log(err);
     }
@@ -39,7 +39,7 @@ const HomePage = () => {
   };
 
   useEffect(() => {
-    loadPrompts();
+    loadSavedPrompts();
   }, []);
 
   useEffect(() => {
@@ -114,8 +114,8 @@ const HomePage = () => {
           currentPrompt={promptToEdit.currentPrompt}
           onSetPrompt={promptToEdit.onSetPrompt}
           onClose={closePromptEditor}
-          userPrompts={userPrompts}
-          setUserPrompts={setUserPrompts}
+          savedPrompts={savedPrompts}
+          setSavedPrompts={setSavedPrompts}
         />
       )}
 
