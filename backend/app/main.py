@@ -10,7 +10,8 @@ from app.oidc_uni_login import router as oidc_router
 from app.db.database import DBSession
 from sqlalchemy.orm import Session
 from app import schemas
-from app.db import models
+from app.db.models import Prompt
+from sqlalchemy import select, desc, or_, func
 import asyncio
 from fastapi.responses import StreamingResponse
 import json
@@ -253,15 +254,59 @@ def get_db():
 
 
 @app.post("/save_prompt", response_model=schemas.Prompt)
-def save_prompt(
+async def save_prompt(
     data: schemas.SavePrompt,
-    user: dict = Depends(get_user_id),
+    user: str = Depends(get_user_id),
     db: Session = Depends(get_db),
 ):
-    data.user = user
-    prompt = models.Prompt(**data.model_dump())
+    if data.agent_name.strip() == "":
+        data.agent_name = None
+    prompt = Prompt(**data.model_dump(), user=user)
     db.add(prompt)
     db.commit()
     db.refresh(prompt)
 
     return prompt
+
+"""
+@app.get("/get_all_saved_prompts")
+async def get_all_saved_prompts():
+    text = "Lorem ipsum dolor sit amet, consectetur adipisci elit, sed eiusmod tempor incidunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquid ex ea commodi consequat. Quis aute iure reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint obcaecat cupiditat non provident, sunt in culpa qui official deserunt mollit anim id est laborum."
+    return [{"prompt": f"{text}{i}", "agent_name": f"agent_name{i}", "id": i} for i in range(500)]
+"""
+
+@app.get("/get_all_saved_prompts", response_model=list[schemas.Prompt])
+async def get_all_saved_prompts(
+    user: str = Depends(get_user_id),
+    db: Session = Depends(get_db),
+):
+    prompts = db.scalars(
+        select(Prompt)
+        .where(Prompt.user == user)
+        .order_by(Prompt.created_at)
+    ).all()
+    
+    return prompts
+
+
+@app.get("/get_saved_prompts/", response_model=list[schemas.Prompt])
+async def get_user_prompts(
+    user: str = Depends(get_user_id),
+    db: Session = Depends(get_db),
+    query: str = "",
+    offset: int = 0,
+    limit: int = 50,
+):
+    prompts = db.scalars(
+        select(Prompt)
+        .where(
+            Prompt.user == user, or_(
+                Prompt.agent_name.icontains(query), Prompt.prompt.icontains(query)
+            )
+        )
+        .order_by(desc(Prompt.created_at))
+        .limit(limit)
+        .offset(offset)
+    ).all()
+    
+    return prompts

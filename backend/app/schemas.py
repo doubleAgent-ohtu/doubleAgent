@@ -11,6 +11,5 @@ class Prompt(BaseModel):
 
 
 class SavePrompt(BaseModel):
-    user: str
     agent_name: str | None = Field(max_length=50)
     prompt: str = Field(max_length=4000, min_length=1)
