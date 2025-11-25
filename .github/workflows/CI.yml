@@ -76,6 +76,4 @@ jobs:
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
           slug: doubleAgent-ohtu/doubleAgent
-          files: |
-            frontend/coverage/coverage-final.json
-            backend/coverage.xml
+          files: "frontend/coverage/coverage-final.json,backend/coverage.xml"
