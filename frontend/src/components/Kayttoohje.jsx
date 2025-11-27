@@ -3,18 +3,18 @@ import axios from 'axios';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 
-const Tietosuojaseloste = () => {
+const Kayttoohje = () => {
   const [markdown, setMarkdown] = useState('');
 
   useEffect(() => {
     axios
-      .get('/tietosuojaseloste.md')
+      .get('/kayttoohje.md')
       .then((response) => {
         setMarkdown(response.data);
       })
       .catch((error) => {
         console.error('Error fetching the file:', error);
-        setMarkdown('# Error loading the privacy policy\n\nSee console for details.');
+        setMarkdown('# Virhe ladattaessa käyttöohjetta\n\nKatso konsoli lisätietoja varten.');
       });
   }, []);
 
@@ -25,4 +25,4 @@ const Tietosuojaseloste = () => {
   );
 };
 
-export default Tietosuojaseloste;
+export default Kayttoohje;

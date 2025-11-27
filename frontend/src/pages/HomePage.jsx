@@ -3,6 +3,7 @@ import BotConfigurator from '../components/BotConfigurator';
 import Menu from '../components/Menu';
 import PromptEditorModal from '../components/PromptEditorModal';
 import Tietosuojaseloste from '../components/Tietosuojaseloste.jsx';
+import Kayttoohje from '../components/Kayttoohje.jsx';
 import Conversation from '../components/Conversation.jsx';
 import HamburgerMenu from '../components/HamburgerMenu';
 
@@ -14,7 +15,6 @@ const HomePage = () => {
   const [isConvoActive, setIsConvoActive] = useState(false);
 
   const openPromptEditor = (prompt, setPrompt) => {
-    // This will trigger the useEffect.
     setPromptToEdit({ currentPrompt: prompt, onSetPrompt: setPrompt });
   };
 
@@ -47,8 +47,8 @@ const HomePage = () => {
           <div
             className={`grid grid-cols-1 gap-6 transition-all duration-300 ${
               isConvoActive
-                ? 'lg:grid-cols-[1fr_6fr_1fr]' // Convo is active
-                : 'lg:grid-cols-[1fr_1.9fr_1fr]' // Default
+                ? 'lg:grid-cols-[1fr_6fr_1fr]'
+                : 'lg:grid-cols-[1fr_1.9fr_1fr]'
             }`}
           >
             <BotConfigurator
@@ -80,6 +80,12 @@ const HomePage = () => {
         <footer className="text-center p-4">
           <button
             className="btn btn-link"
+            onClick={() => document.getElementById('kayttoohje_modal').showModal()}
+          >
+            User Guide
+          </button>
+          <button
+            className="btn btn-link"
             onClick={() => document.getElementById('privacy_modal').showModal()}
           >
             Tietosuojaseloste
@@ -100,6 +106,20 @@ const HomePage = () => {
           onClose={closePromptEditor}
         />
       )}
+
+      <dialog id="kayttoohje_modal" className="modal">
+        <div className="modal-box w-11/12 max-w-4xl">
+          <Kayttoohje />
+          <div className="modal-action">
+            <form method="dialog">
+              <button className="btn">Close</button>
+            </form>
+          </div>
+        </div>
+        <form method="dialog" className="modal-backdrop">
+          <button>close</button>
+        </form>
+      </dialog>
 
       <dialog id="privacy_modal" className="modal">
         <div className="modal-box w-11/12 max-w-4xl">
