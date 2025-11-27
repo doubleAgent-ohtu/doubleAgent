@@ -5,6 +5,7 @@ import PromptEditorModal from '../components/PromptEditorModal';
 import Tietosuojaseloste from '../components/Tietosuojaseloste.jsx';
 import Conversation from '../components/Conversation.jsx';
 import HamburgerMenu from '../components/HamburgerMenu';
+import { useState, useRef, useEffect } from 'react';
 
 const HomePage = () => {
   const [promptA, setPromptA] = useState('');
@@ -79,7 +80,7 @@ const HomePage = () => {
 
         <footer className="text-center p-4">
           <button
-            className="btn btn-link"
+            className="btn btn-link text-base-content no-underline hover:underline"
             onClick={() => document.getElementById('privacy_modal').showModal()}
           >
             Tietosuojaseloste

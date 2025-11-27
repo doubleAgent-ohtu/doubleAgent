@@ -4,26 +4,38 @@ import ReactMarkdown from 'react-markdown';
 
 const Tietosuojaseloste = () => {
   const [markdown, setMarkdown] = useState('');
+  const [language, setLanguage] = useState('FIN');
 
   useEffect(() => {
-    // Fetch the file from the public folder
+    const fileName = language === 'ENG' ? 'tietosuojaselosteENG.md' : 'tietosuojaselosteFIN.md';
+
     axios
-      .get('/tietosuojaseloste.md')
+      .get(`/${fileName}`)
       .then((response) => {
         setMarkdown(response.data);
       })
       .catch((error) => {
         console.error('Error fetching the file:', error);
-        // This is a user-facing error message
         setMarkdown('# Error loading the privacy policy\n\nSee console for details.');
       });
-  }, []);
+  }, [language]);
 
   return (
     <div style={{ padding: '20px', maxWidth: '800px', margin: '0 auto' }}>
-      {/* The ReactMarkdown component automatically converts markdown text
-        into HTML elements (e.g., ### -> <h3>)
-      */}
+      <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px', marginBottom: '1rem' }}>
+        <button
+          onClick={() => setLanguage('FIN')}
+          className={`btn btn-sm ${language === 'FIN' ? 'btn-primary' : 'btn-ghost'}`}
+        >
+          FIN
+        </button>
+        <button
+          onClick={() => setLanguage('ENG')}
+          className={`btn btn-sm ${language === 'ENG' ? 'btn-primary' : 'btn-ghost'}`}
+        >
+          ENG
+        </button>
+      </div>
       <ReactMarkdown>{markdown}</ReactMarkdown>
     </div>
   );
