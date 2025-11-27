@@ -44,7 +44,6 @@ def get_user_id(user: dict = Depends(get_current_user)) -> str:
 
 env = os.getenv("DA_ENVIRONMENT", "not_set")
 if env == "development":
-    # --- DEVELOPMENT ENVIRONMENT SETUP ---
     print("✅ Running in DEVELOPMENT mode. MOCK login routes enabled.")
 
     app.add_middleware(
@@ -56,11 +55,9 @@ if env == "development":
     )
     print("✅ CORS enabled for development")
 
-    # Add MOCK login route
     @app.get("/login")
     async def mock_login(request: Request):
         """Sets the mock session key."""
-        # Set a mock user object directly in the session
         request.session["user"] = {
             "sub": "2Q6XGZP4DNWAEYVIDZV2KLXKO3Z4QEBM",
             "username": "pate",
@@ -70,19 +67,16 @@ if env == "development":
         return RedirectResponse(url="/")
 
 else:
-    # --- PRODUCTION / OTHER ENVIRONMENT SETUP ---
     if env == "production":
         print("🚀 Running in PRODUCTION mode. Using REAL OIDC authentication.")
     else:
         print(f"⚠️ Running in '{env}' mode. Using REAL OIDC authentication.")
 
-    # 1. Include the REAL OIDC router (which has /login and /auth/callback)
     app.include_router(oidc_router)
 
 chatbot_a = ChatbotService()
 chatbot_b = ChatbotService()
 
-# TODO!!!! local list
 messages: list[str] = []
 
 
@@ -95,7 +89,7 @@ class ChatMessage(BaseModel):
     thread_id: str = "default"
     system_prompt: str | None = None
     model: str | None = None
-    chatbot: str = "a"  # "a" or "b"
+    chatbot: str = "a"
 
 
 class ChatResponse(BaseModel):
@@ -119,9 +113,6 @@ class ConversationResponse(BaseModel):
     messages: list[dict]
 
 
-# Logout route is not in oidc_uni_login.py because
-# local testing needs it aswell and oidc_router is
-# included only in production env.
 @app.post("/logout")
 async def real_logout(request: Request):
     """Clears the 'user' session key."""
@@ -154,14 +145,20 @@ def chat_with_bot(
 
 async def conversation_generator(conv: ConversationStart, request: Request):
     print(f"\n--- 🚀 STARTING TOKEN STREAM for {conv.turns} turns ---")
+    print(f"--- 📝 Thread ID: {conv.thread_id} ---")
     current_message = conv.initial_message
     current_bot = "a"
 
-    # Set system prompts if provided
+    # Reset to default if empty, otherwise set custom prompt
     if conv.system_prompt_a:
         chatbot_a.set_system_prompt(conv.system_prompt_a)
+    else:
+        chatbot_a.set_system_prompt(chatbot_a.default_system_prompt)
+
     if conv.system_prompt_b:
         chatbot_b.set_system_prompt(conv.system_prompt_b)
+    else:
+        chatbot_b.set_system_prompt(chatbot_b.default_system_prompt)
 
     try:
         for i in range(conv.turns):
@@ -171,38 +168,30 @@ async def conversation_generator(conv: ConversationStart, request: Request):
 
             print(f"--- Stream Turn {i+1} ---")
 
-            # Select the correct chatbot
             chatbot_instance = chatbot_a if current_bot == "a" else chatbot_b
 
-            # 1. YIELD a "start" message
-            # This tells the frontend to create a new, empty bubble
             start_data = {"type": "start", "chatbot": current_bot}
             yield f"data: {json.dumps(start_data)}\n\n"
 
             full_response_for_next_turn = ""
 
-            # 2. YIELD the "token" stream
             async for token in chatbot_instance.stream_chat(
                 current_message,
                 conv.thread_id,
-                model=conv.model,  # Pass model if you have it
+                model=conv.model,
             ):
                 token_data = {"type": "token", "content": token}
                 yield f"data: {json.dumps(token_data)}\n\n"
 
-                # We must build up the full response to feed to the next bot
                 full_response_for_next_turn += token
 
-            # 3. YIELD an "end" message
-            # This tells the frontend this message is complete
             end_data = {"type": "end"}
             yield f"data: {json.dumps(end_data)}\n\n"
 
-            # Prepare for the next turn
             current_message = full_response_for_next_turn
             current_bot = "b" if current_bot == "a" else "a"
 
-            await asyncio.sleep(0.01)  # Small sleep
+            await asyncio.sleep(0.01)
 
     except Exception as e:
         print(f"--- ❌ ERROR IN STREAM ---: {e}")

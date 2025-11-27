@@ -1,12 +1,13 @@
 import { useState, useEffect, useRef } from 'react';
 import ModelSelection from './ModelSelection.jsx';
 
-const Conversation = ({ promptA, promptB, onActivate }) => {
+const Conversation = ({ promptA, promptB, onActivate, onClearPrompts }) => {
   const [input, setInput] = useState('');
   const [messages, setMessages] = useState(null);
   const messagesRef = useRef(null);
   const [turns, setTurns] = useState(3);
   const [selectedModel, setSelectedModel] = useState('gpt-4o');
+  const [threadId, setThreadId] = useState(() => crypto.randomUUID());
 
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -30,6 +31,14 @@ const Conversation = ({ promptA, promptB, onActivate }) => {
     }
   };
 
+  const handleClearConversation = () => {
+    setMessages(null);
+    setError(null);
+    setThreadId(crypto.randomUUID());
+    if (onClearPrompts) onClearPrompts();
+    console.log('--- 🗑️ Conversation cleared ---');
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
 
@@ -47,6 +56,7 @@ const Conversation = ({ promptA, promptB, onActivate }) => {
       model: selectedModel,
       system_prompt_a: promptA,
       system_prompt_b: promptB,
+      thread_id: threadId,
     };
     setInput('');
 
@@ -211,6 +221,15 @@ const Conversation = ({ promptA, promptB, onActivate }) => {
               'Start'
             )}
           </button>
+          {messages && !isLoading && (
+            <button
+              type="button"
+              className="btn btn-outline btn-secondary"
+              onClick={handleClearConversation}
+            >
+              Clear
+            </button>
+          )}
         </form>
       </div>
     </div>

@@ -25,6 +25,11 @@ const HomePage = () => {
     setPromptToEdit(null);
   };
 
+  const handleClearPrompts = () => {
+    setPromptA('');
+    setPromptB('');
+  };
+
   useEffect(() => {
     if (promptToEdit && promptEditorRef.current) {
       promptEditorRef.current.showModal();
@@ -63,6 +68,7 @@ const HomePage = () => {
                 promptA={promptA}
                 promptB={promptB}
                 onActivate={() => setIsConvoActive(true)}
+                onClearPrompts={handleClearPrompts}
               />
             </div>
 
