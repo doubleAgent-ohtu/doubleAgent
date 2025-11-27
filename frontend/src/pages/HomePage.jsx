@@ -5,17 +5,19 @@ import PromptEditorModal from '../components/PromptEditorModal';
 import Tietosuojaseloste from '../components/Tietosuojaseloste.jsx';
 import Conversation from '../components/Conversation.jsx';
 import HamburgerMenu from '../components/HamburgerMenu';
-import { useState, useRef, useEffect } from 'react';
 
 const HomePage = () => {
   const [promptA, setPromptA] = useState('');
   const [promptB, setPromptB] = useState('');
   const [promptToEdit, setPromptToEdit] = useState(null);
+  
+  
   const promptEditorRef = useRef(null);
+  const privacyModalRef = useRef(null);
+
   const [isConvoActive, setIsConvoActive] = useState(false);
 
   const openPromptEditor = (prompt, setPrompt) => {
-    // This will trigger the useEffect.
     setPromptToEdit({ currentPrompt: prompt, onSetPrompt: setPrompt });
   };
 
@@ -48,8 +50,8 @@ const HomePage = () => {
           <div
             className={`grid grid-cols-1 gap-6 transition-all duration-300 ${
               isConvoActive
-                ? 'lg:grid-cols-[1fr_6fr_1fr]' // Convo is active
-                : 'lg:grid-cols-[1fr_1.9fr_1fr]' // Default
+                ? 'lg:grid-cols-[1fr_6fr_1fr]'
+                : 'lg:grid-cols-[1fr_1.9fr_1fr]'
             }`}
           >
             <BotConfigurator
@@ -81,7 +83,7 @@ const HomePage = () => {
         <footer className="text-center p-4">
           <button
             className="btn btn-link text-base-content no-underline hover:underline"
-            onClick={() => document.getElementById('privacy_modal').showModal()}
+            onClick={() => privacyModalRef.current.showModal()}
           >
             Tietosuojaseloste
           </button>
@@ -102,7 +104,8 @@ const HomePage = () => {
         />
       )}
 
-      <dialog id="privacy_modal" className="modal">
+      {/* Tietosuojaseloste Modal */}
+      <dialog ref={privacyModalRef} id="privacy_modal" className="modal">
         <div className="modal-box w-11/12 max-w-4xl">
           <Tietosuojaseloste />
           <div className="modal-action">
