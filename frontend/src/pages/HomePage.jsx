@@ -10,8 +10,7 @@ const HomePage = () => {
   const [promptA, setPromptA] = useState('');
   const [promptB, setPromptB] = useState('');
   const [promptToEdit, setPromptToEdit] = useState(null);
-  
-  
+
   const promptEditorRef = useRef(null);
   const privacyModalRef = useRef(null);
 
@@ -49,9 +48,7 @@ const HomePage = () => {
           <h1 className="text-center text-4xl font-bold mb-8 tracking-widest">Double Agent AI</h1>
           <div
             className={`grid grid-cols-1 gap-6 transition-all duration-300 ${
-              isConvoActive
-                ? 'lg:grid-cols-[1fr_6fr_1fr]'
-                : 'lg:grid-cols-[1fr_1.9fr_1fr]'
+              isConvoActive ? 'lg:grid-cols-[1fr_6fr_1fr]' : 'lg:grid-cols-[1fr_1.9fr_1fr]'
             }`}
           >
             <BotConfigurator

@@ -22,7 +22,9 @@ const Tietosuojaseloste = () => {
 
   return (
     <div style={{ padding: '20px', maxWidth: '800px', margin: '0 auto' }}>
-      <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px', marginBottom: '1rem' }}>
+      <div
+        style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px', marginBottom: '1rem' }}
+      >
         <button
           onClick={() => setLanguage('FIN')}
           className={`btn btn-sm ${language === 'FIN' ? 'btn-primary' : 'btn-ghost'}`}
