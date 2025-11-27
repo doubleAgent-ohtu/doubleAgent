@@ -61,7 +61,7 @@ const Conversation = ({ promptA, promptB, onActivate, onClearPrompts }) => {
     setInput('');
 
     try {
-            // Has to be fetch, not axios for streaming
+      // Has to be fetch, not axios for streaming
       const response = await fetch('/api/conversation', {
         method: 'POST',
         headers: {
