@@ -11,7 +11,7 @@ from app.db.database import DBSession
 from sqlalchemy.orm import Session
 from app import schemas
 from app.db.models import Prompt
-from sqlalchemy import select, desc, or_, func
+from sqlalchemy import select
 import asyncio
 from fastapi.responses import StreamingResponse
 import json
