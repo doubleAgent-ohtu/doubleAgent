@@ -1,4 +1,3 @@
-# This is a basic workflow to help you get started with Actions
 
 name: CI
 
@@ -25,19 +24,13 @@ jobs:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
       - uses: actions/checkout@v4
 
-      # Runs a set of commands using the runners shell
-      - name: Run a multi-line script
-        run: |
-          echo Add other actions to build,
-          echo test, and deploy your project.
-
-      #Install npm for Prettier check
+      # Install npm for Prettier check
       - name: Install npm dependencies (frontend)
         run: |
           cd frontend
           npm install
 
-      #Run Prettier in frontend
+      # Run Prettier in frontend
       - name: Check code formatting with Prettier (frontend)
         run: |
           cd frontend
@@ -47,13 +40,40 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v4
         with:
-          python-version: '3.11'
+          python-version: "3.11"
 
-      # Install Python dependencies (Black)
-      - name: Install Python Black
-        run: pip install black
+      # Install Poetry
+      - name: Install Poetry
+        run: pip install poetry
+
+      # Install Python dependencies (using pyproject.toml)
+      - name: Install Python dependencies
+        run: |
+          cd backend
+          poetry install --with dev
 
       # Run Black check (Python)
       - name: Check Python formatting with Black
-        run: black --check "backend/app"
-      
+        run: |
+          cd backend
+          poetry run black --check app
+
+      # Run tests for backend with coverage
+      - name: Test backend with pytest + coverage
+        run: |
+          cd backend
+          poetry run pytest --cov=app --cov-report=xml
+
+      # Run frontend tests with coverage (Vitest)
+      - name: Run frontend tests with coverage
+        run: |
+          cd frontend
+          npm test -- --coverage
+
+      # Upload coverage to Codecov
+      - name: Upload coverage reports to Codecov
+        uses: codecov/codecov-action@v5
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          slug: doubleAgent-ohtu/doubleAgent
+          files: "frontend/coverage/coverage-final.json,backend/coverage.xml"

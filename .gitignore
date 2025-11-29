@@ -33,3 +33,9 @@ __pycache__
 .env.local
 
 manifests/configmap.yaml
+
+# Coverage reports
+frontend/coverage/
+backend/coverage.xml
+.coverage
+.pytest_cache/

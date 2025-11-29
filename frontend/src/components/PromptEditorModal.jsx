@@ -49,7 +49,7 @@ const PromptEditorModal = ({
           <textarea
             value={text}
             onChange={(e) => setText(e.target.value)}
-            maxLength={4000}
+            maxLength={15000}
             required
             id="promptText"
             className="textarea textarea-bordered w-full h-40"
