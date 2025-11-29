@@ -11,6 +11,8 @@ const Conversation = ({ promptA, promptB, onActivate, onClearPrompts }) => {
 
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [isSaving, setIsSaving] = useState(false);
+  const [isSaved, setIsSaved] = useState(false);
 
   const abortControllerRef = useRef(null);
 
@@ -34,9 +36,66 @@ const Conversation = ({ promptA, promptB, onActivate, onClearPrompts }) => {
   const handleClearConversation = () => {
     setMessages(null);
     setError(null);
+    setIsSaved(false);
     setThreadId(crypto.randomUUID());
     if (onClearPrompts) onClearPrompts();
     console.log('--- 🗑️ Conversation cleared ---');
+  };
+
+  const handleSaveConversation = async () => {
+    if (!messages || messages.length === 0) {
+      alert('Ei viestiä tallennettavaksi');
+      return;
+    }
+
+    if (isSaved) {
+      alert('Keskustelu on jo tallennettu');
+      return;
+    }
+
+    setIsSaving(true);
+
+    // Generate title from first user message
+    const firstUserMsg = messages.find((m) => m.chatbot === 'user');
+    const title = firstUserMsg
+      ? firstUserMsg.message.substring(0, 50) + (firstUserMsg.message.length > 50 ? '...' : '')
+      : 'Keskustelu';
+
+    const conversationData = {
+      title,
+      thread_id: threadId,
+      model: selectedModel,
+      system_prompt_a: promptA || null,
+      system_prompt_b: promptB || null,
+      turns,
+      messages: messages.map((msg) => ({
+        chatbot: msg.chatbot,
+        message: msg.message,
+      })),
+    };
+
+    try {
+      const response = await fetch('/api/conversations', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(conversationData),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.detail || 'Tallennus epäonnistui');
+      }
+
+      setIsSaved(true);
+      console.log('✅ Keskustelu tallennettu');
+    } catch (err) {
+      console.error('Virhe tallennettaessa:', err);
+      alert(`Virhe tallennettaessa: ${err.message}`);
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   const handleSubmit = async (e) => {
@@ -222,13 +281,32 @@ const Conversation = ({ promptA, promptB, onActivate, onClearPrompts }) => {
             )}
           </button>
           {messages && !isLoading && (
-            <button
-              type="button"
-              className="btn btn-outline btn-secondary"
-              onClick={handleClearConversation}
-            >
-              Clear
-            </button>
+            <>
+              <button
+                type="button"
+                className={`btn ${isSaved ? 'btn-success' : 'btn-info'}`}
+                onClick={handleSaveConversation}
+                disabled={isSaving || isSaved}
+              >
+                {isSaving ? (
+                  <>
+                    <span className="loading loading-spinner loading-xs"></span>
+                    Tallennetaan...
+                  </>
+                ) : isSaved ? (
+                  '✓ Tallennettu'
+                ) : (
+                  'Tallenna'
+                )}
+              </button>
+              <button
+                type="button"
+                className="btn btn-outline btn-secondary"
+                onClick={handleClearConversation}
+              >
+                Clear
+              </button>
+            </>
           )}
         </form>
       </div>
