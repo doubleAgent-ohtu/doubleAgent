@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import axios from 'axios';
 
-const Menu = () => {
+const Menu = ({ onOpenUserGuide }) => {
   const [isDark, setIsDark] = useState(false);
   // initializes theme
   useEffect(() => {
@@ -61,6 +61,26 @@ const Menu = () => {
                 </svg>
               </span>
               <span className="label-text">Homepage</span>
+            </button>
+          </li>
+
+          <li>
+            <button onClick={onOpenUserGuide}>
+              <span className="icon" aria-hidden="true">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  viewBox="0 0 24 24"
+                  strokeLinejoin="round"
+                  strokeLinecap="round"
+                  strokeWidth="2"
+                  fill="none"
+                  stroke="currentColor"
+                  className="inline-block size-4 my-1.5"
+                >
+                  <path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1 0-5H20"></path>
+                </svg>
+              </span>
+              <span className="label-text">User Guide</span>
             </button>
           </li>
 
