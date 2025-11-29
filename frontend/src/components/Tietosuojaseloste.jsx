@@ -1,8 +1,9 @@
 import { useState, useEffect } from 'react';
 import axios from 'axios';
 import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
 
-const Tietosuojaseloste = () => {
+const Tietosuojaseloste = ({ onLanguageChange }) => {
   const [markdown, setMarkdown] = useState('');
   const [language, setLanguage] = useState('FIN');
 
@@ -18,10 +19,14 @@ const Tietosuojaseloste = () => {
         console.error('Error fetching the file:', error);
         setMarkdown('# Error loading the privacy policy\n\nSee console for details.');
       });
-  }, [language]);
+
+    if (onLanguageChange) {
+      onLanguageChange(language);
+    }
+  }, [language, onLanguageChange]);
 
   return (
-    <div style={{ padding: '20px', maxWidth: '800px', margin: '0 auto' }}>
+    <div className="markdown-content">
       <div
         style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px', marginBottom: '1rem' }}
       >
@@ -38,7 +43,7 @@ const Tietosuojaseloste = () => {
           ENG
         </button>
       </div>
-      <ReactMarkdown>{markdown}</ReactMarkdown>
+      <ReactMarkdown remarkPlugins={[remarkGfm]}>{markdown}</ReactMarkdown>
     </div>
   );
 };
