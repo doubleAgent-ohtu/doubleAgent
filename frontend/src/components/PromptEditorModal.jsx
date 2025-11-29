@@ -1,7 +1,15 @@
 import axios from 'axios';
 import { useState, useEffect } from 'react';
+import SelectPrompt from './PromptSelection';
 
-const PromptEditorModal = ({ modalRef, currentPrompt, onSetPrompt, onClose }) => {
+const PromptEditorModal = ({
+  modalRef,
+  currentPrompt,
+  onSetPrompt,
+  onClose,
+  savedPrompts,
+  setSavedPrompts,
+}) => {
   const [text, setText] = useState(currentPrompt);
   const [agentName, setAgentName] = useState('');
 
@@ -17,10 +25,12 @@ const PromptEditorModal = ({ modalRef, currentPrompt, onSetPrompt, onClose }) =>
   const handleSaveToDB = async (e) => {
     e.preventDefault();
     try {
-      await axios.post('/api/save_prompt', {
+      const res = await axios.post('/api/save_prompt', {
         agent_name: agentName || 'Unnamed Agent',
         prompt: text,
       });
+      const new_prompt = res.data;
+      setSavedPrompts((prev) => new Map(prev.set(new_prompt.id, new_prompt)));
       handleSet();
     } catch (err) {
       console.log(err);
@@ -35,6 +45,7 @@ const PromptEditorModal = ({ modalRef, currentPrompt, onSetPrompt, onClose }) =>
           <label htmlFor="promptText" className="label">
             <span className="label-text">System Prompt</span>
           </label>
+          <SelectPrompt savedPrompts={savedPrompts} setText={setText} />
           <textarea
             value={text}
             onChange={(e) => setText(e.target.value)}

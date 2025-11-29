@@ -4,6 +4,7 @@ import Menu from '../components/Menu';
 import PromptEditorModal from '../components/PromptEditorModal';
 import Tietosuojaseloste from '../components/Tietosuojaseloste.jsx';
 import Conversation from '../components/Conversation.jsx';
+import axios from 'axios';
 import HamburgerMenu from '../components/HamburgerMenu';
 
 const HomePage = () => {
@@ -15,6 +16,18 @@ const HomePage = () => {
   const privacyModalRef = useRef(null);
 
   const [isConvoActive, setIsConvoActive] = useState(false);
+  const [savedPrompts, setSavedPrompts] = useState(new Map());
+
+  const loadSavedPrompts = async () => {
+    try {
+      const { data } = await axios.get(`api/get_all_saved_prompts`);
+      setSavedPrompts(
+        data.reduce((promptMap, prompt) => promptMap.set(prompt.id, prompt), new Map()),
+      );
+    } catch (err) {
+      console.log(err);
+    }
+  };
 
   const openPromptEditor = (prompt, setPrompt) => {
     setPromptToEdit({ currentPrompt: prompt, onSetPrompt: setPrompt });
@@ -37,6 +50,10 @@ const HomePage = () => {
       promptEditorRef.current.showModal();
     }
   }, [promptToEdit]);
+
+  useEffect(() => {
+    loadSavedPrompts();
+  }, []);
 
   return (
     <div className="drawer lg:drawer-open">
@@ -104,6 +121,8 @@ const HomePage = () => {
           currentPrompt={promptToEdit.currentPrompt}
           onSetPrompt={promptToEdit.onSetPrompt}
           onClose={closePromptEditor}
+          savedPrompts={savedPrompts}
+          setSavedPrompts={setSavedPrompts}
         />
       )}
 
