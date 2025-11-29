@@ -268,12 +268,6 @@ async def save_prompt(
 
     return prompt
 
-"""
-@app.get("/get_all_saved_prompts")
-async def get_all_saved_prompts():
-    text = "Lorem ipsum dolor sit amet, consectetur adipisci elit, sed eiusmod tempor incidunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquid ex ea commodi consequat. Quis aute iure reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint obcaecat cupiditat non provident, sunt in culpa qui official deserunt mollit anim id est laborum."
-    return [{"prompt": f"{text}{i}", "agent_name": f"agent_name{i}", "id": i} for i in range(500)]
-"""
 
 @app.get("/get_all_saved_prompts", response_model=list[schemas.Prompt])
 async def get_all_saved_prompts(
@@ -281,32 +275,7 @@ async def get_all_saved_prompts(
     db: Session = Depends(get_db),
 ):
     prompts = db.scalars(
-        select(Prompt)
-        .where(Prompt.user == user)
-        .order_by(Prompt.created_at)
+        select(Prompt).where(Prompt.user == user).order_by(Prompt.created_at)
     ).all()
-    
-    return prompts
 
-
-@app.get("/get_saved_prompts/", response_model=list[schemas.Prompt])
-async def get_user_prompts(
-    user: str = Depends(get_user_id),
-    db: Session = Depends(get_db),
-    query: str = "",
-    offset: int = 0,
-    limit: int = 50,
-):
-    prompts = db.scalars(
-        select(Prompt)
-        .where(
-            Prompt.user == user, or_(
-                Prompt.agent_name.icontains(query), Prompt.prompt.icontains(query)
-            )
-        )
-        .order_by(desc(Prompt.created_at))
-        .limit(limit)
-        .offset(offset)
-    ).all()
-    
     return prompts

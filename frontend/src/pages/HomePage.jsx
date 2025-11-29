@@ -6,7 +6,6 @@ import Tietosuojaseloste from '../components/Tietosuojaseloste.jsx';
 import Conversation from '../components/Conversation.jsx';
 import axios from 'axios';
 
-
 const HomePage = () => {
   const [promptA, setPromptA] = useState('');
   const [promptB, setPromptB] = useState('');
@@ -18,9 +17,9 @@ const HomePage = () => {
   const loadSavedPrompts = async () => {
     try {
       const { data } = await axios.get(`api/get_all_saved_prompts`);
-      setSavedPrompts(data.reduce(
-        (promptMap, prompt) => promptMap.set(prompt.id, prompt), new Map()
-      ));
+      setSavedPrompts(
+        data.reduce((promptMap, prompt) => promptMap.set(prompt.id, prompt), new Map()),
+      );
     } catch (err) {
       console.log(err);
     }
@@ -39,14 +38,14 @@ const HomePage = () => {
   };
 
   useEffect(() => {
-    loadSavedPrompts();
-  }, []);
-
-  useEffect(() => {
     if (promptToEdit && promptEditorRef.current) {
       promptEditorRef.current.showModal();
     }
   }, [promptToEdit]);
+
+  useEffect(() => {
+    loadSavedPrompts();
+  }, []);
 
   return (
     <div className="drawer lg:drawer-open">

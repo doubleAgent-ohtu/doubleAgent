@@ -2,7 +2,14 @@ import axios from 'axios';
 import { useState, useEffect } from 'react';
 import SelectPrompt from './PromptSelection';
 
-const PromptEditorModal = ({ modalRef, currentPrompt, onSetPrompt, onClose, savedPrompts, setSavedPrompts }) => {
+const PromptEditorModal = ({
+  modalRef,
+  currentPrompt,
+  onSetPrompt,
+  onClose,
+  savedPrompts,
+  setSavedPrompts,
+}) => {
   const [text, setText] = useState(currentPrompt);
   const [agentName, setAgentName] = useState('');
 
