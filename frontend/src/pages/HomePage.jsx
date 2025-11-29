@@ -3,7 +3,6 @@ import BotConfigurator from '../components/BotConfigurator';
 import Menu from '../components/Menu';
 import PromptEditorModal from '../components/PromptEditorModal';
 import Tietosuojaseloste from '../components/Tietosuojaseloste.jsx';
-import Kayttoohje from '../components/Kayttoohje.jsx';
 import Conversation from '../components/Conversation.jsx';
 import HamburgerMenu from '../components/HamburgerMenu';
 
@@ -11,7 +10,10 @@ const HomePage = () => {
   const [promptA, setPromptA] = useState('');
   const [promptB, setPromptB] = useState('');
   const [promptToEdit, setPromptToEdit] = useState(null);
+
   const promptEditorRef = useRef(null);
+  const privacyModalRef = useRef(null);
+
   const [isConvoActive, setIsConvoActive] = useState(false);
 
   const openPromptEditor = (prompt, setPrompt) => {
@@ -23,6 +25,11 @@ const HomePage = () => {
       promptEditorRef.current.close();
     }
     setPromptToEdit(null);
+  };
+
+  const handleClearPrompts = () => {
+    setPromptA('');
+    setPromptB('');
   };
 
   useEffect(() => {
@@ -46,9 +53,7 @@ const HomePage = () => {
           <h1 className="text-center text-4xl font-bold mb-8 tracking-widest">Double Agent AI</h1>
           <div
             className={`grid grid-cols-1 gap-6 transition-all duration-300 ${
-              isConvoActive
-                ? 'lg:grid-cols-[1fr_6fr_1fr]'
-                : 'lg:grid-cols-[1fr_1.9fr_1fr]'
+              isConvoActive ? 'lg:grid-cols-[1fr_6fr_1fr]' : 'lg:grid-cols-[1fr_1.9fr_1fr]'
             }`}
           >
             <BotConfigurator
@@ -63,6 +68,7 @@ const HomePage = () => {
                 promptA={promptA}
                 promptB={promptB}
                 onActivate={() => setIsConvoActive(true)}
+                onClearPrompts={handleClearPrompts}
               />
             </div>
 
@@ -79,14 +85,8 @@ const HomePage = () => {
 
         <footer className="text-center p-4">
           <button
-            className="btn btn-link"
-            onClick={() => document.getElementById('kayttoohje_modal').showModal()}
-          >
-            User Guide
-          </button>
-          <button
-            className="btn btn-link"
-            onClick={() => document.getElementById('privacy_modal').showModal()}
+            className="btn btn-link text-base-content no-underline hover:underline"
+            onClick={() => privacyModalRef.current.showModal()}
           >
             Tietosuojaseloste
           </button>
@@ -107,21 +107,8 @@ const HomePage = () => {
         />
       )}
 
-      <dialog id="kayttoohje_modal" className="modal">
-        <div className="modal-box w-11/12 max-w-4xl">
-          <Kayttoohje />
-          <div className="modal-action">
-            <form method="dialog">
-              <button className="btn">Close</button>
-            </form>
-          </div>
-        </div>
-        <form method="dialog" className="modal-backdrop">
-          <button>close</button>
-        </form>
-      </dialog>
-
-      <dialog id="privacy_modal" className="modal">
+      {/* Tietosuojaseloste Modal */}
+      <dialog ref={privacyModalRef} id="privacy_modal" className="modal">
         <div className="modal-box w-11/12 max-w-4xl">
           <Tietosuojaseloste />
           <div className="modal-action">
