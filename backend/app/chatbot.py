@@ -132,3 +132,27 @@ class ChatbotService:
 
         except Exception as e:
             yield f"Error: {str(e)}"
+
+    def get_conversation_history(self, thread_id: str):
+        #this function collect all the messages from chat in str type role:message
+        config = {"configurable": {"thread_id": thread_id}}
+        state = self.app.get_state(config)
+        
+        messages = state.values.get("messages", [])
+        
+        conversation_text = ""
+        
+        for message in messages:
+            print('funktio')
+            role = "Unknown"
+            
+            if isinstance(message, HumanMessage):
+                role = "Bot B"
+            elif isinstance(message, AIMessage):
+                role = "Bot A"
+            elif isinstance(message, SystemMessage):
+                continue
+                
+            conversation_text += f"{role}:\n{message.content}\n\n"
+            
+        return conversation_text
