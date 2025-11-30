@@ -77,12 +77,12 @@ test('8. Shows placeholder text when no messages', () => {
   expect(screen.getByText('Type a message to start...')).toBeInTheDocument();
 });
 
-test('9. Turns input has min 1 and max 10 attributes', () => {
+test('9. Turns input has min 1 and max 20 attributes', () => {
   render(<Conversation {...defaultProps} />);
 
   const turnsInput = screen.getByDisplayValue('3');
   expect(turnsInput).toHaveAttribute('min', '1');
-  expect(turnsInput).toHaveAttribute('max', '10');
+  expect(turnsInput).toHaveAttribute('max', '20');
 });
 
 test('10. Model selection has default value gpt-4o', () => {
