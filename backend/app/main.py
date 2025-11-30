@@ -6,7 +6,7 @@ from fastapi.responses import RedirectResponse
 from pydantic import BaseModel
 from starlette.middleware.sessions import SessionMiddleware
 from app.chatbot import ChatbotService
-from app.oidc_uni_login import router as oidc_router
+from app.routers.oidc_router import oidc_router
 from app.db.database import DBSession
 from sqlalchemy.orm import Session
 from app import schemas
