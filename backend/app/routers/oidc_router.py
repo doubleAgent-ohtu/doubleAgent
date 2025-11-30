@@ -3,9 +3,8 @@ from authlib.integrations.starlette_client import OAuth
 from fastapi.responses import RedirectResponse
 import os
 
-router = APIRouter()
+oidc_router = APIRouter()
 
-# configurations from .env
 DA_OIDC_BASE_URL = os.getenv("DA_OIDC_BASE_URL")
 DA_OIDC_CLIENT_ID = os.getenv("DA_OIDC_CLIENT_ID")
 DA_OIDC_CLIENT_SECRET = os.getenv("DA_OIDC_CLIENT_SECRET")
@@ -13,7 +12,6 @@ DA_OIDC_REDIRECT_URI = os.getenv("DA_OIDC_REDIRECT_URI")
 
 oauth = OAuth()
 
-# Our app configurations
 oauth.register(
     name="university",
     client_id=DA_OIDC_CLIENT_ID,
@@ -23,14 +21,14 @@ oauth.register(
 )
 
 
-@router.get("/login")
+@oidc_router.get("/login")
 # Handles the initial login request from the user's browser
 # and redirects them to the university's login page.
 async def login(request: Request):
     return await oauth.university.authorize_redirect(request, DA_OIDC_REDIRECT_URI)
 
 
-@router.get("/auth/callback")
+@oidc_router.get("/auth/callback")
 # Handles the callback from the university after the user has logged in.
 async def auth_callback(request: Request):
     frontend_url = os.getenv("DA_FRONTEND_URL")
