@@ -202,7 +202,7 @@ const Conversation = ({ promptA, promptB, onActivate, onClearPrompts }) => {
               onChange={(e) => setTurns(Number(e.target.value))}
               className="input input-bordered w-20 focus:outline-0"
               min="1"
-              max="10"
+              max="20"
               disabled={isLoading}
             />
           </label>
