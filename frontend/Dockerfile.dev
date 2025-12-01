@@ -8,6 +8,8 @@ COPY package*.json ./
 # Install all npm dependencies
 RUN npm install
 
+COPY . .
+
 # We will mount the source code via a volume,
 # so we don't need to COPY source code here.
 # The command (npm run dev) will be specified in docker-compose.yml

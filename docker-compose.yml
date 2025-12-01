@@ -13,8 +13,7 @@ services:
     volumes:
       # Mounts the entire 'backend' directory into '/app'
       # Any changes on your host are reflected in the container
-      - ./backend:/app
-      - /app/.venv # Prevent host from overwriting container's virtual environment
+      - ./backend/app:/app/app
 
     command: python -m app.dev
 
@@ -30,7 +29,6 @@ services:
       - backend
     # Add volumes for hot-reloading
     volumes:
-      - ./frontend:/app # Mount source code
-      - /app/node_modules # Prevent host from overwriting container's node_modules
+      - ./frontend/src:/app/src # Mount source code
 
     command: npm run dev
