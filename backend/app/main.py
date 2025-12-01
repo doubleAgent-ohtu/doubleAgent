@@ -257,7 +257,7 @@ def save_prompt(
 
 
 @app.post("/conversations", response_model=schemas.ConversationSchema)
-def save_conversation(
+async def save_conversation(
     data: schemas.SaveConversation,
     user_id: str = Depends(get_user_id),
     db: Session = Depends(get_db),
@@ -292,7 +292,7 @@ def save_conversation(
 
 
 @app.get("/conversations", response_model=list[schemas.ConversationSchema])
-def get_conversations(
+async def get_conversations(
     user_id: str = Depends(get_user_id), db: Session = Depends(get_db)
 ):
     """Get all conversations for the current user"""
@@ -306,7 +306,7 @@ def get_conversations(
 
 
 @app.get("/conversations/{conversation_id}", response_model=schemas.ConversationSchema)
-def get_conversation(
+async def get_conversation(
     conversation_id: int,
     user_id: str = Depends(get_user_id),
     db: Session = Depends(get_db),
@@ -328,7 +328,7 @@ def get_conversation(
 
 
 @app.delete("/conversations/{conversation_id}")
-def delete_conversation(
+async def delete_conversation(
     conversation_id: int,
     user_id: str = Depends(get_user_id),
     db: Session = Depends(get_db),

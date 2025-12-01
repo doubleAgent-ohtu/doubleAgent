@@ -1,5 +1,5 @@
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
-from sqlalchemy import String, DateTime, Text, ForeignKey
+from sqlalchemy import String, DateTime, Text, ForeignKey, CheckConstraint
 from datetime import datetime
 from sqlalchemy.sql import func
 
@@ -29,6 +29,11 @@ class Conversation(Base):
     """Table for storing conversations"""
 
     __tablename__ = "conversation"
+    __table_args__ = (
+        CheckConstraint(
+            "turns >= 1 AND turns <= 10", name="conversation_turns_range_check"
+        ),
+    )
 
     id: Mapped[int] = mapped_column(primary_key=True)
     user: Mapped[str] = mapped_column(String(), nullable=False, index=True)
@@ -37,7 +42,7 @@ class Conversation(Base):
     model: Mapped[str] = mapped_column(String(50), nullable=True)
     system_prompt_a: Mapped[str] = mapped_column(Text(), nullable=True)
     system_prompt_b: Mapped[str] = mapped_column(Text(), nullable=True)
-    turns: Mapped[int] = mapped_column(nullable=False, default=3)
+    turns: Mapped[int] = mapped_column(nullable=False, server_default="3", default=3)
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), server_default=func.now()
     )

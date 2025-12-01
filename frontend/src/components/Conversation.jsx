@@ -44,12 +44,12 @@ const Conversation = ({ promptA, promptB, onActivate, onClearPrompts }) => {
 
   const handleSaveConversation = async () => {
     if (!messages || messages.length === 0) {
-      alert('Ei viestiä tallennettavaksi');
+      alert('No messages to save');
       return;
     }
 
     if (isSaved) {
-      alert('Keskustelu on jo tallennettu');
+      alert('Conversation already saved');
       return;
     }
 
@@ -59,7 +59,7 @@ const Conversation = ({ promptA, promptB, onActivate, onClearPrompts }) => {
     const firstUserMsg = messages.find((m) => m.chatbot === 'user');
     const title = firstUserMsg
       ? firstUserMsg.message.substring(0, 50) + (firstUserMsg.message.length > 50 ? '...' : '')
-      : 'Keskustelu';
+      : 'Conversation';
 
     const conversationData = {
       title,
@@ -85,14 +85,14 @@ const Conversation = ({ promptA, promptB, onActivate, onClearPrompts }) => {
 
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.detail || 'Tallennus epäonnistui');
+        throw new Error(errorData.detail || 'Save failed');
       }
 
       setIsSaved(true);
-      console.log('✅ Keskustelu tallennettu');
+      console.log('✅ Conversation saved');
     } catch (err) {
-      console.error('Virhe tallennettaessa:', err);
-      alert(`Virhe tallennettaessa: ${err.message}`);
+      console.error('Error saving conversation:', err);
+      alert(`Error saving conversation: ${err.message}`);
     } finally {
       setIsSaving(false);
     }
@@ -291,12 +291,12 @@ const Conversation = ({ promptA, promptB, onActivate, onClearPrompts }) => {
                 {isSaving ? (
                   <>
                     <span className="loading loading-spinner loading-xs"></span>
-                    Tallennetaan...
+                    Saving...
                   </>
                 ) : isSaved ? (
-                  '✓ Tallennettu'
+                  '✓ Saved'
                 ) : (
-                  'Tallenna'
+                  'Save'
                 )}
               </button>
               <button
