@@ -28,7 +28,7 @@ class MessageSchema(BaseModel):
 class ConversationSchema(BaseModel):
     id: int
     user: str
-    title: str
+    conversation_starter: str
     thread_id: str
     model: str | None
     system_prompt_a: str | None
@@ -42,10 +42,10 @@ class ConversationSchema(BaseModel):
 
 
 class SaveConversation(BaseModel):
-    title: str = Field(max_length=255, min_length=1)
+    conversation_starter: str = Field(max_length=15000, min_length=1)
     thread_id: str = Field(max_length=100)
     model: str | None = Field(max_length=50, default=None)
     system_prompt_a: str | None = None
     system_prompt_b: str | None = None
-    turns: int = Field(ge=1, le=10, default=3)
+    turns: int = Field(ge=1, le=20, default=3)
     messages: list[dict] = Field(min_length=1)

@@ -31,13 +31,13 @@ class Conversation(Base):
     __tablename__ = "conversation"
     __table_args__ = (
         CheckConstraint(
-            "turns >= 1 AND turns <= 10", name="conversation_turns_range_check"
+            "turns >= 1 AND turns <= 20", name="conversation_turns_range_check"
         ),
     )
 
     id: Mapped[int] = mapped_column(primary_key=True)
     user: Mapped[str] = mapped_column(String(), nullable=False, index=True)
-    title: Mapped[str] = mapped_column(String(255), nullable=False)
+    conversation_starter: Mapped[str] = mapped_column(String(15000), nullable=False)
     thread_id: Mapped[str] = mapped_column(String(100), nullable=False)
     model: Mapped[str] = mapped_column(String(50), nullable=True)
     system_prompt_a: Mapped[str] = mapped_column(Text(), nullable=True)
@@ -52,7 +52,7 @@ class Conversation(Base):
     )
 
     def __repr__(self):
-        return f"id: {self.id}, user: {self.user}, title: {self.title}"
+        return f"id: {self.id}, user: {self.user}, conversation_starter: {self.conversation_starter}"
 
 
 class Message(Base):

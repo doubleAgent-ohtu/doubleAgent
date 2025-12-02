@@ -55,14 +55,14 @@ const Conversation = ({ promptA, promptB, onActivate, onClearPrompts }) => {
 
     setIsSaving(true);
 
-    // Generate title from first user message
+    // Generate conversation_starter from first user message
     const firstUserMsg = messages.find((m) => m.chatbot === 'user');
-    const title = firstUserMsg
+    const conversation_starter = firstUserMsg
       ? firstUserMsg.message.substring(0, 50) + (firstUserMsg.message.length > 50 ? '...' : '')
       : 'Conversation';
 
     const conversationData = {
-      title,
+      conversation_starter,
       thread_id: threadId,
       model: selectedModel,
       system_prompt_a: promptA || null,

@@ -265,7 +265,7 @@ async def save_conversation(
     """Save a conversation with all its messages"""
     conversation = models.Conversation(
         user=user_id,
-        title=data.title,
+        conversation_starter=data.conversation_starter,
         thread_id=data.thread_id,
         model=data.model,
         system_prompt_a=data.system_prompt_a,

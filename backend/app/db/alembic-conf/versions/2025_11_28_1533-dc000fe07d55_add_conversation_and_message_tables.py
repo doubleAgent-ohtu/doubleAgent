@@ -25,14 +25,14 @@ def upgrade() -> None:
         "conversation",
         sa.Column("id", sa.Integer(), nullable=False),
         sa.Column("user", sa.String(), nullable=False),
-        sa.Column("title", sa.String(length=255), nullable=False),
+        sa.Column("conversation_starter", sa.String(length=15000), nullable=False),
         sa.Column("thread_id", sa.String(length=100), nullable=False),
         sa.Column("model", sa.String(length=50), nullable=True),
         sa.Column("system_prompt_a", sa.Text(), nullable=True),
         sa.Column("system_prompt_b", sa.Text(), nullable=True),
         sa.Column("turns", sa.Integer(), nullable=False, server_default="3"),
         sa.CheckConstraint(
-            "turns >= 1 AND turns <= 10", name="conversation_turns_range_check"
+            "turns >= 1 AND turns <= 20", name="conversation_turns_range_check"
         ),
         sa.Column(
             "created_at",
