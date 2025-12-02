@@ -42,9 +42,21 @@ const DownloadChatButton = ({ threadId = 'default', label = 'Lataa .txt' }) => {
       title="Lataa keskustelu tekstitiedostona"
       aria-label={`Lataa keskustelu ${threadId}`}
     >
-      {/* Lataus-ikoni (Heroicons) */}
-      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-4 h-4">
-        <path strokeLinecap="round" strokeLinejoin="round" d="M3 16.5v2.25A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75V16.5M12 12.75l-3-3m0 0-3 3m3-3v7.5M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
+      {/* Lataus-ikoni (korjattu, pystysuora ja keskittynyt) */}
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        fill="none"
+        viewBox="0 0 24 24"
+        strokeWidth={1.5}
+        stroke="currentColor"
+        className="w-4 h-4 self-center rotate-0"
+        aria-hidden="true"
+      >
+        <path
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          d="M12 3v11.25M12 14.25l4.5-4.5M12 14.25l-4.5-4.5M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+        />
       </svg>
       {label}
     </button>

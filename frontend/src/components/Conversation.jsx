@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import ModelSelection from './ModelSelection.jsx';
+import DownloadChatButton from './DownloadChatButton.jsx';
 
 const Conversation = ({ promptA, promptB, onActivate, onClearPrompts, threadId: propThreadId, setThreadId: propSetThreadId }) => {
   const [input, setInput] = useState('');
@@ -228,13 +229,17 @@ const Conversation = ({ promptA, promptB, onActivate, onClearPrompts, threadId: 
             )}
           </button>
           {messages && !isLoading && (
-            <button
-              type="button"
-              className="btn btn-outline btn-secondary"
-              onClick={handleClearConversation}
-            >
-              Clear
-            </button>
+            <>
+              <button
+                type="button"
+                className="btn btn-outline btn-secondary"
+                onClick={handleClearConversation}
+              >
+                Clear
+              </button>
+
+              <DownloadChatButton threadId={threadId} label="Download conversation" />
+            </>
           )}
         </form>
       </div>

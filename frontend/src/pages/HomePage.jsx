@@ -4,7 +4,6 @@ import Menu from '../components/Menu';
 import PromptEditorModal from '../components/PromptEditorModal';
 import Tietosuojaseloste from '../components/Tietosuojaseloste.jsx';
 import Conversation from '../components/Conversation.jsx';
-import DownloadChatButton from '../components/DownloadChatButton';
 
 const HomePage = () => {
   const [promptA, setPromptA] = useState('');
@@ -88,7 +87,7 @@ const HomePage = () => {
               Tietosuojaseloste
             </button>
 
-            <DownloadChatButton threadId={threadId} label="Lataa keskustelu" />
+            
           </div>
         </footer>
       </div>
