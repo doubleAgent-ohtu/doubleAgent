@@ -12,7 +12,7 @@ const DownloadChatButton = ({ threadId = 'default', label = 'Lataa .txt' }) => {
       });
 
       if (!response.ok) {
-        throw new Error('Lataus epäonnistui');
+        throw new Error('Download failed');
       }
 
       const blob = await response.blob();
@@ -21,7 +21,7 @@ const DownloadChatButton = ({ threadId = 'default', label = 'Lataa .txt' }) => {
       const a = document.createElement('a');
       a.href = url;
       
-      a.download = `keskustelu_${threadId}.txt`;
+      a.download = `conversation_${threadId}.txt`;
       
       document.body.appendChild(a);
       a.click();
@@ -30,8 +30,8 @@ const DownloadChatButton = ({ threadId = 'default', label = 'Lataa .txt' }) => {
       document.body.removeChild(a);
       
     } catch (error) {
-      console.error('Virhe ladattaessa keskustelua:', error);
-      alert('Keskustelun lataaminen epäonnistui. Varmista että olet kirjautunut sisään.');
+      console.error('Error downloading conversation:', error);
+      alert('Failed to download conversation. Make sure you are logged in.');
     }
   };
 
@@ -39,10 +39,10 @@ const DownloadChatButton = ({ threadId = 'default', label = 'Lataa .txt' }) => {
     <button
       onClick={handleDownload}
       className="btn btn-primary btn-sm gap-2"
-      title="Lataa keskustelu tekstitiedostona"
-      aria-label={`Lataa keskustelu ${threadId}`}
+      title="Download conversation as text"
+      aria-label={`Download conversation ${threadId}`}
     >
-      {/* Lataus-ikoni (korjattu, pystysuora ja keskittynyt) */}
+    
       <svg
         xmlns="http://www.w3.org/2000/svg"
         fill="none"
