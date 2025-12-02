@@ -16,7 +16,6 @@ const HomePage = () => {
   const privacyModalRef = useRef(null);
   const userGuideModalRef = useRef(null);
 
-  const [isConvoActive, setIsConvoActive] = useState(false);
   const [userGuideLanguage, setUserGuideLanguage] = useState('FIN');
   const [privacyLanguage, setPrivacyLanguage] = useState('FIN');
 
@@ -120,7 +119,6 @@ const HomePage = () => {
         />
       )}
 
-      <dialog id="privacy_modal" className="modal">
       {/* User Guide Modal */}
       <dialog ref={userGuideModalRef} id="userguide_modal" className="modal">
         <div className="modal-box w-11/12 max-w-4xl">
