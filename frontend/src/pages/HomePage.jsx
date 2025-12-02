@@ -3,6 +3,7 @@ import BotConfigurator from '../components/BotConfigurator';
 import Menu from '../components/Menu';
 import PromptEditorModal from '../components/PromptEditorModal';
 import Tietosuojaseloste from '../components/Tietosuojaseloste.jsx';
+import Kayttoohje from '../components/Kayttoohje.jsx';
 import Conversation from '../components/Conversation.jsx';
 
 const HomePage = () => {
@@ -12,6 +13,12 @@ const HomePage = () => {
   const promptEditorRef = useRef(null);
   const [isConvoActive, setIsConvoActive] = useState(false);
   const [threadId, setThreadId] = useState(() => crypto.randomUUID());
+  const privacyModalRef = useRef(null);
+  const userGuideModalRef = useRef(null);
+
+  const [isConvoActive, setIsConvoActive] = useState(false);
+  const [userGuideLanguage, setUserGuideLanguage] = useState('FIN');
+  const [privacyLanguage, setPrivacyLanguage] = useState('FIN');
 
   const openPromptEditor = (prompt, setPrompt) => {
     // This will trigger the useEffect.
@@ -23,6 +30,15 @@ const HomePage = () => {
       promptEditorRef.current.close();
     }
     setPromptToEdit(null);
+  };
+
+  const handleClearPrompts = () => {
+    setPromptA('');
+    setPromptB('');
+  };
+
+  const openUserGuide = () => {
+    userGuideModalRef.current.showModal();
   };
 
   useEffect(() => {
@@ -92,7 +108,7 @@ const HomePage = () => {
 
       <div className="drawer-side">
         <label htmlFor="my-drawer-4" aria-label="close sidebar" className="drawer-overlay"></label>
-        <Menu />
+        <Menu onOpenUserGuide={openUserGuide} />
       </div>
 
       {promptToEdit && (
@@ -105,11 +121,28 @@ const HomePage = () => {
       )}
 
       <dialog id="privacy_modal" className="modal">
+      {/* User Guide Modal */}
+      <dialog ref={userGuideModalRef} id="userguide_modal" className="modal">
         <div className="modal-box w-11/12 max-w-4xl">
-          <Tietosuojaseloste />
+          <Kayttoohje onLanguageChange={setUserGuideLanguage} />
           <div className="modal-action">
             <form method="dialog">
-              <button className="btn">Sulje</button>
+              <button className="btn">{userGuideLanguage === 'FIN' ? 'Sulje' : 'Close'}</button>
+            </form>
+          </div>
+        </div>
+        <form method="dialog" className="modal-backdrop">
+          <button>close</button>
+        </form>
+      </dialog>
+
+      {/* Tietosuojaseloste Modal */}
+      <dialog ref={privacyModalRef} id="privacy_modal" className="modal">
+        <div className="modal-box w-11/12 max-w-4xl">
+          <Tietosuojaseloste onLanguageChange={setPrivacyLanguage} />
+          <div className="modal-action">
+            <form method="dialog">
+              <button className="btn">{privacyLanguage === 'FIN' ? 'Sulje' : 'Close'}</button>
             </form>
           </div>
         </div>

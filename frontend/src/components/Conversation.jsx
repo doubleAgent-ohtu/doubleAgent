@@ -23,6 +23,8 @@ const Conversation = ({
 
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [isSaving, setIsSaving] = useState(false);
+  const [isSaved, setIsSaved] = useState(false);
 
   const abortControllerRef = useRef(null);
 
@@ -49,8 +51,66 @@ const Conversation = ({
     const newId = crypto.randomUUID();
     setThreadId(newId);
     if (propSetThreadId) propSetThreadId(newId);
+    setIsSaved(false);
+    setThreadId(crypto.randomUUID());
     if (onClearPrompts) onClearPrompts();
     console.log('--- 🗑️ Conversation cleared ---');
+  };
+
+  const handleSaveConversation = async () => {
+    if (!messages || messages.length === 0) {
+      alert('No messages to save');
+      return;
+    }
+
+    if (isSaved) {
+      alert('Conversation already saved');
+      return;
+    }
+
+    setIsSaving(true);
+
+    // Generate conversation_starter from first user message
+    const firstUserMsg = messages.find((m) => m.chatbot === 'user');
+    const conversation_starter = firstUserMsg
+      ? firstUserMsg.message.substring(0, 50) + (firstUserMsg.message.length > 50 ? '...' : '')
+      : 'Conversation';
+
+    const conversationData = {
+      conversation_starter,
+      thread_id: threadId,
+      model: selectedModel,
+      system_prompt_a: promptA || null,
+      system_prompt_b: promptB || null,
+      turns,
+      messages: messages.map((msg) => ({
+        chatbot: msg.chatbot,
+        message: msg.message,
+      })),
+    };
+
+    try {
+      const response = await fetch('/api/conversations', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(conversationData),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.detail || 'Save failed');
+      }
+
+      setIsSaved(true);
+      console.log('✅ Conversation saved');
+    } catch (err) {
+      console.error('Error saving conversation:', err);
+      alert(`Error saving conversation: ${err.message}`);
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   const handleSubmit = async (e) => {
@@ -216,7 +276,7 @@ const Conversation = ({
               onChange={(e) => setTurns(Number(e.target.value))}
               className="input input-bordered w-20 focus:outline-0"
               min="1"
-              max="10"
+              max="20"
               disabled={isLoading}
             />
           </label>
@@ -237,6 +297,23 @@ const Conversation = ({
           </button>
           {messages && !isLoading && (
             <>
+              <button
+                type="button"
+                className={`btn ${isSaved ? 'btn-success' : 'btn-info'}`}
+                onClick={handleSaveConversation}
+                disabled={isSaving || isSaved}
+              >
+                {isSaving ? (
+                  <>
+                    <span className="loading loading-spinner loading-xs"></span>
+                    Saving...
+                  </>
+                ) : isSaved ? (
+                  '✓ Saved'
+                ) : (
+                  'Save'
+                )}
+              </button>
               <button
                 type="button"
                 className="btn btn-outline btn-secondary"

@@ -3,12 +3,12 @@ import axios from 'axios';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 
-const Tietosuojaseloste = ({ onLanguageChange }) => {
+const Kayttoohje = ({ onLanguageChange }) => {
   const [markdown, setMarkdown] = useState('');
   const [language, setLanguage] = useState('FIN');
 
   useEffect(() => {
-    const fileName = language === 'ENG' ? 'tietosuojaselosteENG.md' : 'tietosuojaselosteFIN.md';
+    const fileName = language === 'ENG' ? 'user-guideENG.md' : 'user-guideFIN.md';
 
     axios
       .get(`/${fileName}`)
@@ -17,7 +17,7 @@ const Tietosuojaseloste = ({ onLanguageChange }) => {
       })
       .catch((error) => {
         console.error('Error fetching the file:', error);
-        setMarkdown('# Error loading the privacy policy\n\nSee console for details.');
+        setMarkdown('# Error loading the user guide\n\nSee console for details.');
       });
 
     if (onLanguageChange) {
@@ -48,4 +48,4 @@ const Tietosuojaseloste = ({ onLanguageChange }) => {
   );
 };
 
-export default Tietosuojaseloste;
+export default Kayttoohje;
