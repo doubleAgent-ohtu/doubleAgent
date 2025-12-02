@@ -206,8 +206,8 @@ async def start_conversation(
     request: Request,
     current_user: dict = Depends(get_current_user),
 ):
-    if conv.turns < 1 or conv.turns > 10:
-        raise HTTPException(status_code=400, detail="Turns must be between 1 and 10")
+    if conv.turns < 1 or conv.turns > 20:
+        raise HTTPException(status_code=400, detail="Turns must be between 1 and 20")
     return StreamingResponse(
         conversation_generator(conv, request), media_type="text/event-stream"
     )
