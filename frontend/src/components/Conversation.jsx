@@ -2,7 +2,14 @@ import { useState, useEffect, useRef } from 'react';
 import ModelSelection from './ModelSelection.jsx';
 import DownloadChatButton from './DownloadChatButton.jsx';
 
-const Conversation = ({ promptA, promptB, onActivate, onClearPrompts, threadId: propThreadId, setThreadId: propSetThreadId }) => {
+const Conversation = ({
+  promptA,
+  promptB,
+  onActivate,
+  onClearPrompts,
+  threadId: propThreadId,
+  setThreadId: propSetThreadId,
+}) => {
   const [input, setInput] = useState('');
   const [messages, setMessages] = useState(null);
   const messagesRef = useRef(null);

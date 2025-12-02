@@ -86,8 +86,6 @@ const HomePage = () => {
             >
               Tietosuojaseloste
             </button>
-
-            
           </div>
         </footer>
       </div>

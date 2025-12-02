@@ -265,7 +265,6 @@ def download_chat(thread_id: str, current_user: dict = Depends(get_current_user)
     history_text_A = chatbot_a.get_conversation_history(thread_id)
     print(history_text_A)
 
-   
     headers = {
         "Content-Disposition": f"attachment; filename=conversation_{thread_id}.txt"
     }

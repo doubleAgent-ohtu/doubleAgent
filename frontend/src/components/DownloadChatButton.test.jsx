@@ -72,5 +72,7 @@ test('3. Failed download shows alert', async () => {
   await user.click(button);
 
   expect(global.fetch).toHaveBeenCalled();
-  expect(alertSpy).toHaveBeenCalledWith('Failed to download conversation. Make sure you are logged in.');
+  expect(alertSpy).toHaveBeenCalledWith(
+    'Failed to download conversation. Make sure you are logged in.',
+  );
 });

@@ -1,14 +1,13 @@
 import React from 'react';
 
 const DownloadChatButton = ({ threadId = 'default', label = 'Download .txt' }) => {
-  
   const handleDownload = async () => {
     try {
-      const API_URL = 'http://localhost:8000'; 
-      
+      const API_URL = 'http://localhost:8000';
+
       const response = await fetch(`${API_URL}/download-chat/${threadId}`, {
         method: 'GET',
-        credentials: 'include', 
+        credentials: 'include',
       });
 
       if (!response.ok) {
@@ -16,19 +15,18 @@ const DownloadChatButton = ({ threadId = 'default', label = 'Download .txt' }) =
       }
 
       const blob = await response.blob();
-      
+
       const url = window.URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      
+
       a.download = `conversation_${threadId}.txt`;
-      
+
       document.body.appendChild(a);
       a.click();
-      
+
       window.URL.revokeObjectURL(url);
       document.body.removeChild(a);
-      
     } catch (error) {
       console.error('Error downloading conversation:', error);
       alert('Failed to download conversation. Make sure you are logged in.');
@@ -42,7 +40,6 @@ const DownloadChatButton = ({ threadId = 'default', label = 'Download .txt' }) =
       title="Download conversation as text"
       aria-label={`Download conversation ${threadId}`}
     >
-    
       <svg
         xmlns="http://www.w3.org/2000/svg"
         fill="none"
