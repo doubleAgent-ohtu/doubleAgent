@@ -1,6 +1,6 @@
 import React from 'react';
 
-const DownloadChatButton = ({ threadId = "default" }) => {
+const DownloadChatButton = ({ threadId = 'default', label = 'Lataa .txt' }) => {
   
   const handleDownload = async () => {
     try {
@@ -36,16 +36,17 @@ const DownloadChatButton = ({ threadId = "default" }) => {
   };
 
   return (
-    <button 
-      onClick={handleDownload} 
-      className="btn btn-outline btn-sm gap-2"
+    <button
+      onClick={handleDownload}
+      className="btn btn-primary btn-sm gap-2"
       title="Lataa keskustelu tekstitiedostona"
+      aria-label={`Lataa keskustelu ${threadId}`}
     >
       {/* Lataus-ikoni (Heroicons) */}
       <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-4 h-4">
         <path strokeLinecap="round" strokeLinejoin="round" d="M3 16.5v2.25A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75V16.5M12 12.75l-3-3m0 0-3 3m3-3v7.5M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
       </svg>
-      Lataa .txt
+      {label}
     </button>
   );
 };

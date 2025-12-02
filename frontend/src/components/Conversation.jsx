@@ -1,13 +1,17 @@
 import { useState, useEffect, useRef } from 'react';
 import ModelSelection from './ModelSelection.jsx';
 
-const Conversation = ({ promptA, promptB, onActivate, onClearPrompts }) => {
+const Conversation = ({ promptA, promptB, onActivate, onClearPrompts, threadId: propThreadId, setThreadId: propSetThreadId }) => {
   const [input, setInput] = useState('');
   const [messages, setMessages] = useState(null);
   const messagesRef = useRef(null);
   const [turns, setTurns] = useState(3);
   const [selectedModel, setSelectedModel] = useState('gpt-4o');
-  const [threadId, setThreadId] = useState(() => crypto.randomUUID());
+  const [threadId, setThreadId] = useState(() => propThreadId ?? crypto.randomUUID());
+
+  useEffect(() => {
+    if (propThreadId) setThreadId(propThreadId);
+  }, [propThreadId]);
 
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -34,7 +38,9 @@ const Conversation = ({ promptA, promptB, onActivate, onClearPrompts }) => {
   const handleClearConversation = () => {
     setMessages(null);
     setError(null);
-    setThreadId(crypto.randomUUID());
+    const newId = crypto.randomUUID();
+    setThreadId(newId);
+    if (propSetThreadId) propSetThreadId(newId);
     if (onClearPrompts) onClearPrompts();
     console.log('--- 🗑️ Conversation cleared ---');
   };
