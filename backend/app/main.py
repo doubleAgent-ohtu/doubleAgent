@@ -254,3 +254,99 @@ def save_prompt(
     db.refresh(prompt)
 
     return prompt
+
+
+@app.post("/conversations", response_model=schemas.ConversationSchema)
+async def save_conversation(
+    data: schemas.SaveConversation,
+    user_id: str = Depends(get_user_id),
+    db: Session = Depends(get_db),
+):
+    """Save a conversation with all its messages"""
+    conversation = models.Conversation(
+        user=user_id,
+        conversation_starter=data.conversation_starter,
+        thread_id=data.thread_id,
+        model=data.model,
+        system_prompt_a=data.system_prompt_a,
+        system_prompt_b=data.system_prompt_b,
+        turns=data.turns,
+    )
+    db.add(conversation)
+    db.flush()
+
+    # Add messages
+    for idx, msg in enumerate(data.messages):
+        message = models.Message(
+            conversation_id=conversation.id,
+            chatbot=msg.get("chatbot", "unknown"),
+            message=msg.get("message", ""),
+            order=idx,
+        )
+        db.add(message)
+
+    db.commit()
+    db.refresh(conversation)
+
+    return conversation
+
+
+@app.get("/conversations", response_model=list[schemas.ConversationSchema])
+async def get_conversations(
+    user_id: str = Depends(get_user_id), db: Session = Depends(get_db)
+):
+    """Get all conversations for the current user"""
+    conversations = (
+        db.query(models.Conversation)
+        .filter(models.Conversation.user == user_id)
+        .order_by(models.Conversation.created_at.desc())
+        .all()
+    )
+    return conversations
+
+
+@app.get("/conversations/{conversation_id}", response_model=schemas.ConversationSchema)
+async def get_conversation(
+    conversation_id: int,
+    user_id: str = Depends(get_user_id),
+    db: Session = Depends(get_db),
+):
+    """Get a specific conversation with all messages"""
+    conversation = (
+        db.query(models.Conversation)
+        .filter(
+            models.Conversation.id == conversation_id,
+            models.Conversation.user == user_id,
+        )
+        .first()
+    )
+
+    if not conversation:
+        raise HTTPException(status_code=404, detail="Conversation not found")
+
+    return conversation
+
+
+@app.delete("/conversations/{conversation_id}")
+async def delete_conversation(
+    conversation_id: int,
+    user_id: str = Depends(get_user_id),
+    db: Session = Depends(get_db),
+):
+    """Delete a conversation"""
+    conversation = (
+        db.query(models.Conversation)
+        .filter(
+            models.Conversation.id == conversation_id,
+            models.Conversation.user == user_id,
+        )
+        .first()
+    )
+
+    if not conversation:
+        raise HTTPException(status_code=404, detail="Conversation not found")
+
+    db.delete(conversation)
+    db.commit()
+
+    return {"message": "Conversation deleted successfully"}
