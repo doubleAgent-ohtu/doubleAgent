@@ -1,6 +1,6 @@
 import React from 'react';
 
-const DownloadChatButton = ({ threadId = 'default', label = 'Lataa .txt' }) => {
+const DownloadChatButton = ({ threadId = 'default', label = 'Download .txt' }) => {
   
   const handleDownload = async () => {
     try {
