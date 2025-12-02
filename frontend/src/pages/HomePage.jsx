@@ -7,7 +7,6 @@ import Conversation from '../components/Conversation.jsx';
 import HamburgerMenu from '../components/HamburgerMenu';
 import DownloadChatButton from '../components/DownloadChatButton';
 
-// MÄÄRITETÄÄN KIINTEÄ ID TÄHÄN
 const CONSTANT_THREAD_ID = "current_chat"; 
 
 const HomePage = () => {
