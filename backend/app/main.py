@@ -10,7 +10,8 @@ from app.routers.oidc_router import oidc_router
 from app.db.database import DBSession
 from sqlalchemy.orm import Session
 from app import schemas
-from app.db import models
+from app.db.models import Prompt
+from sqlalchemy import select, desc
 import asyncio
 from fastapi.responses import StreamingResponse
 import json
@@ -241,16 +242,113 @@ def get_db():
         db.close()
 
 
+@app.get("/get_prompts", response_model=list[schemas.Prompt])
+async def get_prompts(
+    user: str = Depends(get_user_id),
+    db: Session = Depends(get_db),
+    query: str = "",
+    offset: int = 0,
+    limit: int = 50,
+):
+    prompts = db.scalars(
+        select(Prompt)
+        .where(
+            Prompt.user == user,
+            Prompt.agent_name.icontains(query)
+        )
+        .order_by(desc(Prompt.created_at))
+        .limit(limit)
+        .offset(offset)
+    ).all()
+
+    return prompts
+
+
 @app.post("/save_prompt", response_model=schemas.Prompt)
-def save_prompt(
+async def save_prompt(
     data: schemas.SavePrompt,
-    user: dict = Depends(get_user_id),
+    user: str = Depends(get_user_id),
     db: Session = Depends(get_db),
 ):
+    agent_name_exists = db.execute(
+        select(Prompt).where(
+            Prompt.user == user,
+            Prompt.agent_name == data.agent_name
+        )
+    ).first()
 
-    prompt = models.Prompt(**data.model_dump(), user=user)
+    if agent_name_exists:
+        raise ValueError(
+            f"Another prompt is already saved as '{data.agent_name}'."
+        )
+
+    prompt = Prompt(**data.model_dump(), user=user)
     db.add(prompt)
     db.commit()
     db.refresh(prompt)
 
     return prompt
+
+
+@app.put("/update_prompt/{prompt_id}", response_model=schemas.Prompt)
+async def update_prompt(
+    prompt_id: int,
+    data: schemas.SavePrompt,
+    user: str = Depends(get_user_id),
+    db: Session = Depends(get_db),
+):
+    agent_name_exists = db.execute(
+        select(Prompt).where(
+            Prompt.user == user,
+            Prompt.agent_name == data.agent_name,
+            Prompt.id != prompt_id
+        )
+    ).first()
+
+    if agent_name_exists:
+        raise ValueError(
+            f"Another prompt is already saved as '{data.agent_name}'."
+        )
+
+    prompt = db.execute(
+        select(Prompt)
+        .where(
+            Prompt.user == user,
+            Prompt.id == prompt_id
+        )
+    ).first()
+
+    if not prompt:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="Prompt not found"
+        )
+
+    prompt.update(**data.model_dump())
+    db.commit()
+
+    return prompt
+
+
+@app.put("/delete_prompt/{prompt_id}")
+async def delete_prompt(
+    prompt_id: int,
+    user: str = Depends(get_user_id),
+    db: Session = Depends(get_db),
+):
+    prompt = db.execute(
+        select(Prompt)
+        .where(
+            Prompt.user == user,
+            Prompt.id == prompt_id
+        )
+    ).first()
+
+    if not prompt:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="Prompt not found"
+        )
+
+    db.delete(prompt)
+    db.commit()
+
+    return {"message": "Prompt deleted successfully"}
