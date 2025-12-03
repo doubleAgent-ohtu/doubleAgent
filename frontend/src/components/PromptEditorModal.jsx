@@ -1,27 +1,30 @@
 import axios from 'axios';
 import { useState, useEffect } from 'react';
 
-const PromptEditorModal = ({ modalRef, currentPrompt, onSetPrompt, onClose }) => {
-  const [text, setText] = useState(currentPrompt);
-  const [agentName, setAgentName] = useState('');
+const PromptEditorModal = ({ modalRef, promptToEdit, onSetPrompt, setSavedPrompts, chatbot, onClose }) => {
+  const [text, setText] = useState(promptToEdit.prompt);
+  const [agentName, setAgentName] = useState(promptToEdit.agent_name);
+  const [messages, setMessages] = useState([]);
 
   useEffect(() => {
-    setText(currentPrompt);
+    setText(currentPrompt.prompt);
   }, [currentPrompt]);
 
-  const handleSet = () => {
-    onSetPrompt(text);
-    onClose();
-  };
-
-  const handleSaveToDB = async (e) => {
+  const handleSave = async (e) => {
     e.preventDefault();
     try {
-      await axios.post('/api/save_prompt', {
-        agent_name: agentName || 'Unnamed Agent',
-        prompt: text,
-      });
-      handleSet();
+      const data = {agent_name: agentName, prompt: text};
+      let prompt = null;
+
+      // A new prompt is created if id is null
+      if (promptToEdit.id) {
+        prompt = await axios.put(`/api/update_prompt/${promptToEdit.id}`, data).data;
+      } else {
+        prompt = await axios.post('api/save_prompt', data).data;
+      }
+      onSetPrompt(prompt);
+      setSavedPrompts((prev) => new Map(prev.set(prompt.id, prompt)));
+      onClose();
     } catch (err) {
       console.log(err);
     }
@@ -30,7 +33,22 @@ const PromptEditorModal = ({ modalRef, currentPrompt, onSetPrompt, onClose }) =>
   return (
     <dialog ref={modalRef} className="modal">
       <div className="modal-box flex flex-col gap-4">
-        <h3 className="font-bold text-lg">Set Prompt</h3>
+        <h3 className="font-bold text-lg">Set Prompt {chatbot}</h3>
+
+        <div>
+          <label htmlFor="savePromptAgentName" className="label">
+            <span className="label-text">Agent Name</span>
+          </label>
+          <input
+            value={agentName}
+            onChange={(e) => setAgentName(e.target.value)}
+            maxLength={50}
+            id="savePromptAgentName"
+            className="input input-bordered w-full"
+            placeholder="My Custom Agent..."
+          />
+        </div>
+
         <div>
           <label htmlFor="promptText" className="label">
             <span className="label-text">System Prompt</span>
@@ -45,32 +63,13 @@ const PromptEditorModal = ({ modalRef, currentPrompt, onSetPrompt, onClose }) =>
           />
         </div>
 
-        <div className="divider">Save Prompt (Optional)</div>
-
-        <div>
-          <label htmlFor="savePromptAgentName" className="label">
-            <span className="label-text">Agent Name (to save)</span>
-          </label>
-          <input
-            value={agentName}
-            onChange={(e) => setAgentName(e.target.value)}
-            maxLength={50}
-            id="savePromptAgentName"
-            className="input input-bordered w-full"
-            placeholder="My Custom Agent..."
-          />
-        </div>
-
         <div className="modal-action justify-between">
           <button type="button" onClick={onClose} className="btn btn-ghost">
             Cancel
           </button>
           <div className="flex gap-2">
-            <button type="button" onClick={handleSet} className="btn">
-              Set
-            </button>
-            <button type="button" onClick={handleSaveToDB} className="btn btn-primary">
-              Set & Save
+            <button type="button" onClick={handleSave} className="btn btn-primary">
+              Save
             </button>
           </div>
         </div>
@@ -79,7 +78,7 @@ const PromptEditorModal = ({ modalRef, currentPrompt, onSetPrompt, onClose }) =>
       {/* Click backdrop to close */}
       <form method="dialog" className="modal-backdrop">
         <button type="button" onClick={onClose}>
-          close
+          Close
         </button>
       </form>
     </dialog>

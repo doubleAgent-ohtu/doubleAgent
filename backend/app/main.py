@@ -246,19 +246,9 @@ def get_db():
 async def get_prompts(
     user: str = Depends(get_user_id),
     db: Session = Depends(get_db),
-    query: str = "",
-    offset: int = 0,
-    limit: int = 50,
 ):
     prompts = db.scalars(
-        select(Prompt)
-        .where(
-            Prompt.user == user,
-            Prompt.agent_name.icontains(query)
-        )
-        .order_by(desc(Prompt.created_at))
-        .limit(limit)
-        .offset(offset)
+        select(Prompt).where(Prompt.user == user)
     ).all()
 
     return prompts

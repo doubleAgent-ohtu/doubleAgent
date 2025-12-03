@@ -6,13 +6,28 @@ import Tietosuojaseloste from '../components/Tietosuojaseloste.jsx';
 import Kayttoohje from '../components/Kayttoohje.jsx';
 import Conversation from '../components/Conversation.jsx';
 import HamburgerMenu from '../components/HamburgerMenu';
+import ChangePromptModal from '../components/ChangePromptModal.jsx';
 
 const HomePage = () => {
-  const [promptA, setPromptA] = useState('');
-  const [promptB, setPromptB] = useState('');
-  const [promptToEdit, setPromptToEdit] = useState(null);
+  const [savedPrompts, setSavedPrompts] = useState(new Map());
+  const init_prompt = {
+    id: null, 
+    user: null,
+    agent_name:'',
+    prompt: '',
+    created_at: null
+  };
+  const [promptA, setPromptA] = useState(init_prompt);
+  const [promptB, setPromptB] = useState(init_prompt);
+
+  const [promptToEdit, setPromptToEdit] = useState(null); 
+  const [promptToChange, setPromptToChange] = useState(null); 
 
   const promptEditorRef = useRef(null);
+  const changePromptModalRef = useRef(null);
+
+
+
   const privacyModalRef = useRef(null);
   const userGuideModalRef = useRef(null);
 
@@ -20,9 +35,33 @@ const HomePage = () => {
   const [userGuideLanguage, setUserGuideLanguage] = useState('FIN');
   const [privacyLanguage, setPrivacyLanguage] = useState('FIN');
 
-  const openPromptEditor = (prompt, setPrompt) => {
-    setPromptToEdit({ currentPrompt: prompt, onSetPrompt: setPrompt });
+  const loadSavedPrompts = async () => {
+    try {
+      const { data } = await axios.get('api/get_prompts');
+      setSavedPrompts(
+        data.reduce((promptMap, prompt) => promptMap.set(prompt.id, prompt), new Map()),
+      );
+    } catch (err) {
+      console.log(err);
+    }
   };
+
+  const openPromptEditor = (prompt, setPrompt, chatbot) => {
+    setPromptToEdit({
+      promptToEdit: prompt,
+      onSetPrompt: setPrompt,
+      chatbot: chatbot
+    });
+  };
+
+  const openChangePromptModal = (setPrompt, chatbot) => {
+    setPromptToChange({
+      onSetPrompt: setPrompt,
+      chatbot: chatbot
+    });
+  };
+
+
 
   const closePromptEditor = () => {
     if (promptEditorRef.current) {
@@ -31,9 +70,17 @@ const HomePage = () => {
     setPromptToEdit(null);
   };
 
+  const closeChangePromptModal = () => {
+    if (changePromptModalRef.current) {
+      changePromptModalRef.current.close();
+    }
+    setPromptToChange(null);
+  };
+
+
   const handleClearPrompts = () => {
-    setPromptA('');
-    setPromptB('');
+    setPromptA(init_prompt);
+    setPromptB(init_prompt);
   };
 
   const openUserGuide = () => {
@@ -41,10 +88,24 @@ const HomePage = () => {
   };
 
   useEffect(() => {
+    loadSavedPrompts();
+  }, []);
+
+
+
+  useEffect(() => {
     if (promptToEdit && promptEditorRef.current) {
       promptEditorRef.current.showModal();
     }
   }, [promptToEdit]);
+
+  useEffect(() => {
+    if (promptToChange && changePromptModalRef.current) {
+      changePromptModalRef.current.showModal();
+    }
+  }, [promptToChange]);
+
+
 
   return (
     <div className="drawer lg:drawer-open">
@@ -66,15 +127,17 @@ const HomePage = () => {
           >
             <BotConfigurator
               title="Chatbot A"
-              prompt={promptA}
-              onSetPrompt={() => openPromptEditor(promptA, setPromptA)}
+              prompt={promptA.prompt}
+              agentName={promptA.agent_name}
+              onEditPrompt={() => openPromptEditor(promptA, setPromptA, 'A')}
+              onChangePrompt={() => openChangePromptModal(setPromptA, 'A')}
               onActivate={() => setIsConvoActive(false)}
             />
 
             <div className="order-3 lg:order-2">
               <Conversation
-                promptA={promptA}
-                promptB={promptB}
+                promptA={promptA.prompt}
+                promptB={promptB.prompt}
                 onActivate={() => setIsConvoActive(true)}
                 onClearPrompts={handleClearPrompts}
               />
@@ -83,8 +146,10 @@ const HomePage = () => {
             <div className="order-2 lg:order-3">
               <BotConfigurator
                 title="Chatbot B"
-                prompt={promptB}
-                onSetPrompt={() => openPromptEditor(promptB, setPromptB)}
+                prompt={promptB.prompt}
+                agentName={promptB.agent_name}
+                onEditPrompt={() => openPromptEditor(promptB, setPromptB, 'B')}
+                onChangePrompt={() => openChangePromptModal(setPromptB, 'B')}
                 onActivate={() => setIsConvoActive(false)}
               />
             </div>
@@ -109,9 +174,22 @@ const HomePage = () => {
       {promptToEdit && (
         <PromptEditorModal
           modalRef={promptEditorRef}
-          currentPrompt={promptToEdit.currentPrompt}
+          promptToEdit={promptToEdit.promptToEdit}
           onSetPrompt={promptToEdit.onSetPrompt}
+          setSavedPrompts={setSavedPrompts}
+          chatbot={promptToEdit.chatbot}
           onClose={closePromptEditor}
+        />
+      )}
+
+      {promptToChange && (
+        <ChangePromptModal 
+          modalRef={changePromptModalRef}
+          savedPrompts={savedPrompts}
+          setSavedPrompts={setSavedPrompts}
+          onSetPrompt={promptToChange.onSetPrompt}
+          chatbot={chatbot}
+          onClose={closeChangePromptModal}
         />
       )}
 

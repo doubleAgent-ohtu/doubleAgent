@@ -1,4 +1,4 @@
-const BotConfigurator = ({ title, prompt, onSetPrompt, onActivate }) => {
+const BotConfigurator = ({ title, prompt, agentName, onEditPrompt, onChangePrompt, onActivate }) => {
   return (
     <div
       className="p-4 rounded-lg border bg-base-100 flex flex-col h-[50vh] lg:h-[70vh]"
@@ -11,6 +11,7 @@ const BotConfigurator = ({ title, prompt, onSetPrompt, onActivate }) => {
 
       <div className="mb-2 text-base-content/70 shrink-0">
         <b>Current prompt:</b>
+        <h3>{agentName}</h3>
       </div>
 
       <div className="grow min-h-0 mb-4">
@@ -20,14 +21,26 @@ const BotConfigurator = ({ title, prompt, onSetPrompt, onActivate }) => {
           </p>
         </div>
       </div>
+      <div>
+        <button
+          onClick={onChangePrompt}
+          onFocus={onActivate}
+          className={`btn btn-primary shrink-0 ${prompt && 'btn-soft'}`}
+        >
+          {prompt ? 'Change Prompt' : 'Set Prompt'}
+        </button>
 
-      <button
-        onClick={onSetPrompt}
-        onFocus={onActivate}
-        className={`btn btn-primary shrink-0 ${prompt && 'btn-soft'}`}
-      >
-        {prompt ? 'Edit Prompt' : 'Set Prompt'}
-      </button>
+        {prompt && (
+          <>
+            <button onClick={onEditPrompt}>
+              Edit Prompt
+            </button>
+            <button>
+              Clear Prompt
+            </button>
+          </>
+        )}
+      </div>
     </div>
   );
 };
