@@ -5,22 +5,22 @@ import PromptEditorModal from '../components/PromptEditorModal';
 import Tietosuojaseloste from '../components/Tietosuojaseloste.jsx';
 import Kayttoohje from '../components/Kayttoohje.jsx';
 import Conversation from '../components/Conversation.jsx';
+import HamburgerMenu from '../components/HamburgerMenu';
 
 const HomePage = () => {
   const [promptA, setPromptA] = useState('');
   const [promptB, setPromptB] = useState('');
   const [promptToEdit, setPromptToEdit] = useState(null);
+
   const promptEditorRef = useRef(null);
-  const [isConvoActive, setIsConvoActive] = useState(false);
-  const [threadId, setThreadId] = useState(() => crypto.randomUUID());
   const privacyModalRef = useRef(null);
   const userGuideModalRef = useRef(null);
 
+  const [isConvoActive, setIsConvoActive] = useState(false);
   const [userGuideLanguage, setUserGuideLanguage] = useState('FIN');
   const [privacyLanguage, setPrivacyLanguage] = useState('FIN');
 
   const openPromptEditor = (prompt, setPrompt) => {
-    // This will trigger the useEffect.
     setPromptToEdit({ currentPrompt: prompt, onSetPrompt: setPrompt });
   };
 
@@ -57,12 +57,11 @@ const HomePage = () => {
       />
       <div className="drawer-content flex flex-col min-h-screen">
         <main className="p-8 grow" onClick={() => setIsConvoActive(false)}>
+          <HamburgerMenu />
           <h1 className="text-center text-4xl font-bold mb-8 tracking-widest">Double Agent AI</h1>
           <div
             className={`grid grid-cols-1 gap-6 transition-all duration-300 ${
-              isConvoActive
-                ? 'lg:grid-cols-[1fr_6fr_1fr]' // Convo is active
-                : 'lg:grid-cols-[1fr_1.9fr_1fr]' // Default
+              isConvoActive ? 'lg:grid-cols-[1fr_6fr_1fr]' : 'lg:grid-cols-[1fr_1.9fr_1fr]'
             }`}
           >
             <BotConfigurator
@@ -77,8 +76,7 @@ const HomePage = () => {
                 promptA={promptA}
                 promptB={promptB}
                 onActivate={() => setIsConvoActive(true)}
-                threadId={threadId}
-                setThreadId={setThreadId}
+                onClearPrompts={handleClearPrompts}
               />
             </div>
 
@@ -94,14 +92,12 @@ const HomePage = () => {
         </main>
 
         <footer className="text-center p-4">
-          <div className="flex items-center justify-center gap-3">
-            <button
-              className="btn btn-ghost"
-              onClick={() => document.getElementById('privacy_modal').showModal()}
-            >
-              Tietosuojaseloste
-            </button>
-          </div>
+          <button
+            className="btn btn-link text-base-content no-underline hover:underline"
+            onClick={() => privacyModalRef.current.showModal()}
+          >
+            Tietosuojaseloste
+          </button>
         </footer>
       </div>
 
