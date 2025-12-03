@@ -143,8 +143,8 @@ class ChatbotService:
         conversation_text = ""
 
         for message in messages:
-            role = 'Unk'
-            
+            role = "Unk"
+
             if isinstance(message, HumanMessage):
                 role = "Bot B"
             elif isinstance(message, AIMessage):

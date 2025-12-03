@@ -35,7 +35,7 @@ const DownloadChatButton = ({ threadId = 'default', label = 'Download .txt' }) =
 
   return (
     <button
-      type = "button"
+      type="button"
       onClick={handleDownload}
       className="btn btn-primary btn-sm gap-2"
       title="Download conversation as text"
