@@ -270,6 +270,8 @@ def download_chat(thread_id: str, current_user: dict = Depends(get_current_user)
     }
 
     return Response(content=history_text_A, media_type="text/plain", headers=headers)
+
+
 @app.post("/conversations", response_model=schemas.ConversationSchema)
 async def save_conversation(
     data: schemas.SaveConversation,
@@ -319,8 +321,8 @@ async def get_conversations(
     return conversations
 
 
-@app.get("/conversations/{conversation_id}", response_model=schemas.ConversationSchema)
-async def get_conversation(
+@app.get("/conversation/{conversation_id}", response_model=schemas.ConversationSchema)
+async def get_converastion(
     conversation_id: int,
     user_id: str = Depends(get_user_id),
     db: Session = Depends(get_db),
