@@ -215,8 +215,11 @@ async def test_stream_chat_error_handling(chatbot_service):
 
 
 @pytest.fixture
-def test_db():
+def test_db(mocker):
     """Create test database"""
+    # Mock the DA_DB_URL environment variable
+    mocker.patch.dict(os.environ, {"DA_DB_URL": "sqlite:///:memory:"})
+
     from app.db.models import Base
     from sqlalchemy import create_engine
     from sqlalchemy.orm import sessionmaker
