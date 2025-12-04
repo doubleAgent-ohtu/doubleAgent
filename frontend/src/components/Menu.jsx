@@ -1,8 +1,9 @@
 import { useEffect, useState } from 'react';
 import axios from 'axios';
 
-const Menu = ({ onOpenUserGuide }) => {
+const Menu = ({ onOpenUserGuide, onSelectConversation, onNewChat }) => {
   const [isDark, setIsDark] = useState(false);
+  const [starters, setStarters] = useState([]);
   // initializes theme
   useEffect(() => {
     const saved = localStorage.getItem('theme');
@@ -22,6 +23,7 @@ const Menu = ({ onOpenUserGuide }) => {
   };
   const handleLogout = async () => {
     try {
+      try { sessionStorage.setItem('postLogoutMessage', 'Chathistory'); } catch (e) { /* ignore */ }
       const res = await axios.post('/api/logout', {}, { withCredentials: true });
       // Axios doesn't follow redirects automatically for POST, so check response
       if (res.status === 200) {
@@ -38,6 +40,44 @@ const Menu = ({ onOpenUserGuide }) => {
     const cb = document.getElementById('my-drawer-4');
     if (cb) cb.checked = !cb.checked;
   };
+
+  // load user's saved conversations (conversation_starter) to show as starters
+  // shared loader for starters (used by initial load and refresh handler)
+  const loadStarters = async () => {
+    try {
+      const res = await fetch('/api/conversations', { credentials: 'include' });
+      if (!res.ok) return null;
+      const data = await res.json();
+      return data || [];
+    } catch (err) {
+      console.warn('Failed to fetch conversation starters', err);
+      return null;
+    }
+  };
+
+  useEffect(() => {
+    let mounted = true;
+
+    (async () => {
+      const data = await loadStarters();
+      if (mounted && data) setStarters(data);
+    })();
+
+    return () => {
+      mounted = false;
+    };
+  }, []);
+
+  // refresh starters when other parts of the app signal updates (e.g. after saving)
+  useEffect(() => {
+    const handler = async () => {
+      const data = await loadStarters();
+      if (data) setStarters(data);
+    };
+
+    window.addEventListener('conversations:updated', handler);
+    return () => window.removeEventListener('conversations:updated', handler);
+  }, []);
 
   return (
     <div className="bg-base-200 flex flex-col justify-between min-h-full sidebar p-2">
@@ -61,6 +101,47 @@ const Menu = ({ onOpenUserGuide }) => {
                 </svg>
               </span>
               <span className="label-text">Homepage</span>
+            </button>
+          </li>
+
+          <li>
+            <button
+              onClick={() => {
+                // dispatch a global event so other components (Conversation/HomePage)
+                // can clear selected system prompts and reset their state
+                try {
+                  window.dispatchEvent(new CustomEvent('new-chat:start'));
+                } catch (e) {
+                  // ignore if dispatch fails in old browsers
+                }
+
+                if (typeof onNewChat === 'function') {
+                  onNewChat();
+                  return;
+                }
+                if (typeof onSelectConversation === 'function') {
+                  onSelectConversation(null);
+                  return;
+                }
+                console.log('New chat requested');
+              }}
+            >
+              <span className="icon" aria-hidden="true">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  viewBox="0 0 24 24"
+                  strokeLinejoin="round"
+                  strokeLinecap="round"
+                  strokeWidth="2"
+                  fill="none"
+                  stroke="currentColor"
+                  className="inline-block h-4 w-4 my-1.5"
+                >
+                  <path d="M12 5v14"></path>
+                  <path d="M5 12h14"></path>
+                </svg>
+              </span>
+              <span className="label-text">New chat</span>
             </button>
           </li>
 
@@ -129,7 +210,33 @@ const Menu = ({ onOpenUserGuide }) => {
             </button>
           </li>
         </ul>
+        {/* Conversation starters under the icons (only visible when menu is expanded) */}
+        {starters && starters.length > 0 && (
+          <div className="mt-4 is-drawer-close:hidden">
+            <p className="label-text text-sm opacity-70 mb-2">Chat history</p>
+            <ul className="menu w-full">
+              {starters.map((c) => (
+                <li key={c.id}>
+                  <button
+                    className="btn btn-ghost btn-xs w-full justify-start text-sm whitespace-normal break-words"
+                    onClick={() => {
+                      if (onSelectConversation) onSelectConversation(c);
+                      else console.log('open', c.id);
+                    }}
+                  >
+                    {c.conversation_starter && c.conversation_starter.length > 40
+                      ? c.conversation_starter.slice(0, 40) + '...'
+                      : c.conversation_starter}
+                  </button>
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
       </div>
+
+
+      
 
       <div className="m-2 flex flex-col items-end gap-2">
         <button
