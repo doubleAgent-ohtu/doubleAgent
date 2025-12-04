@@ -238,8 +238,17 @@ def test_db(mocker):
 
 
 @pytest.fixture
-def test_client(test_db):
+def test_client(test_db, mocker):
     """Create test client with mocked dependencies"""
+    # Mock environment variables before importing app
+    mocker.patch.dict(
+        os.environ,
+        {
+            "DA_OPENAI_API_KEY": "test-key-123",
+            "OPENAI_API_KEY": "test-key-123",
+        },
+    )
+
     from fastapi.testclient import TestClient
     from app.main import app, get_db, get_user_id
 
