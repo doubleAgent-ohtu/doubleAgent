@@ -17,7 +17,7 @@ oauth.register(
     client_id=DA_OIDC_CLIENT_ID,
     client_secret=DA_OIDC_CLIENT_SECRET,
     server_metadata_url=f"{DA_OIDC_BASE_URL}/.well-known/openid-configuration",
-    client_kwargs={"scope": "openid email profile"},  # what we want to know about user
+    client_kwargs={"scope": "openid email profile grp"},  # what we want to know about user
 )
 
 
