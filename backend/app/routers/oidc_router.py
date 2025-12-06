@@ -17,9 +17,7 @@ oauth.register(
     client_id=DA_OIDC_CLIENT_ID,
     client_secret=DA_OIDC_CLIENT_SECRET,
     server_metadata_url=f"{DA_OIDC_BASE_URL}/.well-known/openid-configuration",
-    client_kwargs={
-        "scope": "openid email profile grp"
-    },  # what we want to know about user
+    client_kwargs={"scope": "openid email profile"},  # what we want to know about user
 )
 
 
@@ -40,18 +38,6 @@ async def auth_callback(request: Request):
 
         # Extracts the user's info from the token.
         userinfo = token["userinfo"]
-
-        # Check if user is part of the required group using hyGroupCn
-        user_groups = userinfo.get("hyGroupCn", [])
-        required_group = "grp-doubleagent"
-
-        # Block access if user is not in the required group
-        if required_group not in user_groups:
-            print(
-                f"Access denied: User not in required group '{required_group}'. User groups: {user_groups}"
-            )
-            print(f"Available userinfo keys: {list(userinfo.keys())}")
-            return RedirectResponse(url=f"{frontend_url}?error=unauthorized")
 
         # Saves the user's details into the server-side session
         request.session["user"] = userinfo
