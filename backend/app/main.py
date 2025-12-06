@@ -1,6 +1,6 @@
 import os
 from dotenv import load_dotenv
-from fastapi import FastAPI, Request, HTTPException, status, Depends
+from fastapi import FastAPI, Request, HTTPException, status, Depends, Response
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import RedirectResponse
 from pydantic import BaseModel
@@ -12,7 +12,7 @@ from sqlalchemy.orm import Session
 from app import schemas
 from app.db import models
 import asyncio
-from fastapi.responses import StreamingResponse
+from fastapi.responses import StreamingResponse, RedirectResponse
 import json
 
 load_dotenv()
@@ -256,6 +256,22 @@ def save_prompt(
     return prompt
 
 
+@app.get("/download-chat/{thread_id}")
+def download_chat(thread_id: str, current_user: dict = Depends(get_current_user)):
+    """
+    Download bots conversation in .txt file format
+    """
+
+    history_text_A = chatbot_a.get_conversation_history(thread_id)
+    print(history_text_A)
+
+    headers = {
+        "Content-Disposition": f"attachment; filename=conversation_{thread_id}.txt"
+    }
+
+    return Response(content=history_text_A, media_type="text/plain", headers=headers)
+
+
 @app.post("/conversations", response_model=schemas.ConversationSchema)
 async def save_conversation(
     data: schemas.SaveConversation,
@@ -305,8 +321,8 @@ async def get_conversations(
     return conversations
 
 
-@app.get("/conversations/{conversation_id}", response_model=schemas.ConversationSchema)
-async def get_conversation(
+@app.get("/conversation/{conversation_id}", response_model=schemas.ConversationSchema)
+async def get_converastion(
     conversation_id: int,
     user_id: str = Depends(get_user_id),
     db: Session = Depends(get_db),
