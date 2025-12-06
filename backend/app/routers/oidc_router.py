@@ -41,14 +41,16 @@ async def auth_callback(request: Request):
         # Extracts the user's info from the token.
         userinfo = token["userinfo"]
 
-        # Check if user is part of the required group
-        user_groups = userinfo.get("grp", [])
+        # Check if user is part of the required group using hyGroupCn
+        user_groups = userinfo.get("hyGroupCn", [])
         required_group = "grp-doubleagent"
 
+        # Block access if user is not in the required group
         if required_group not in user_groups:
             print(
                 f"Access denied: User not in required group '{required_group}'. User groups: {user_groups}"
             )
+            print(f"Available userinfo keys: {list(userinfo.keys())}")
             return RedirectResponse(url=f"{frontend_url}?error=unauthorized")
 
         # Saves the user's details into the server-side session
