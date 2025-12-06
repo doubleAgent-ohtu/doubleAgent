@@ -53,7 +53,7 @@ const Conversation = ({
     if (onClearPrompts) onClearPrompts();
     console.log('--- 🗑️ Conversation cleared ---');
   };
-  
+
   const handleSaveConversation = async () => {
     if (!messages || messages.length === 0) {
       alert('No messages to save');
