@@ -48,15 +48,12 @@ const Conversation = ({
   const handleClearConversation = () => {
     setMessages(null);
     setError(null);
-    const newId = crypto.randomUUID();
-    setThreadId(newId);
-    if (propSetThreadId) propSetThreadId(newId);
     setIsSaved(false);
     setThreadId(crypto.randomUUID());
     if (onClearPrompts) onClearPrompts();
     console.log('--- 🗑️ Conversation cleared ---');
   };
-
+  
   const handleSaveConversation = async () => {
     if (!messages || messages.length === 0) {
       alert('No messages to save');
