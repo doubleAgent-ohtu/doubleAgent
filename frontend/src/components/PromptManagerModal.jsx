@@ -21,6 +21,14 @@ const PromptManagerModal = ({ promptManagerContext, setPromptManagerContext, sav
   return (
     <dialog ref={modalRef} className="modal">
       <div className="modal-box flex flex-col gap-4 w-11/12 max-w-5xl h-3/4">
+        <div className="modal-action">
+          <button
+            className="btn btn-sm btn-circle btn-ghost absolute right-2 top-2"
+            onClick={closeModal}
+          >
+            x
+          </button>
+        </div>
 
         {promptManagerContext && (
           promptManagerContext.isEditor ? (
@@ -43,7 +51,7 @@ const PromptManagerModal = ({ promptManagerContext, setPromptManagerContext, sav
           )
         )}
       </div>
-
+  
       {/* Click backdrop to close */}
       <form method="dialog" className="modal-backdrop">
         <button type="button" onClick={closeModal}>
@@ -87,6 +95,7 @@ const PromptEditor = ({ promptData, onSetPrompt, setSavedPrompts, chatbot, onClo
           id="savePromptAgentName"
           className="input input-bordered w-full"
           placeholder="My Custom Agent..."
+          required
         />
       </div>
       <div>
@@ -97,9 +106,9 @@ const PromptEditor = ({ promptData, onSetPrompt, setSavedPrompts, chatbot, onClo
           value={text}
           onChange={(e) => setText(e.target.value)}
           maxLength={15000}
-          required
           id="promptText"
           className="textarea textarea-bordered w-full h-40"
+          required
         />
       </div>
       <div className="modal-action">
@@ -125,13 +134,16 @@ const PromptMenu = ({ onSetPrompt, setPromptManagerContext, savedPrompts, setSav
     });
   };
 
-  const deletePrompt = async (id) => {
-    try {
-      await axios.delete(`api/delete_prompt/${id}`);
-      savedPrompts.delete(id);
-      setSavedPrompts((prev) => new Map(prev));
-    } catch (err) {
-      console.log(err);
+  const deletePrompt = async (id, agentName) => {
+    let conf = confirm(`Are you sure you want to delete '${agentName}'?`)
+    if (conf) {
+      try {
+        await axios.delete(`api/delete_prompt/${id}`);
+        savedPrompts.delete(id);
+        setSavedPrompts((prev) => new Map(prev));
+      } catch (err) {
+        console.log(err);
+      }
     }
   };
 
@@ -159,7 +171,7 @@ const PromptMenu = ({ onSetPrompt, setPromptManagerContext, savedPrompts, setSav
                 <button onClick={() => changeToPromptEditor(prompt)} className="">
                   Edit
                 </button>
-                <button onClick={() => deletePrompt(id)} className="">
+                <button onClick={() => deletePrompt(id, prompt.agent_name)} className="">
                   Delete
                 </button>
               </li>
