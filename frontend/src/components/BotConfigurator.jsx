@@ -1,4 +1,4 @@
-const BotConfigurator = ({ title, prompt, agentName, onEditPrompt, onChangePrompt, onActivate }) => {
+const BotConfigurator = ({ title, prompt, agentName, onEditPrompt, onClearPrompt, onActivate }) => {
   return (
     <div
       className="p-4 rounded-lg border bg-base-100 flex flex-col h-[50vh] lg:h-[70vh]"
@@ -23,7 +23,7 @@ const BotConfigurator = ({ title, prompt, agentName, onEditPrompt, onChangePromp
       </div>
       <div>
         <button
-          onClick={onChangePrompt}
+          onClick={() => onEditPrompt(false)}
           onFocus={onActivate}
           className={`btn btn-primary shrink-0 ${prompt && 'btn-soft'}`}
         >
@@ -31,14 +31,14 @@ const BotConfigurator = ({ title, prompt, agentName, onEditPrompt, onChangePromp
         </button>
 
         {prompt && (
-          <>
-            <button onClick={onEditPrompt}>
+          <div>
+            <button onClick={() => onEditPrompt(true)}>
               Edit Prompt
             </button>
-            <button>
+            <button onClick={onClearPrompt}>
               Clear Prompt
             </button>
-          </>
+          </div>
         )}
       </div>
     </div>

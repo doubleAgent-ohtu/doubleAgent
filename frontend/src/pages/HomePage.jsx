@@ -1,32 +1,25 @@
 import { useState, useRef, useEffect } from 'react';
+import axios from 'axios';
 import BotConfigurator from '../components/BotConfigurator';
 import Menu from '../components/Menu';
-import PromptEditorModal from '../components/PromptEditorModal';
 import Tietosuojaseloste from '../components/Tietosuojaseloste.jsx';
 import Kayttoohje from '../components/Kayttoohje.jsx';
 import Conversation from '../components/Conversation.jsx';
 import HamburgerMenu from '../components/HamburgerMenu';
-import ChangePromptModal from '../components/ChangePromptModal.jsx';
+import PromptManagerModal from '../components/PromptManagerModal.jsx';
+
 
 const HomePage = () => {
   const [savedPrompts, setSavedPrompts] = useState(new Map());
   const init_prompt = {
     id: null, 
-    user: null,
-    agent_name:'',
+    agent_name: '',
     prompt: '',
     created_at: null
   };
   const [promptA, setPromptA] = useState(init_prompt);
   const [promptB, setPromptB] = useState(init_prompt);
-
-  const [promptToEdit, setPromptToEdit] = useState(null); 
-  const [promptToChange, setPromptToChange] = useState(null); 
-
-  const promptEditorRef = useRef(null);
-  const changePromptModalRef = useRef(null);
-
-
+  const [promptManagerContext, setPromptManagerContext] = useState(null); 
 
   const privacyModalRef = useRef(null);
   const userGuideModalRef = useRef(null);
@@ -35,48 +28,14 @@ const HomePage = () => {
   const [userGuideLanguage, setUserGuideLanguage] = useState('FIN');
   const [privacyLanguage, setPrivacyLanguage] = useState('FIN');
 
-  const loadSavedPrompts = async () => {
-    try {
-      const { data } = await axios.get('api/get_prompts');
-      setSavedPrompts(
-        data.reduce((promptMap, prompt) => promptMap.set(prompt.id, prompt), new Map()),
-      );
-    } catch (err) {
-      console.log(err);
-    }
-  };
-
-  const openPromptEditor = (prompt, setPrompt, chatbot) => {
-    setPromptToEdit({
-      promptToEdit: prompt,
+  const openPromptManagerModal = (chatbot, promptData, setPrompt, isEditor) => {
+    setPromptManagerContext({
+      chatbot: chatbot,
+      promptData: promptData,
       onSetPrompt: setPrompt,
-      chatbot: chatbot
+      isEditor: isEditor
     });
   };
-
-  const openChangePromptModal = (setPrompt, chatbot) => {
-    setPromptToChange({
-      onSetPrompt: setPrompt,
-      chatbot: chatbot
-    });
-  };
-
-
-
-  const closePromptEditor = () => {
-    if (promptEditorRef.current) {
-      promptEditorRef.current.close();
-    }
-    setPromptToEdit(null);
-  };
-
-  const closeChangePromptModal = () => {
-    if (changePromptModalRef.current) {
-      changePromptModalRef.current.close();
-    }
-    setPromptToChange(null);
-  };
-
 
   const handleClearPrompts = () => {
     setPromptA(init_prompt);
@@ -88,24 +47,18 @@ const HomePage = () => {
   };
 
   useEffect(() => {
+    const loadSavedPrompts = async () => {
+      try {
+        const { data } = await axios.get('api/get_prompts');
+        setSavedPrompts(
+          data.reduce((promptMap, prompt) => promptMap.set(prompt.id, prompt), new Map()),
+        );
+      } catch (err) {
+        console.log(err);
+      }
+    };
     loadSavedPrompts();
   }, []);
-
-
-
-  useEffect(() => {
-    if (promptToEdit && promptEditorRef.current) {
-      promptEditorRef.current.showModal();
-    }
-  }, [promptToEdit]);
-
-  useEffect(() => {
-    if (promptToChange && changePromptModalRef.current) {
-      changePromptModalRef.current.showModal();
-    }
-  }, [promptToChange]);
-
-
 
   return (
     <div className="drawer lg:drawer-open">
@@ -129,8 +82,8 @@ const HomePage = () => {
               title="Chatbot A"
               prompt={promptA.prompt}
               agentName={promptA.agent_name}
-              onEditPrompt={() => openPromptEditor(promptA, setPromptA, 'A')}
-              onChangePrompt={() => openChangePromptModal(setPromptA, 'A')}
+              onEditPrompt={(isEditor) => openPromptManagerModal('A', promptA, setPromptA, isEditor)}
+              onClearPrompt={() => setPromptA(init_prompt)}
               onActivate={() => setIsConvoActive(false)}
             />
 
@@ -148,8 +101,8 @@ const HomePage = () => {
                 title="Chatbot B"
                 prompt={promptB.prompt}
                 agentName={promptB.agent_name}
-                onEditPrompt={() => openPromptEditor(promptB, setPromptB, 'B')}
-                onChangePrompt={() => openChangePromptModal(setPromptB, 'B')}
+                onEditPrompt={(isEditor) => openPromptManagerModal('B', promptB, setPromptB, isEditor)}
+                onClearPrompt={() => setPromptB(init_prompt)}
                 onActivate={() => setIsConvoActive(false)}
               />
             </div>
@@ -171,25 +124,12 @@ const HomePage = () => {
         <Menu onOpenUserGuide={openUserGuide} />
       </div>
 
-      {promptToEdit && (
-        <PromptEditorModal
-          modalRef={promptEditorRef}
-          promptToEdit={promptToEdit.promptToEdit}
-          onSetPrompt={promptToEdit.onSetPrompt}
-          setSavedPrompts={setSavedPrompts}
-          chatbot={promptToEdit.chatbot}
-          onClose={closePromptEditor}
-        />
-      )}
-
-      {promptToChange && (
-        <ChangePromptModal 
-          modalRef={changePromptModalRef}
+      {promptManagerContext && (
+        <PromptManagerModal
+          promptManagerContext={promptManagerContext}
+          setPromptManagerContext={setPromptManagerContext}
           savedPrompts={savedPrompts}
           setSavedPrompts={setSavedPrompts}
-          onSetPrompt={promptToChange.onSetPrompt}
-          chatbot={chatbot}
-          onClose={closeChangePromptModal}
         />
       )}
 

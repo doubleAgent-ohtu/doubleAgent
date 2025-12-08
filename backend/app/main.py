@@ -11,7 +11,7 @@ from app.db.database import DBSession
 from sqlalchemy.orm import Session
 from app import schemas
 from app.db.models import Prompt
-from sqlalchemy import select, desc
+from sqlalchemy import select, update
 import asyncio
 from fastapi.responses import StreamingResponse
 import json
@@ -260,7 +260,7 @@ async def save_prompt(
     user: str = Depends(get_user_id),
     db: Session = Depends(get_db),
 ):
-    agent_name_exists = db.execute(
+    agent_name_exists = db.scalars(
         select(Prompt).where(
             Prompt.user == user,
             Prompt.agent_name == data.agent_name
@@ -269,7 +269,7 @@ async def save_prompt(
 
     if agent_name_exists:
         raise ValueError(
-            f"Another prompt is already saved as '{data.agent_name}'."
+            f"Another prompt already saved as '{data.agent_name}'."
         )
 
     prompt = Prompt(**data.model_dump(), user=user)
@@ -287,7 +287,7 @@ async def update_prompt(
     user: str = Depends(get_user_id),
     db: Session = Depends(get_db),
 ):
-    agent_name_exists = db.execute(
+    agent_name_exists = db.scalars(
         select(Prompt).where(
             Prompt.user == user,
             Prompt.agent_name == data.agent_name,
@@ -297,35 +297,35 @@ async def update_prompt(
 
     if agent_name_exists:
         raise ValueError(
-            f"Another prompt is already saved as '{data.agent_name}'."
+            f"Another prompt already saved as '{data.agent_name}'."
         )
-
-    prompt = db.execute(
-        select(Prompt)
+    
+    updated_prompt = db.scalars(
+        update(Prompt)
         .where(
             Prompt.user == user,
             Prompt.id == prompt_id
         )
+        .values(**data.model_dump())
+        .returning(Prompt)
     ).first()
 
-    if not prompt:
+    if not updated_prompt:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail="Prompt not found"
         )
-
-    prompt.update(**data.model_dump())
     db.commit()
 
-    return prompt
+    return updated_prompt
 
 
-@app.put("/delete_prompt/{prompt_id}")
+@app.delete("/delete_prompt/{prompt_id}")
 async def delete_prompt(
     prompt_id: int,
     user: str = Depends(get_user_id),
     db: Session = Depends(get_db),
 ):
-    prompt = db.execute(
+    prompt = db.scalars(
         select(Prompt)
         .where(
             Prompt.user == user,
