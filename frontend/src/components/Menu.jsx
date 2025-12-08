@@ -23,7 +23,11 @@ const Menu = ({ onOpenUserGuide, onSelectConversation, onNewChat }) => {
   };
   const handleLogout = async () => {
     try {
-      try { sessionStorage.setItem('postLogoutMessage', 'Chathistory'); } catch (e) { /* ignore */ }
+      try {
+        sessionStorage.setItem('postLogoutMessage', 'Chathistory');
+      } catch (e) {
+        /* ignore */
+      }
       const res = await axios.post('/api/logout', {}, { withCredentials: true });
       // Axios doesn't follow redirects automatically for POST, so check response
       if (res.status === 200) {
@@ -234,9 +238,6 @@ const Menu = ({ onOpenUserGuide, onSelectConversation, onNewChat }) => {
           </div>
         )}
       </div>
-
-
-      
 
       <div className="m-2 flex flex-col items-end gap-2">
         <button

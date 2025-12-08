@@ -1,7 +1,14 @@
 import { useState, useEffect, useRef } from 'react';
 import ModelSelection from './ModelSelection.jsx';
 
-const Conversation = ({ promptA, promptB, onActivate, onClearPrompts, openConversation, newChatSignal }) => {
+const Conversation = ({
+  promptA,
+  promptB,
+  onActivate,
+  onClearPrompts,
+  openConversation,
+  newChatSignal,
+}) => {
   const [input, setInput] = useState('');
   const [messages, setMessages] = useState(null);
   const messagesRef = useRef(null);
@@ -31,8 +38,11 @@ const Conversation = ({ promptA, promptB, onActivate, onClearPrompts, openConver
       if (!openConversation) return;
 
       // If full messages are already present, use them
-        if (openConversation.messages && openConversation.messages.length > 0) {
-        const mapped = openConversation.messages.map((m) => ({ chatbot: m.chatbot, message: m.message }));
+      if (openConversation.messages && openConversation.messages.length > 0) {
+        const mapped = openConversation.messages.map((m) => ({
+          chatbot: m.chatbot,
+          message: m.message,
+        }));
         setMessages(mapped);
         setThreadId(openConversation.thread_id || crypto.randomUUID());
         if (openConversation.model) setSelectedModel(openConversation.model);
@@ -88,7 +98,6 @@ const Conversation = ({ promptA, promptB, onActivate, onClearPrompts, openConver
     if (typeof newChatSignal === 'undefined') return;
     handleClearConversation();
   }, [newChatSignal]);
-
 
   // Also respond to global new-chat events (dispatched from Menu)
   useEffect(() => {
@@ -156,8 +165,16 @@ const Conversation = ({ promptA, promptB, onActivate, onClearPrompts, openConver
       const saved = await response.json();
 
       setIsSaved(true);
-      try { window.dispatchEvent(new Event('conversations:updated')); } catch (e) { /* ignore */ }
-      try { window.dispatchEvent(new CustomEvent('conversation:opened', { detail: saved })); } catch (e) { /* ignore */ }
+      try {
+        window.dispatchEvent(new Event('conversations:updated'));
+      } catch (e) {
+        /* ignore */
+      }
+      try {
+        window.dispatchEvent(new CustomEvent('conversation:opened', { detail: saved }));
+      } catch (e) {
+        /* ignore */
+      }
       console.log('✅ Conversation saved');
     } catch (err) {
       console.error('Error saving conversation:', err);

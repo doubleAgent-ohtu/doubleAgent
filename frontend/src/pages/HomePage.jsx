@@ -139,7 +139,11 @@ const HomePage = () => {
 
       <div className="drawer-side">
         <label htmlFor="my-drawer-4" aria-label="close sidebar" className="drawer-overlay"></label>
-        <Menu onOpenUserGuide={openUserGuide} onSelectConversation={handleSelectConversation} onNewChat={handleNewChat} />
+        <Menu
+          onOpenUserGuide={openUserGuide}
+          onSelectConversation={handleSelectConversation}
+          onNewChat={handleNewChat}
+        />
       </div>
 
       {promptToEdit && (

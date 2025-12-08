@@ -56,15 +56,27 @@ test('2. Clicking New chat dispatches event and calls onNewChat prop', async () 
 test('3. Loads and renders conversation starters, clicking calls onSelectConversation', async () => {
   const fakeConvos = [
     { id: 1, conversation_starter: 'Hello world', system_prompt_a: 'A', system_prompt_b: 'B' },
-    { id: 2, conversation_starter: 'This is a longer starter that will be truncated at forty characters for display', system_prompt_a: null, system_prompt_b: null },
+    {
+      id: 2,
+      conversation_starter:
+        'This is a longer starter that will be truncated at forty characters for display',
+      system_prompt_a: null,
+      system_prompt_b: null,
+    },
   ];
 
   global.fetch = vi.fn(() =>
-    Promise.resolve({ ok: true, json: () => Promise.resolve(fakeConvos) })
+    Promise.resolve({ ok: true, json: () => Promise.resolve(fakeConvos) }),
   );
 
   const onSelectConversation = vi.fn();
-  render(<Menu onOpenUserGuide={() => {}} onSelectConversation={onSelectConversation} onNewChat={() => {}} />);
+  render(
+    <Menu
+      onOpenUserGuide={() => {}}
+      onSelectConversation={onSelectConversation}
+      onNewChat={() => {}}
+    />,
+  );
 
   // wait for the starters to be rendered
   await waitFor(() => expect(screen.getByText('Chat history')).toBeInTheDocument());
@@ -73,7 +85,9 @@ test('3. Loads and renders conversation starters, clicking calls onSelectConvers
   expect(screen.getByText('Hello world')).toBeInTheDocument();
 
   // second starter should be truncated to 40 chars + '...'
-  expect(screen.getByText((content) => content.startsWith('This is a longer starter'))).toBeInTheDocument();
+  expect(
+    screen.getByText((content) => content.startsWith('This is a longer starter')),
+  ).toBeInTheDocument();
 
   // click first starter
   const firstBtn = screen.getByText('Hello world');
@@ -89,7 +103,9 @@ test('4. Truncation produces exactly 40 chars + ellipsis', async () => {
     { id: 1, conversation_starter: longStarter, system_prompt_a: null, system_prompt_b: null },
   ];
 
-  global.fetch = vi.fn(() => Promise.resolve({ ok: true, json: () => Promise.resolve(fakeConvos) }));
+  global.fetch = vi.fn(() =>
+    Promise.resolve({ ok: true, json: () => Promise.resolve(fakeConvos) }),
+  );
 
   render(<Menu onOpenUserGuide={() => {}} onSelectConversation={() => {}} onNewChat={() => {}} />);
 
@@ -117,9 +133,13 @@ test('5. Logout calls axios.post and redirects', async () => {
   const logoutBtn = screen.getByText('Logout');
   fireEvent.click(logoutBtn);
 
-  await waitFor(() => expect(axios.post).toHaveBeenCalledWith('/api/logout', {}, { withCredentials: true }));
+  await waitFor(() =>
+    expect(axios.post).toHaveBeenCalledWith('/api/logout', {}, { withCredentials: true }),
+  );
   // component sets window.location.href = '/' on success
-  expect(global.window.location.href === '/' || global.window.location.assign.mock.calls.length > 0).toBeTruthy();
+  expect(
+    global.window.location.href === '/' || global.window.location.assign.mock.calls.length > 0,
+  ).toBeTruthy();
 
   // restore original location
   global.window.location = origLocation;
