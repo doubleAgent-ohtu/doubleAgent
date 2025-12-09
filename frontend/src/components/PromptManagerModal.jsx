@@ -216,8 +216,8 @@ const PromptMenu = ({
       <div className="m-2">
         <h3 className="text-xl">My prompts</h3>
       </div>
-      <div className="modal-action my-5 p-1 size-fit">
-        <button onClick={() => changeToPromptEditor()} className="btn">
+      <div className="modal-action my-5 size-fit">
+        <button onClick={() => changeToPromptEditor()} className="btn btn-primary rounded-xl">
           Add new prompt
         </button>
       </div>
@@ -229,20 +229,20 @@ const PromptMenu = ({
                 <>
                   <li
                     key={id}
-                    className={`flex flex-row items-center w-full p-2 rounded-xl ${selected == id && 'bg-base-200'} hover:bg-base-200 hover:cursor-pointer`}
+                    className={`flex flex-row items-center w-full p-2 rounded-xl ${selected == id && 'bg-base-300'} hover:bg-base-200 hover:cursor-pointer`}
                     onClick={() => onSelectPrompt(prompt)}
                   >
                     <p className='ml-1'>{prompt.agent_name}</p>
                     <div className='ml-auto'>
                       <button
                         onClick={(e) => {e.stopPropagation(); changeToPromptEditor(prompt);}}
-                        className="btn btn-ghost rounded-xl"
+                        className="btn btn-ghost rounded-xl mr-1 p-2"
                       >
                         Edit
                       </button>
                       <button
                         onClick={(e) => {e.stopPropagation(); deletePrompt(id, prompt.agent_name);}}
-                        className="btn btn-ghost rounded-xl"
+                        className="btn btn-ghost rounded-xl text-red-500 p-2"
                       >
                         {delIsLoading == id ? (
                           <>Deleting<span className="loading loading-spinner loading-xs"></span></>
