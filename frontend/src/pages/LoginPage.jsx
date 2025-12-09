@@ -7,9 +7,7 @@ const LoginPage = () => {
   };
 
   return (
-    // 1. Main container: Added overflow-hidden
     <div className="fixed top-0 left-0 w-full h-full flex justify-center items-center bg-black overflow-hidden">
-      {/* 2. Background Layer: Stretches to fill screen, sits at z-0 */}
       <div className="absolute inset-0 w-full h-full z-0">
         <Galaxy
           mouseRepulsion={false}
@@ -24,7 +22,6 @@ const LoginPage = () => {
         />
       </div>
 
-      {/* 3. Content Layer: Sits on top (z-10) so buttons work */}
       <div className="relative z-10 p-8 text-center max-w-xl">
         <h1 className="text-6xl font-bold mb-20">Double Agent AI</h1>
         <h2 className="text-4xl font-semibold mb-4">Tervetuloa</h2>
