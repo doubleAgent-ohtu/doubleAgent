@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import ModelSelection from './ModelSelection.jsx';
+import DownloadChatButton from './DownloadChatButton.jsx';
 
 const Conversation = ({
   promptA,
@@ -8,13 +9,19 @@ const Conversation = ({
   onClearPrompts,
   openConversation,
   newChatSignal,
+  threadId: propThreadId,
+  setThreadId: propSetThreadId,
 }) => {
   const [input, setInput] = useState('');
   const [messages, setMessages] = useState(null);
   const messagesRef = useRef(null);
   const [turns, setTurns] = useState(3);
   const [selectedModel, setSelectedModel] = useState('gpt-4o');
-  const [threadId, setThreadId] = useState(() => crypto.randomUUID());
+  const [threadId, setThreadId] = useState(() => propThreadId ?? crypto.randomUUID());
+
+  useEffect(() => {
+    if (propThreadId) setThreadId(propThreadId);
+  }, [propThreadId]);
 
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -393,6 +400,8 @@ const Conversation = ({
               >
                 Clear
               </button>
+
+              <DownloadChatButton threadId={threadId} label="Download conversation" />
             </>
           )}
         </form>
