@@ -118,6 +118,7 @@ const PromptEditor = ({
           value={agentName}
           onChange={(e) => setAgentName(e.target.value)}
           maxLength={50}
+          minLength={1}
           id="savePromptAgentName"
           className="input input-bordered w-full"
           placeholder="My Custom Agent..."
@@ -133,6 +134,7 @@ const PromptEditor = ({
           value={text}
           onChange={(e) => setText(e.target.value)}
           maxLength={15000}
+          minLength={1}
           id="promptText"
           className="textarea textarea-bordered w-full h-40"
           placeholder="My Custom Prompt..."
