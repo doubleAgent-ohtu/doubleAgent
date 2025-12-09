@@ -247,9 +247,7 @@ async def get_prompts(
     user: str = Depends(get_user_id),
     db: Session = Depends(get_db),
 ):
-    prompts = db.scalars(
-        select(Prompt).where(Prompt.user == user)
-    ).all()
+    prompts = db.scalars(select(Prompt).where(Prompt.user == user)).all()
 
     return prompts
 
@@ -261,15 +259,13 @@ async def save_prompt(
     db: Session = Depends(get_db),
 ):
     agent_name_exists = db.scalars(
-        select(Prompt).where(
-            Prompt.user == user,
-            Prompt.agent_name == data.agent_name
-        )
+        select(Prompt).where(Prompt.user == user, Prompt.agent_name == data.agent_name)
     ).first()
 
     if agent_name_exists:
-        raise ValueError(
-            f"Another prompt already saved as '{data.agent_name}'."
+        raise HTTPException(
+            status_code=409,
+            detail=f"Another prompt already saved as '{data.agent_name}'",
         )
 
     prompt = Prompt(**data.model_dump(), user=user)
@@ -291,21 +287,19 @@ async def update_prompt(
         select(Prompt).where(
             Prompt.user == user,
             Prompt.agent_name == data.agent_name,
-            Prompt.id != prompt_id
+            Prompt.id != prompt_id,
         )
     ).first()
 
     if agent_name_exists:
-        raise ValueError(
-            f"Another prompt already saved as '{data.agent_name}'."
+        raise HTTPException(
+            status_code=409,
+            detail=f"Another prompt already saved as '{data.agent_name}'",
         )
-    
+
     updated_prompt = db.scalars(
         update(Prompt)
-        .where(
-            Prompt.user == user,
-            Prompt.id == prompt_id
-        )
+        .where(Prompt.user == user, Prompt.id == prompt_id)
         .values(**data.model_dump())
         .returning(Prompt)
     ).first()
@@ -326,11 +320,7 @@ async def delete_prompt(
     db: Session = Depends(get_db),
 ):
     prompt = db.scalars(
-        select(Prompt)
-        .where(
-            Prompt.user == user,
-            Prompt.id == prompt_id
-        )
+        select(Prompt).where(Prompt.user == user, Prompt.id == prompt_id)
     ).first()
 
     if not prompt:

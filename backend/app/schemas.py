@@ -21,7 +21,7 @@ class SavePrompt(BaseModel):
             raise ValueError("Missing agent name")
 
         return name
-    
+
     @field_validator("prompt")
     @classmethod
     def check_valid_prompt(cls, prompt: str) -> str:
@@ -30,4 +30,3 @@ class SavePrompt(BaseModel):
             raise ValueError("Missing prompt")
 
         return pr
-

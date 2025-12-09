@@ -1,8 +1,13 @@
 import axios from 'axios';
 import { useState, useEffect, useRef } from 'react';
 
-
-const PromptManagerModal = ({ promptManagerContext, setPromptManagerContext, savedPrompts, setSavedPrompts }) => {
+const PromptManagerModal = ({
+  promptManagerContext,
+  setPromptManagerContext,
+  savedPrompts,
+  setSavedPrompts,
+  showAlert,
+}) => {
   const modalRef = useRef(null);
 
   const closeModal = () => {
@@ -17,41 +22,43 @@ const PromptManagerModal = ({ promptManagerContext, setPromptManagerContext, sav
       modalRef.current.showModal();
     }
   }, [promptManagerContext]);
-    
+
   return (
     <dialog ref={modalRef} className="modal">
-      <div className="modal-box flex flex-col gap-4 w-11/12 max-w-5xl h-3/4">
+      <div className="modal-box flex flex-col w-15/16 max-w-7xl h-3/4 p-8">
         <div className="modal-action">
           <button
-            className="btn btn-sm btn-circle btn-ghost absolute right-2 top-2"
+            className="btn btn-ghost btn-sm absolute right-4 top-4 text-xl"
             onClick={closeModal}
           >
-            x
+            <MaterialSymbolsCloseRounded />
           </button>
         </div>
 
-        {promptManagerContext && (
-          promptManagerContext.isEditor ? (
-            <PromptEditor 
+        {promptManagerContext &&
+          (promptManagerContext.isEditor ? (
+            <PromptEditor
               promptData={promptManagerContext.promptData}
               onSetPrompt={promptManagerContext.onSetPrompt}
               setSavedPrompts={setSavedPrompts}
               chatbot={promptManagerContext.chatbot}
               onClose={closeModal}
-            /> 
+              showAlert={showAlert}
+            />
           ) : (
-            <PromptMenu 
+            <PromptMenu
+              selected={promptManagerContext.promptData.id}
               onSetPrompt={promptManagerContext.onSetPrompt}
               setPromptManagerContext={setPromptManagerContext}
               savedPrompts={savedPrompts}
               setSavedPrompts={setSavedPrompts}
               chatbot={promptManagerContext.chatbot}
               onClose={closeModal}
-            /> 
-          )
-        )}
+              showAlert={showAlert}
+            />
+          ))}
       </div>
-  
+
       {/* Click backdrop to close */}
       <form method="dialog" className="modal-backdrop">
         <button type="button" onClick={closeModal}>
@@ -62,30 +69,49 @@ const PromptManagerModal = ({ promptManagerContext, setPromptManagerContext, sav
   );
 };
 
-
-const PromptEditor = ({ promptData, onSetPrompt, setSavedPrompts, chatbot, onClose }) => {
+const PromptEditor = ({
+  promptData,
+  onSetPrompt,
+  setSavedPrompts,
+  chatbot,
+  onClose,
+  showAlert,
+}) => {
   const [text, setText] = useState(promptData.prompt);
   const [agentName, setAgentName] = useState(promptData.agent_name);
+  const [saveIsLoading, setSaveIsLoading] = useState(false);
 
   const handleSaveSet = async () => {
+    setSaveIsLoading(true);
     try {
-      const data = {agent_name: agentName, prompt: text};
-      let res = promptData.id ? await axios.put(`api/update_prompt/${promptData.id}`, data)
-                              : await axios.post('api/save_prompt', data);
+      const data = { agent_name: agentName, prompt: text };
+      let res = promptData.id
+        ? await axios.put(`api/update_prompt/${promptData.id}`, data)
+        : await axios.post('api/save_prompt', data);
       const prompt = res.data;
+
       onSetPrompt(prompt);
-      onClose();
       setSavedPrompts((prev) => new Map(prev.set(prompt.id, prompt)));
+      onClose();
+      showAlert(`Prompt ${promptData.id ? 'updated' : 'created'} and set`, 'success');
     } catch (err) {
       console.log(err);
+      showAlert(
+        `An error occured. Another prompt may have already been saved as '${agentName}'. Make sure you have filled all fields.`,
+        'error',
+      );
+    } finally {
+      setSaveIsLoading(false);
     }
   };
 
   return (
-    <div>
-      <h3 className="font-bold text-lg">Set Prompt {chatbot}</h3>
-      <div>
-        <label htmlFor="savePromptAgentName" className="label">
+    <div className="flex flex-col gap-2">
+      <div className="m-2">
+        <h3 className="font-bold text-xl">Set Prompt {chatbot}</h3>
+      </div>
+      <div className="m-2">
+        <label htmlFor="savePromptAgentName" className="label mb-1">
           <span className="label-text">Agent Name</span>
         </label>
         <input
@@ -96,10 +122,11 @@ const PromptEditor = ({ promptData, onSetPrompt, setSavedPrompts, chatbot, onClo
           className="input input-bordered w-full"
           placeholder="My Custom Agent..."
           required
+          disabled={saveIsLoading}
         />
       </div>
-      <div>
-        <label htmlFor="promptText" className="label">
+      <div className="mx-2 mt-2">
+        <label htmlFor="promptText" className="label mb-2">
           <span className="label-text">System Prompt</span>
         </label>
         <textarea
@@ -108,41 +135,71 @@ const PromptEditor = ({ promptData, onSetPrompt, setSavedPrompts, chatbot, onClo
           maxLength={15000}
           id="promptText"
           className="textarea textarea-bordered w-full h-40"
+          placeholder="My Custom Prompt..."
           required
+          disabled={saveIsLoading}
         />
       </div>
-      <div className="modal-action">
-        <button type="button" onClick={() => handleSaveSet()} className="btn btn-primary">
-          Save
+      <div className="modal-action mt-1">
+        <button
+          type="button"
+          onClick={() => handleSaveSet()}
+          className="btn mr-1"
+          disabled={saveIsLoading}
+        >
+          {saveIsLoading ? (
+            <>
+              Saving<span className="loading loading-spinner loading-xs"></span>
+            </>
+          ) : (
+            <>Save</>
+          )}
+        </button>
+        <button onClick={onClose} className="btn mr-2">
+          Cancel
         </button>
       </div>
     </div>
   );
 };
 
-
-const PromptMenu = ({ onSetPrompt, setPromptManagerContext, savedPrompts, setSavedPrompts, chatbot, onClose }) => {
+const PromptMenu = ({
+  selected,
+  onSetPrompt,
+  setPromptManagerContext,
+  savedPrompts,
+  setSavedPrompts,
+  chatbot,
+  onClose,
+  showAlert,
+}) => {
+  const [delIsLoading, setDelIsLoading] = useState(false);
 
   const changeToPromptEditor = (
-    promptData = {id: null, agent_name: '', prompt: '', created_at: null}
+    promptData = { id: null, agent_name: '', prompt: '', created_at: null },
   ) => {
     setPromptManagerContext({
       chatbot: chatbot,
       promptData: promptData,
       onSetPrompt: onSetPrompt,
-      isEditor: true
+      isEditor: true,
     });
   };
 
   const deletePrompt = async (id, agentName) => {
-    let conf = confirm(`Are you sure you want to delete '${agentName}'?`)
+    let conf = confirm(`Are you sure you want to delete '${agentName}'?`);
     if (conf) {
+      setDelIsLoading(id);
       try {
         await axios.delete(`api/delete_prompt/${id}`);
         savedPrompts.delete(id);
         setSavedPrompts((prev) => new Map(prev));
+        showAlert(`'${agentName} deleted'`, 'success');
       } catch (err) {
         console.log(err);
+        showAlert(err.response?.data?.detail || 'Error occured', 'error');
+      } finally {
+        setDelIsLoading(false);
       }
     }
   };
@@ -154,34 +211,68 @@ const PromptMenu = ({ onSetPrompt, setPromptManagerContext, savedPrompts, setSav
 
   return (
     <div>
-      <h3 className="font-bold text-lg">My prompts</h3>
-      <div className="modal-action">
-        <button onClick={() => changeToPromptEditor()}>
+      <div className="m-2">
+        <h3 className="font-bold text-xl">My prompts</h3>
+      </div>
+      <div className="modal-action my-5 p-1 size-fit">
+        <button onClick={() => changeToPromptEditor()} className="btn">
           Add new prompt
         </button>
       </div>
       <div>
-        {savedPrompts && (
-          <ul className="menu bg-base-200 w-full">
-            {Array.from(savedPrompts, ([id, prompt]) => (
-              <li key={id} className="flex flex-row">
-                <a onClick={() => onSelectPrompt(prompt)} className="">
-                  {prompt.agent_name}
-                </a>
-                <button onClick={() => changeToPromptEditor(prompt)} className="">
-                  Edit
-                </button>
-                <button onClick={() => deletePrompt(id, prompt.agent_name)} className="">
-                  Delete
-                </button>
-              </li>
-            ))}
-          </ul>
-        )}
+        {savedPrompts &&
+          (savedPrompts.size ? (
+            <ul className="menu w-full">
+              {Array.from(savedPrompts, ([id, prompt]) => (
+                <li
+                  key={id}
+                  className="flex flex-row gap-1 items-center w-full p-1 border-b-1 border-base-300"
+                >
+                  <a
+                    onClick={() => onSelectPrompt(prompt)}
+                    className={`grow p-3 ${selected == id && 'bg-base-300'}`}
+                  >
+                    {prompt.agent_name}
+                  </a>
+                  <button
+                    onClick={() => changeToPromptEditor(prompt)}
+                    className="btn btn-ghost p-3"
+                  >
+                    Edit
+                  </button>
+                  <button
+                    onClick={() => deletePrompt(id, prompt.agent_name)}
+                    className="btn btn-ghost p-3"
+                  >
+                    {delIsLoading == id ? (
+                      <>
+                        Deleting<span className="loading loading-spinner loading-xs"></span>
+                      </>
+                    ) : (
+                      <>Delete</>
+                    )}
+                  </button>
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <p className="italic text-pretty tracking-wide opacity-80 text-sm">No saved prompts</p>
+          ))}
       </div>
     </div>
   );
 };
 
+const MaterialSymbolsCloseRounded = (props) => {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" viewBox="0 0 24 24" {...props}>
+      {/* Icon from Material Symbols by Google - https://github.com/google/material-design-icons/blob/master/LICENSE */}
+      <path
+        fill="currentColor"
+        d="m12 13.4l-4.9 4.9q-.275.275-.7.275t-.7-.275t-.275-.7t.275-.7l4.9-4.9l-4.9-4.9q-.275-.275-.275-.7t.275-.7t.7-.275t.7.275l4.9 4.9l4.9-4.9q.275-.275.7-.275t.7.275t.275.7t-.275.7L13.4 12l4.9 4.9q.275.275.275.7t-.275.7t-.7.275t-.7-.275z"
+      />
+    </svg>
+  );
+};
 
 export default PromptManagerModal;
