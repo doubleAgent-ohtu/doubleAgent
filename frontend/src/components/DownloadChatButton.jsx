@@ -1,30 +1,24 @@
-import React from 'react';
+import axios from 'axios';
 
 const DownloadChatButton = ({ threadId = 'default', label = 'Download .txt' }) => {
   const handleDownload = async () => {
     try {
-      const API_URL = 'http://localhost:8000';
-
-      const response = await fetch(`${API_URL}/download-chat/${threadId}`, {
-        method: 'GET',
-        credentials: 'include',
+      const response = await axios.get(`api/download-chat/${threadId}`, {
+        responseType: 'blob', // Important: tells axios to handle the response as binary data
+        withCredentials: true, // Equivalent to credentials: 'include'
       });
 
-      if (!response.ok) {
-        throw new Error('Download failed');
-      }
-
-      const blob = await response.blob();
+      const blob = response.data;
 
       const url = window.URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-
       a.download = `conversation_${threadId}.txt`;
 
       document.body.appendChild(a);
       a.click();
 
+      // Cleanup
       window.URL.revokeObjectURL(url);
       document.body.removeChild(a);
     } catch (error) {
