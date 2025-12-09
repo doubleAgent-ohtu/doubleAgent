@@ -1,9 +1,13 @@
-import React from 'react';
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import '@testing-library/jest-dom';
+import axios from 'axios';
+import { vi } from 'vitest';
 
 import DownloadChatButton from './DownloadChatButton';
+
+// 1. Tell Vitest to take control of axios
+vi.mock('axios');
 
 afterEach(() => {
   vi.restoreAllMocks();
@@ -13,28 +17,30 @@ test('1. Renders button with default label and aria', () => {
   render(<DownloadChatButton />);
 
   const button = screen.getByRole('button', { name: /download conversation default/i });
-  // aria-label contains the threadId (default)
   expect(button).toBeInTheDocument();
   expect(button).toHaveTextContent(/download/i);
 });
 
-test('2. Successful download calls fetch and triggers anchor click', async () => {
+test('2. Successful download calls axios and triggers anchor click', async () => {
   const user = userEvent.setup();
 
-  // Mock fetch to return ok and a blob
+  // Mock Axios success response
+  // Note: Axios wraps the response body in a 'data' property.
   const blob = new Blob(['hello'], { type: 'text/plain' });
-  global.fetch = vi.fn().mockResolvedValue({ ok: true, blob: async () => blob });
+  axios.get.mockResolvedValue({ data: blob });
 
+  // Mock URL APIs
   const createObjectURL = vi.spyOn(URL, 'createObjectURL').mockReturnValue('blob:fake');
   const revokeObjectURL = vi.spyOn(URL, 'revokeObjectURL').mockImplementation(() => {});
 
+  // Mock Anchor element creation and clicking
   const origCreateElement = document.createElement.bind(document);
   let createdAnchor = null;
   vi.spyOn(document, 'createElement').mockImplementation((tag) => {
     const el = origCreateElement(tag);
     if (tag === 'a') {
       createdAnchor = el;
-      vi.spyOn(el, 'click');
+      vi.spyOn(el, 'click'); // Spy on the click method
     }
     return el;
   });
@@ -47,16 +53,18 @@ test('2. Successful download calls fetch and triggers anchor click', async () =>
   const button = screen.getByRole('button', { name: /download conversation default/i });
   await user.click(button);
 
-  expect(global.fetch).toHaveBeenCalledWith('http://localhost:8000/download-chat/default', {
-    method: 'GET',
-    credentials: 'include',
+  // Assertions updated for Axios and Relative Path
+  expect(axios.get).toHaveBeenCalledWith('api/download-chat/default', {
+    responseType: 'blob',
+    withCredentials: true,
   });
 
-  // ensure blob url created and anchor clicked
-  expect(createObjectURL).toHaveBeenCalled();
-  // ensure the anchor element was created and its click() was invoked
+  // Ensure blob url created and anchor clicked
+  expect(createObjectURL).toHaveBeenCalledWith(blob);
   expect(createdAnchor).toBeTruthy();
   expect(createdAnchor.click).toHaveBeenCalled();
+
+  // Ensure DOM cleanup happened
   expect(appendSpy).toHaveBeenCalled();
   expect(removeSpy).toHaveBeenCalled();
   expect(revokeObjectURL).toHaveBeenCalled();
@@ -64,14 +72,17 @@ test('2. Successful download calls fetch and triggers anchor click', async () =>
 
 test('3. Failed download shows alert', async () => {
   const user = userEvent.setup();
-  global.fetch = vi.fn().mockResolvedValue({ ok: false });
+
+  // Mock Axios failure
+  axios.get.mockRejectedValue(new Error('Network Error'));
+
   const alertSpy = vi.spyOn(window, 'alert').mockImplementation(() => {});
 
   render(<DownloadChatButton />);
   const button = screen.getByRole('button', { name: /download conversation default/i });
   await user.click(button);
 
-  expect(global.fetch).toHaveBeenCalled();
+  expect(axios.get).toHaveBeenCalled();
   expect(alertSpy).toHaveBeenCalledWith(
     'Failed to download conversation. Make sure you are logged in.',
   );
