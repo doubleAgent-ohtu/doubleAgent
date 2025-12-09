@@ -4,6 +4,10 @@ import '@testing-library/jest-dom';
 
 import Conversation from './Conversation';
 
+vi.mock('./third-party/Orb.jsx', () => ({
+  default: () => <div data-testid="orb-mock">Orb Placeholder</div>,
+}));
+
 global.fetch = vi.fn();
 
 Element.prototype.scrollTo = vi.fn();
@@ -74,7 +78,7 @@ test('7. Renders turns input with default value 3', () => {
 test('8. Shows placeholder text when no messages', () => {
   render(<Conversation {...defaultProps} />);
 
-  expect(screen.getByText('Type a message to start...')).toBeInTheDocument();
+  expect(screen.getByText('Orb Placeholder')).toBeInTheDocument();
 });
 
 test('9. Turns input has min 1 and max 20 attributes', () => {
