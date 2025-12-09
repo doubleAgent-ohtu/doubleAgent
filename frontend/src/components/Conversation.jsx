@@ -1,6 +1,8 @@
 import { useState, useEffect, useRef } from 'react';
 import ModelSelection from './ModelSelection.jsx';
 import DownloadChatButton from './DownloadChatButton.jsx';
+import Orb from './third-party/Orb.jsx';
+import { motion, AnimatePresence } from 'framer-motion';
 
 const Conversation = ({
   promptA,
@@ -301,7 +303,22 @@ const Conversation = ({
         <div ref={messagesRef} className="messages-container overflow-y-auto h-full pr-2">
           <div className="absolute top-0 left-0 w-full h-16 pointer-events-none z-20 bg-linear-to-b from-base-200 to-[rgba(243,244,246,0)]"></div>
 
-          {!messages && <p className="mt-10">Type a message to start...</p>}
+          <AnimatePresence>
+            {!messages && (
+              <motion.div
+                key="orb-wrapper" // Unique key is required for AnimatePresence
+                initial={{ opacity: 0 }} // Starts invisible
+                animate={{ opacity: 1 }} // Fades in
+                exit={{ opacity: 0 }} // Fades out when !messages becomes false
+                transition={{ duration: 0.8, ease: 'easeInOut' }}
+                className="absolute inset-0 flex items-center justify-center z-0 pointer-events-none"
+              >
+                <div className="w-[300px] h-[300px] pointer-events-auto -translate-y-24 lg:-translate-y-64">
+                  <Orb hoverIntensity={0.1} rotateOnHover={true} hue={0} forceHoverState={false} />
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
 
           {messages &&
             messages.map((msg, idx) => (
