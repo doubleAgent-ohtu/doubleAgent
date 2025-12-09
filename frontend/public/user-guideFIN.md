@@ -14,11 +14,11 @@
 
 Etusivulla näet kolme pääaluetta:
 
-| Alue | Kuvaus |
-|------|--------|
-| **Chatbot A** (vasen) | Vasemmanpuoleisen botin asetukset ja järjestelmäkehote |
-| **Keskustelualue** (keskellä) | Bottien välinen keskustelu ja viestien syöttö |
-| **Chatbot B** (oikea) | Oikeanpuoleisen botin asetukset ja järjestelmäkehote |
+| Alue                          | Kuvaus                                                 |
+| ----------------------------- | ------------------------------------------------------ |
+| **Chatbot A** (vasen)         | Vasemmanpuoleisen botin asetukset ja järjestelmäkehote |
+| **Keskustelualue** (keskellä) | Bottien välinen keskustelu ja viestien syöttö          |
+| **Chatbot B** (oikea)         | Oikeanpuoleisen botin asetukset ja järjestelmäkehote   |
 
 #### Sivuvalikko
 
@@ -37,7 +37,7 @@ Järjestelmäkehote (system prompt) määrittää, miten chatbot käyttäytyy ke
 1. Klikkaa **"Set Prompt"** tai **"Edit Prompt"** -painiketta joko Chatbot A:n tai B:n laatikossa.
 2. Avautuvassa ikkunassa:
    - Kirjoita haluamasi järjestelmäkehote **System Prompt** -kenttään.
-   - *Valinnainen:* Anna agentille nimi **Agent Name** -kenttään, jos haluat tallentaa kehotteen.
+   - _Valinnainen:_ Anna agentille nimi **Agent Name** -kenttään, jos haluat tallentaa kehotteen.
 3. Valitse toiminto:
    - **Set** – Asettaa kehotteen tälle istunnolle
    - **Set & Save** – Asettaa kehotteen ja tallentaa sen tietokantaan myöhempää käyttöä varten
@@ -64,15 +64,14 @@ Järjestelmäkehote (system prompt) määrittää, miten chatbot käyttäytyy ke
 
 ### 6. Mallin valinta
 
-| Malli | Kuvaus |
-|-------|--------|
-| **GPT-4o** | Oletusvalinta, tasapainoinen suorituskyky |
-| **GPT-4o-mini** | Kevyempi ja nopeampi versio |
-| **GPT-4.1** | Kehittyneempi versio |
-| **GPT-5** | Uusin malli |
+| Malli           | Kuvaus                                    |
+| --------------- | ----------------------------------------- |
+| **GPT-4o**      | Oletusvalinta, tasapainoinen suorituskyky |
+| **GPT-4o-mini** | Kevyempi ja nopeampi versio               |
+| **GPT-4.1**     | Kehittyneempi versio                      |
+| **GPT-5**       | Uusin malli                               |
 
 ---
-
 
 ### 7. Uloskirjautuminen
 
@@ -90,8 +89,8 @@ Sovellus käsittelee henkilötietoja EU:n yleisen tietosuoja-asetuksen (GDPR) mu
 
 ### 9. Vianmääritys
 
-| Ongelma | Ratkaisu |
-|---------|----------|
-| Kirjautuminen ei onnistu | Tarkista yliopistotunnuksesi ja verkkoyhteys |
-| Keskustelu ei käynnisty | Varmista, että olet kirjoittanut aloitusviestin |
-| Viestit eivät lataudu | Päivitä sivu ja yritä uudelleen |
+| Ongelma                  | Ratkaisu                                        |
+| ------------------------ | ----------------------------------------------- |
+| Kirjautuminen ei onnistu | Tarkista yliopistotunnuksesi ja verkkoyhteys    |
+| Keskustelu ei käynnisty  | Varmista, että olet kirjoittanut aloitusviestin |
+| Viestit eivät lataudu    | Päivitä sivu ja yritä uudelleen                 |

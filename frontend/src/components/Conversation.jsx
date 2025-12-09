@@ -7,6 +7,8 @@ const Conversation = ({
   promptB,
   onActivate,
   onClearPrompts,
+  openConversation,
+  newChatSignal,
   threadId: propThreadId,
   setThreadId: propSetThreadId,
 }) => {
@@ -37,6 +39,50 @@ const Conversation = ({
     }
   }, [messages]);
 
+  // Load a conversation provided by parent or other components
+  useEffect(() => {
+    const loadConversation = async () => {
+      if (!openConversation) return;
+
+      // If full messages are already present, use them
+      if (openConversation.messages && openConversation.messages.length > 0) {
+        const mapped = openConversation.messages.map((m) => ({
+          chatbot: m.chatbot,
+          message: m.message,
+        }));
+        setMessages(mapped);
+        setThreadId(openConversation.thread_id || crypto.randomUUID());
+        if (openConversation.model) setSelectedModel(openConversation.model);
+        setIsSaved(true);
+        return;
+      }
+
+      // Otherwise fetch the conversation by id
+      try {
+        const id = openConversation.id || openConversation;
+        console.log('Loading conversation id:', id);
+        const res = await fetch(`/api/conversations/${id}`, { credentials: 'include' });
+        if (!res.ok) {
+          console.warn('Failed to load conversation', res.status);
+          return;
+        }
+        const data = await res.json();
+        console.log('Loaded conversation data:', data);
+        if (data && data.messages) {
+          const mapped = data.messages.map((m) => ({ chatbot: m.chatbot, message: m.message }));
+          setMessages(mapped);
+        }
+        setThreadId(data.thread_id || crypto.randomUUID());
+        if (data.model) setSelectedModel(data.model);
+        setIsSaved(true);
+      } catch (err) {
+        console.error('Error loading conversation', err);
+      }
+    };
+
+    loadConversation();
+  }, [openConversation]);
+
   const handleStopConversation = () => {
     if (abortControllerRef.current) {
       abortControllerRef.current.abort(); // Send the cancel signal
@@ -53,6 +99,29 @@ const Conversation = ({
     if (onClearPrompts) onClearPrompts();
     console.log('--- 🗑️ Conversation cleared ---');
   };
+
+  // Clear conversation when parent signals a new chat
+  useEffect(() => {
+    if (typeof newChatSignal === 'undefined') return;
+    handleClearConversation();
+  }, [newChatSignal]);
+
+  // Also respond to global new-chat events (dispatched from Menu)
+  useEffect(() => {
+    const handler = () => handleClearConversation();
+    try {
+      window.addEventListener('new-chat:start', handler);
+    } catch (e) {
+      // ignore
+    }
+    return () => {
+      try {
+        window.removeEventListener('new-chat:start', handler);
+      } catch (e) {
+        // ignore
+      }
+    };
+  }, []);
 
   const handleSaveConversation = async () => {
     if (!messages || messages.length === 0) {
@@ -100,7 +169,19 @@ const Conversation = ({
         throw new Error(errorData.detail || 'Save failed');
       }
 
+      const saved = await response.json();
+
       setIsSaved(true);
+      try {
+        window.dispatchEvent(new Event('conversations:updated'));
+      } catch (e) {
+        /* ignore */
+      }
+      try {
+        window.dispatchEvent(new CustomEvent('conversation:opened', { detail: saved }));
+      } catch (e) {
+        /* ignore */
+      }
       console.log('✅ Conversation saved');
     } catch (err) {
       console.error('Error saving conversation:', err);
@@ -132,6 +213,7 @@ const Conversation = ({
     setInput('');
 
     try {
+      console.log('Starting POST /api/conversation with payload:', conversationData);
       // Has to be fetch, not axios for streaming
       const response = await fetch('/api/conversation', {
         method: 'POST',

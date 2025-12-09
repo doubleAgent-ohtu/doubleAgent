@@ -19,7 +19,7 @@ export default defineConfig(({ mode }) => {
         },
       },
     },
-    
+
     //TESTS
     test: {
       globals: true,

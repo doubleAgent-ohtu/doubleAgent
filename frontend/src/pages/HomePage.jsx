@@ -19,6 +19,8 @@ const HomePage = () => {
   const [isConvoActive, setIsConvoActive] = useState(false);
   const [userGuideLanguage, setUserGuideLanguage] = useState('FIN');
   const [privacyLanguage, setPrivacyLanguage] = useState('FIN');
+  const [openConversation, setOpenConversation] = useState(null);
+  const [newChatSignal, setNewChatSignal] = useState(0);
 
   const openPromptEditor = (prompt, setPrompt) => {
     setPromptToEdit({ currentPrompt: prompt, onSetPrompt: setPrompt });
@@ -40,11 +42,43 @@ const HomePage = () => {
     userGuideModalRef.current.showModal();
   };
 
+  const handleSelectConversation = async (c) => {
+    if (!c) return;
+    // set the selected conversation immediately; Conversation component will fetch full data if needed
+    // also set the system prompts so Conversation uses the same prompts
+    setPromptA(c.system_prompt_a || '');
+    setPromptB(c.system_prompt_b || '');
+    setOpenConversation(c);
+    setIsConvoActive(true);
+  };
+
+  const handleNewChat = () => {
+    // increment signal so Conversation clears itself
+    setOpenConversation(null);
+    setNewChatSignal((n) => n + 1);
+    setIsConvoActive(true);
+  };
+
   useEffect(() => {
     if (promptToEdit && promptEditorRef.current) {
       promptEditorRef.current.showModal();
     }
   }, [promptToEdit]);
+
+  useEffect(() => {
+    const handler = (e) => {
+      if (e && e.detail) {
+        const c = e.detail;
+        setPromptA(c.system_prompt_a || '');
+        setPromptB(c.system_prompt_b || '');
+        setOpenConversation(c);
+        setIsConvoActive(true);
+      }
+    };
+
+    window.addEventListener('conversation:opened', handler);
+    return () => window.removeEventListener('conversation:opened', handler);
+  }, []);
 
   return (
     <div className="drawer lg:drawer-open">
@@ -77,6 +111,8 @@ const HomePage = () => {
                 promptB={promptB}
                 onActivate={() => setIsConvoActive(true)}
                 onClearPrompts={handleClearPrompts}
+                openConversation={openConversation}
+                newChatSignal={newChatSignal}
               />
             </div>
 
@@ -103,7 +139,11 @@ const HomePage = () => {
 
       <div className="drawer-side">
         <label htmlFor="my-drawer-4" aria-label="close sidebar" className="drawer-overlay"></label>
-        <Menu onOpenUserGuide={openUserGuide} />
+        <Menu
+          onOpenUserGuide={openUserGuide}
+          onSelectConversation={handleSelectConversation}
+          onNewChat={handleNewChat}
+        />
       </div>
 
       {promptToEdit && (
