@@ -10,7 +10,7 @@ import PromptManagerModal from '../components/PromptManagerModal.jsx';
 import useAlert from '../components/useAlert.jsx';
 
 const HomePage = () => {
-  const [savedPrompts, setSavedPrompts] = useState(new Map());
+  const [savedPrompts, setSavedPrompts] = useState(null);
   const init_prompt = {
     id: null,
     agent_name: '',
@@ -27,6 +27,8 @@ const HomePage = () => {
   const [isConvoActive, setIsConvoActive] = useState(false);
   const [userGuideLanguage, setUserGuideLanguage] = useState('FIN');
   const [privacyLanguage, setPrivacyLanguage] = useState('FIN');
+  const [openConversation, setOpenConversation] = useState(null);
+  const [newChatSignal, setNewChatSignal] = useState(0);
 
   const { alertIsVisible, alertText, alertType, showAlert } = useAlert();
 
@@ -48,6 +50,23 @@ const HomePage = () => {
     userGuideModalRef.current.showModal();
   };
 
+  const handleSelectConversation = async (c) => {
+    if (!c) return;
+    // set the selected conversation immediately; Conversation component will fetch full data if needed
+    // also set the system prompts so Conversation uses the same prompts
+    setPromptA(c.system_prompt_a || '');
+    setPromptB(c.system_prompt_b || '');
+    setOpenConversation(c);
+    setIsConvoActive(true);
+  };
+
+  const handleNewChat = () => {
+    // increment signal so Conversation clears itself
+    setOpenConversation(null);
+    setNewChatSignal((n) => n + 1);
+    setIsConvoActive(true);
+  };
+
   useEffect(() => {
     const loadSavedPrompts = async () => {
       try {
@@ -63,6 +82,21 @@ const HomePage = () => {
   }, []);
 
   useEffect(() => {}, []);
+
+  useEffect(() => {
+    const handler = (e) => {
+      if (e && e.detail) {
+        const c = e.detail;
+        setPromptA(c.system_prompt_a || '');
+        setPromptB(c.system_prompt_b || '');
+        setOpenConversation(c);
+        setIsConvoActive(true);
+      }
+    };
+
+    window.addEventListener('conversation:opened', handler);
+    return () => window.removeEventListener('conversation:opened', handler);
+  }, []);
 
   return (
     <div className="drawer lg:drawer-open">
@@ -99,6 +133,8 @@ const HomePage = () => {
                 promptB={promptB.prompt}
                 onActivate={() => setIsConvoActive(true)}
                 onClearPrompts={handleClearPrompts}
+                openConversation={openConversation}
+                newChatSignal={newChatSignal}
               />
             </div>
 
@@ -129,7 +165,11 @@ const HomePage = () => {
 
       <div className="drawer-side">
         <label htmlFor="my-drawer-4" aria-label="close sidebar" className="drawer-overlay"></label>
-        <Menu onOpenUserGuide={openUserGuide} />
+        <Menu
+          onOpenUserGuide={openUserGuide}
+          onSelectConversation={handleSelectConversation}
+          onNewChat={handleNewChat}
+        />
       </div>
 
       {promptManagerContext && (

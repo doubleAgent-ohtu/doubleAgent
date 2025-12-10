@@ -1,6 +1,6 @@
 import os
 from dotenv import load_dotenv
-from fastapi import FastAPI, Request, HTTPException, status, Depends
+from fastapi import FastAPI, Request, HTTPException, status, Depends, Response
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import RedirectResponse
 from pydantic import BaseModel
@@ -10,10 +10,10 @@ from app.routers.oidc_router import oidc_router
 from app.db.database import DBSession
 from sqlalchemy.orm import Session
 from app import schemas
-from app.db.models import Prompt
+from app.db.models import Prompt, Conversation, Message
 from sqlalchemy import select, update
 import asyncio
-from fastapi.responses import StreamingResponse
+from fastapi.responses import StreamingResponse, RedirectResponse
 import json
 
 load_dotenv()
@@ -207,8 +207,8 @@ async def start_conversation(
     request: Request,
     current_user: dict = Depends(get_current_user),
 ):
-    if conv.turns < 1 or conv.turns > 10:
-        raise HTTPException(status_code=400, detail="Turns must be between 1 and 10")
+    if conv.turns < 1 or conv.turns > 20:
+        raise HTTPException(status_code=400, detail="Turns must be between 1 and 20")
     return StreamingResponse(
         conversation_generator(conv, request), media_type="text/event-stream"
     )
@@ -332,3 +332,116 @@ async def delete_prompt(
     db.commit()
 
     return {"message": "Prompt deleted successfully"}
+
+
+@app.get("/download-chat/{thread_id}")
+def download_chat(thread_id: str, current_user: dict = Depends(get_current_user)):
+    """
+    Download bots conversation in .txt file format
+    """
+
+    history_text_A = chatbot_a.get_conversation_history(thread_id)
+    print(history_text_A)
+
+    headers = {
+        "Content-Disposition": f"attachment; filename=conversation_{thread_id}.txt"
+    }
+
+    return Response(content=history_text_A, media_type="text/plain", headers=headers)
+
+
+@app.post("/conversations", response_model=schemas.ConversationSchema)
+async def save_conversation(
+    data: schemas.SaveConversation,
+    user_id: str = Depends(get_user_id),
+    db: Session = Depends(get_db),
+):
+    """Save a conversation with all its messages"""
+    conversation = Conversation(
+        user=user_id,
+        conversation_starter=data.conversation_starter,
+        thread_id=data.thread_id,
+        model=data.model,
+        system_prompt_a=data.system_prompt_a,
+        system_prompt_b=data.system_prompt_b,
+        turns=data.turns,
+    )
+    db.add(conversation)
+    db.flush()
+
+    # Add messages
+    for idx, msg in enumerate(data.messages):
+        message = Message(
+            conversation_id=conversation.id,
+            chatbot=msg.get("chatbot", "unknown"),
+            message=msg.get("message", ""),
+            order=idx,
+        )
+        db.add(message)
+
+    db.commit()
+    db.refresh(conversation)
+
+    return conversation
+
+
+@app.get("/conversations", response_model=list[schemas.ConversationSchema])
+async def get_conversations(
+    user_id: str = Depends(get_user_id), db: Session = Depends(get_db)
+):
+    """Get all conversations for the current user"""
+    conversations = (
+        db.query(Conversation)
+        .filter(Conversation.user == user_id)
+        .order_by(Conversation.created_at.desc())
+        .all()
+    )
+    return conversations
+
+
+@app.get("/conversation/{conversation_id}", response_model=schemas.ConversationSchema)
+@app.get("/conversations/{conversation_id}", response_model=schemas.ConversationSchema)
+async def get_converastion(
+    conversation_id: int,
+    user_id: str = Depends(get_user_id),
+    db: Session = Depends(get_db),
+):
+    """Get a specific conversation with all messages"""
+    conversation = (
+        db.query(Conversation)
+        .filter(
+            Conversation.id == conversation_id,
+            Conversation.user == user_id,
+        )
+        .first()
+    )
+
+    if not conversation:
+        raise HTTPException(status_code=404, detail="Conversation not found")
+
+    return conversation
+
+
+@app.delete("/conversations/{conversation_id}")
+async def delete_conversation(
+    conversation_id: int,
+    user_id: str = Depends(get_user_id),
+    db: Session = Depends(get_db),
+):
+    """Delete a conversation"""
+    conversation = (
+        db.query(Conversation)
+        .filter(
+            Conversation.id == conversation_id,
+            Conversation.user == user_id,
+        )
+        .first()
+    )
+
+    if not conversation:
+        raise HTTPException(status_code=404, detail="Conversation not found")
+
+    db.delete(conversation)
+    db.commit()
+
+    return {"message": "Conversation deleted successfully"}

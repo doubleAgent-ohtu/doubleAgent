@@ -2,7 +2,6 @@ import axios from 'axios';
 import { useState, useEffect, useRef } from 'react';
 import { LucidePencilLine } from './BotConfigurator';
 
-
 const PromptManagerModal = ({
   promptManagerContext,
   setPromptManagerContext,
@@ -106,7 +105,9 @@ const PromptEditor = ({
 
       switch (err.status) {
         case 409:
-          setErrMessage(`Error: Another agent named '${agentName}' may already exist. Please try again.`);
+          setErrMessage(
+            `Error: Another agent named '${agentName}' may already exist. Please try again.`,
+          );
           break;
         case 422:
           setErrMessage('Error: Please check that fields are not missing.');
@@ -126,7 +127,11 @@ const PromptEditor = ({
         <h3 className="text-xl">Set Prompt {chatbot}</h3>
       </div>
 
-      {errMessage && <div className='m-2 text-red-500'><p>{errMessage}</p></div>}
+      {errMessage && (
+        <div className="m-2 text-red-500">
+          <p>{errMessage}</p>
+        </div>
+      )}
 
       <div className="m-2">
         <label htmlFor="savePromptAgentName" className="label mb-1">
@@ -168,12 +173,17 @@ const PromptEditor = ({
           disabled={saveIsLoading}
         >
           {saveIsLoading ? (
-            <>Saving<span className="loading loading-spinner loading-xs"></span></>
+            <>
+              Saving<span className="loading loading-spinner loading-xs"></span>
+            </>
           ) : (
             <>Save</>
           )}
         </button>
-        <button onClick={onClose} className="btn rounded-xl mr-2 border-none bg-red-500/30 hover:bg-red-500/50">
+        <button
+          onClick={onClose}
+          className="btn rounded-xl mr-2 border-none bg-red-500/30 hover:bg-red-500/50"
+        >
           Cancel
         </button>
       </div>
@@ -228,7 +238,7 @@ const PromptMenu = ({
   };
 
   return (
-    <div className='flex flex-col'>
+    <div className="flex flex-col">
       <div>
         <h3 className="text-lg">My prompts</h3>
       </div>
@@ -239,28 +249,37 @@ const PromptMenu = ({
         </button>
       </div>
       <div>
-        {savedPrompts && (savedPrompts.size 
-          ? <ul className="flex flex-col w-full">
+        {savedPrompts ? (
+          savedPrompts.size ? (
+            <ul className="flex flex-col w-full">
               {Array.from(savedPrompts, ([id, prompt]) => (
                 <div key={id}>
                   <li
                     className={`flex flex-row items-center w-full p-1 rounded-xl ${selected == id && 'bg-base-300'} hover:bg-base-200 hover:cursor-pointer`}
                     onClick={() => onSelectPrompt(prompt)}
                   >
-                    <p className='ml-3'>{prompt.agent_name}</p>
-                    <div className='ml-auto'>
+                    <p className="ml-3">{prompt.agent_name}</p>
+                    <div className="ml-auto">
                       <button
-                        onClick={(e) => {e.stopPropagation(); changeToPromptEditor(prompt);}}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          changeToPromptEditor(prompt);
+                        }}
                         className="btn btn-primary btn-soft rounded-xl mr-2"
                       >
                         Edit
                       </button>
                       <button
-                        onClick={(e) => {e.stopPropagation(); deletePrompt(id, prompt.agent_name);}}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          deletePrompt(id, prompt.agent_name);
+                        }}
                         className="btn rounded-xl text-lg border-none bg-red-500/30 hover:bg-red-500/50"
                       >
                         <LucideTrash2 />
-                        {delIsLoading == id && <span className="loading loading-spinner loading-xs"></span>}
+                        {delIsLoading == id && (
+                          <span className="loading loading-spinner loading-xs"></span>
+                        )}
                       </button>
                     </div>
                   </li>
@@ -268,7 +287,15 @@ const PromptMenu = ({
                 </div>
               ))}
             </ul>
-          : <p className="italic text-pretty tracking-wide opacity-80 text-sm">No saved prompts</p>
+          ) : (
+            <p className="italic text-pretty tracking-wide opacity-80 text-sm">No saved prompts</p>
+          )
+        ) : (
+          <>
+            <p className="italic text-pretty tracking-wide opacity-80 text-sm">
+              Loading prompts <span className="loading loading-spinner loading-xs"></span>
+            </p>
+          </>
         )}
       </div>
     </div>
@@ -287,11 +314,20 @@ const MaterialSymbolsCloseRounded = (props) => {
   );
 };
 
-
 const LucideTrash2 = (props) => {
   return (
-    <svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" viewBox="0 0 24 24" {...props}>{/* Icon from Lucide by Lucide Contributors - https://github.com/lucide-icons/lucide/blob/main/LICENSE */}<path fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 11v6m4-6v6m5-11v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6M3 6h18M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" /></svg>
-  )
-}
+    <svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" viewBox="0 0 24 24" {...props}>
+      {/* Icon from Lucide by Lucide Contributors - https://github.com/lucide-icons/lucide/blob/main/LICENSE */}
+      <path
+        fill="none"
+        stroke="currentColor"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth="2"
+        d="M10 11v6m4-6v6m5-11v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6M3 6h18M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"
+      />
+    </svg>
+  );
+};
 
 export default PromptManagerModal;

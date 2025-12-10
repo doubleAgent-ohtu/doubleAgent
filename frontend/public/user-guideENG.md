@@ -14,11 +14,11 @@
 
 On the home page, you will see three main areas:
 
-| Area | Description |
-|------|-------------|
-| **Chatbot A** (left) | Settings and system prompt for the left bot |
-| **Conversation area** (center) | Conversation between bots and message input |
-| **Chatbot B** (right) | Settings and system prompt for the right bot |
+| Area                           | Description                                  |
+| ------------------------------ | -------------------------------------------- |
+| **Chatbot A** (left)           | Settings and system prompt for the left bot  |
+| **Conversation area** (center) | Conversation between bots and message input  |
+| **Chatbot B** (right)          | Settings and system prompt for the right bot |
 
 #### Sidebar Menu
 
@@ -37,7 +37,7 @@ A system prompt defines how the chatbot behaves in the conversation.
 1. Click the **"Set Prompt"** or **"Edit Prompt"** button in either Chatbot A's or B's box.
 2. In the dialog that opens:
    - Enter your desired system prompt in the **System Prompt** field.
-   - *Optional:* Give the agent a name in the **Agent Name** field if you want to save the prompt.
+   - _Optional:_ Give the agent a name in the **Agent Name** field if you want to save the prompt.
 3. Choose an action:
    - **Set** – Sets the prompt for this session
    - **Set & Save** – Sets the prompt and saves it to the database for future use
@@ -64,12 +64,12 @@ A system prompt defines how the chatbot behaves in the conversation.
 
 ### 6. Model Selection
 
-| Model | Description |
-|-------|-------------|
-| **GPT-4o** | Default choice, balanced performance |
-| **GPT-4o-mini** | Lighter and faster version |
-| **GPT-4.1** | More advanced version |
-| **GPT-5** | Latest model |
+| Model           | Description                          |
+| --------------- | ------------------------------------ |
+| **GPT-4o**      | Default choice, balanced performance |
+| **GPT-4o-mini** | Lighter and faster version           |
+| **GPT-4.1**     | More advanced version                |
+| **GPT-5**       | Latest model                         |
 
 ---
 
@@ -89,8 +89,8 @@ The application processes personal data in accordance with the EU General Data P
 
 ### 9. Troubleshooting
 
-| Problem | Solution |
-|---------|----------|
-| Cannot log in | Check your university credentials and network connection |
-| Conversation won't start | Make sure you have entered a starting message |
-| Messages not loading | Refresh the page and try again |
+| Problem                  | Solution                                                 |
+| ------------------------ | -------------------------------------------------------- |
+| Cannot log in            | Check your university credentials and network connection |
+| Conversation won't start | Make sure you have entered a starting message            |
+| Messages not loading     | Refresh the page and try again                           |
