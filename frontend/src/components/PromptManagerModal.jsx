@@ -109,7 +109,7 @@ const PromptEditor = ({
           setErrMessage(`Error: Another agent named '${agentName}' may already exist. Please try again.`);
           break;
         case 422:
-          setErrMessage('Error: Please check that no fields are missing.');
+          setErrMessage('Error: Please check that fields are not missing.');
           break;
         default:
           onClose();
@@ -126,9 +126,7 @@ const PromptEditor = ({
         <h3 className="text-xl">Set Prompt {chatbot}</h3>
       </div>
 
-      <div className='m-2 text-red-500'>
-        <p>{errMessage}</p>
-      </div>
+      {errMessage && <div className='m-2 text-red-500'><p>{errMessage}</p></div>}
 
       <div className="m-2">
         <label htmlFor="savePromptAgentName" className="label mb-1">
