@@ -231,8 +231,8 @@ const Menu = ({ onOpenUserGuide, onSelectConversation, onNewChat }) => {
                   }}
                 >
                   <span className="whitespace-normal break-words text-xs leading-relaxed line-clamp-2">
-                    {c.conversation_starter && c.conversation_starter.length > 60
-                      ? c.conversation_starter.slice(0, 60) + '...'
+                    {c.conversation_starter && c.conversation_starter.length > 40
+                      ? c.conversation_starter.slice(0, 40) + '...'
                       : c.conversation_starter || 'Untitled conversation'}
                   </span>
                 </button>

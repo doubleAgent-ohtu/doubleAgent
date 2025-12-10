@@ -79,7 +79,7 @@ test('3. Loads and renders conversation starters, clicking calls onSelectConvers
   );
 
   // wait for the starters to be rendered
-  await waitFor(() => expect(screen.getByText('Chat history')).toBeInTheDocument());
+  await waitFor(() => expect(screen.getByText('Chat History')).toBeInTheDocument());
 
   // first starter full text
   expect(screen.getByText('Hello world')).toBeInTheDocument();
@@ -109,7 +109,7 @@ test('4. Truncation produces exactly 40 chars + ellipsis', async () => {
 
   render(<Menu onOpenUserGuide={() => {}} onSelectConversation={() => {}} onNewChat={() => {}} />);
 
-  await waitFor(() => expect(screen.getByText('Chat history')).toBeInTheDocument());
+  await waitFor(() => expect(screen.getByText('Chat History')).toBeInTheDocument());
 
   const truncated = screen.getByText((c) => c.endsWith('...'));
   // should be 43 characters total: 40 + '...'
