@@ -216,25 +216,28 @@ const Menu = ({ onOpenUserGuide, onSelectConversation, onNewChat }) => {
         </ul>
         {/* Conversation starters under the icons (only visible when menu is expanded) */}
         {starters && starters.length > 0 && (
-          <div className="mt-4 is-drawer-close:hidden">
-            <p className="label-text text-sm opacity-70 mb-2">Chat history</p>
-            <ul className="menu w-full">
+          <div className="mt-4 is-drawer-close:hidden px-2">
+            <div className="divider divider-start text-xs opacity-60 my-2">
+              <span className="font-semibold">Chat History</span>
+            </div>
+            <div className="w-full space-y-1">
               {starters.map((c) => (
-                <li key={c.id}>
-                  <button
-                    className="btn btn-ghost btn-xs w-full justify-start text-sm whitespace-normal break-words"
-                    onClick={() => {
-                      if (onSelectConversation) onSelectConversation(c);
-                      else console.log('open', c.id);
-                    }}
-                  >
-                    {c.conversation_starter && c.conversation_starter.length > 40
-                      ? c.conversation_starter.slice(0, 40) + '...'
-                      : c.conversation_starter}
-                  </button>
-                </li>
+                <button
+                  key={c.id}
+                  className="btn btn-ghost btn-sm w-full justify-start text-left normal-case font-normal hover:bg-base-300 active:bg-base-300 rounded-lg p-3 h-auto min-h-0"
+                  onClick={() => {
+                    if (onSelectConversation) onSelectConversation(c);
+                    else console.log('open', c.id);
+                  }}
+                >
+                  <span className="whitespace-normal break-words text-xs leading-relaxed line-clamp-2">
+                    {c.conversation_starter && c.conversation_starter.length > 60
+                      ? c.conversation_starter.slice(0, 60) + '...'
+                      : c.conversation_starter || 'Untitled conversation'}
+                  </span>
+                </button>
               ))}
-            </ul>
+            </div>
           </div>
         )}
       </div>
