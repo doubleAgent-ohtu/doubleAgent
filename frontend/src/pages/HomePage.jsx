@@ -173,7 +173,7 @@ const HomePage = () => {
       </dialog>
 
       {alertIsVisible && (
-        <div className="top-8 left-20 fixed z-100">
+        <div className="top-8 left-25 fixed z-100">
           <div
             className={`alert ${alertType == 'success' ? 'alert-success' : alertType == 'error' ? 'alert-error' : 'alert-info'}`}
           >

@@ -1,5 +1,7 @@
 import axios from 'axios';
 import { useState, useEffect, useRef } from 'react';
+import { LucidePencilLine } from './BotConfigurator';
+
 
 const PromptManagerModal = ({
   promptManagerContext,
@@ -80,9 +82,14 @@ const PromptEditor = ({
   const [text, setText] = useState(promptData.prompt);
   const [agentName, setAgentName] = useState(promptData.agent_name);
   const [saveIsLoading, setSaveIsLoading] = useState(false);
+  const [errMessage, setErrMessage] = useState(null);
 
   const handleSaveSet = async () => {
     setSaveIsLoading(true);
+    setAgentName(agentName?.trim());
+    setText(text?.trim());
+    setErrMessage(null);
+
     try {
       const data = { agent_name: agentName, prompt: text };
       let res = promptData.id
@@ -93,13 +100,21 @@ const PromptEditor = ({
       onSetPrompt(prompt);
       setSavedPrompts((prev) => new Map(prev.set(prompt.id, prompt)));
       onClose();
-      showAlert(`Prompt ${promptData.id ? 'updated' : 'created'} and set`, 'success');
+      showAlert(`Prompt ${promptData.id ? 'edited' : 'created'} and set.`, 'success');
     } catch (err) {
       console.log(err);
-      showAlert(
-        `An error occured. Another prompt may have already been saved as '${agentName}'. Make sure you have filled all fields.`,
-        'error',
-      );
+
+      switch (err.status) {
+        case 409:
+          setErrMessage(`Error: Another agent named '${agentName}' may already exist. Please try again.`);
+          break;
+        case 422:
+          setErrMessage('Error: Please check that no fields are missing.');
+          break;
+        default:
+          onClose();
+          showAlert('An error occured.', 'error');
+      }
     } finally {
       setSaveIsLoading(false);
     }
@@ -108,8 +123,13 @@ const PromptEditor = ({
   return (
     <div className="flex flex-col gap-2">
       <div className="m-2">
-        <h3 className="font-bold text-xl">Set Prompt {chatbot}</h3>
+        <h3 className="text-xl">Set Prompt {chatbot}</h3>
       </div>
+
+      <div className='m-2 text-red-500'>
+        <p>{errMessage}</p>
+      </div>
+
       <div className="m-2">
         <label htmlFor="savePromptAgentName" className="label mb-1">
           <span className="label-text">Agent Name</span>
@@ -118,14 +138,14 @@ const PromptEditor = ({
           value={agentName}
           onChange={(e) => setAgentName(e.target.value)}
           maxLength={50}
-          minLength={1}
           id="savePromptAgentName"
-          className="input input-bordered w-full"
+          className="input input-bordered w-full transition delay-60 duration-120 ease-in-out hover:border-1 hover:border-base-content"
           placeholder="My Custom Agent..."
           required
           disabled={saveIsLoading}
         />
       </div>
+
       <div className="mx-2 mt-2">
         <label htmlFor="promptText" className="label mb-2">
           <span className="label-text">System Prompt</span>
@@ -134,30 +154,28 @@ const PromptEditor = ({
           value={text}
           onChange={(e) => setText(e.target.value)}
           maxLength={15000}
-          minLength={1}
           id="promptText"
-          className="textarea textarea-bordered w-full h-40"
+          className="textarea textarea-bordered w-full h-40 transition delay-60 duration-120 ease-in-out hover:border-1 hover:border-base-content"
           placeholder="My Custom Prompt..."
           required
           disabled={saveIsLoading}
         />
       </div>
+
       <div className="modal-action mt-1">
         <button
           type="button"
           onClick={handleSaveSet}
-          className="btn mr-1"
+          className="btn btn-primary btn-soft rounded-xl mr-2"
           disabled={saveIsLoading}
         >
           {saveIsLoading ? (
-            <>
-              Saving<span className="loading loading-spinner loading-xs"></span>
-            </>
+            <>Saving<span className="loading loading-spinner loading-xs"></span></>
           ) : (
             <>Save</>
           )}
         </button>
-        <button onClick={onClose} className="btn mr-2">
+        <button onClick={onClose} className="btn rounded-xl mr-2 border-none bg-red-500/30 hover:bg-red-500/50">
           Cancel
         </button>
       </div>
@@ -212,53 +230,48 @@ const PromptMenu = ({
   };
 
   return (
-    <div>
-      <div className="m-2">
-        <h3 className="text-xl">My prompts</h3>
+    <div className='flex flex-col'>
+      <div>
+        <h3 className="text-lg">My prompts</h3>
       </div>
-      <div className="modal-action my-5 size-fit">
+      <div className="modal-action size-fit my-6">
         <button onClick={() => changeToPromptEditor()} className="btn btn-primary rounded-xl">
+          <LucidePencilLine />
           Add new prompt
         </button>
       </div>
       <div>
-        {savedPrompts &&
-          (savedPrompts.size ? (
-            <ul className="flex flex-col w-full dark">
+        {savedPrompts && (savedPrompts.size 
+          ? <ul className="flex flex-col w-full">
               {Array.from(savedPrompts, ([id, prompt]) => (
-                <>
+                <div key={id}>
                   <li
-                    key={id}
-                    className={`flex flex-row items-center w-full p-2 rounded-xl ${selected == id && 'bg-base-300'} hover:bg-base-200 hover:cursor-pointer`}
+                    className={`flex flex-row items-center w-full p-1 rounded-xl ${selected == id && 'bg-base-300'} hover:bg-base-200 hover:cursor-pointer`}
                     onClick={() => onSelectPrompt(prompt)}
                   >
-                    <p className='ml-1'>{prompt.agent_name}</p>
+                    <p className='ml-3'>{prompt.agent_name}</p>
                     <div className='ml-auto'>
                       <button
                         onClick={(e) => {e.stopPropagation(); changeToPromptEditor(prompt);}}
-                        className="btn btn-ghost rounded-xl mr-1 p-2"
+                        className="btn btn-primary btn-soft rounded-xl mr-2"
                       >
                         Edit
                       </button>
                       <button
                         onClick={(e) => {e.stopPropagation(); deletePrompt(id, prompt.agent_name);}}
-                        className="btn btn-ghost rounded-xl text-red-500 p-2"
+                        className="btn rounded-xl text-lg border-none bg-red-500/30 hover:bg-red-500/50"
                       >
-                        {delIsLoading == id ? (
-                          <>Deleting<span className="loading loading-spinner loading-xs"></span></>
-                        ) : (
-                          <>Delete</>
-                        )}
+                        <LucideTrash2 />
+                        {delIsLoading == id && <span className="loading loading-spinner loading-xs"></span>}
                       </button>
                     </div>
                   </li>
-                  <hr className="my-2 text-base-300 dark:text-white" />
-                </>
+                  <hr className="text-base-300 bg-base-300 my-2 rounded-sm" />
+                </div>
               ))}
             </ul>
-          ) : (
-            <p className="italic text-pretty tracking-wide opacity-80 text-sm">No saved prompts</p>
-        ))}
+          : <p className="italic text-pretty tracking-wide opacity-80 text-sm">No saved prompts</p>
+        )}
       </div>
     </div>
   );
@@ -275,5 +288,12 @@ const MaterialSymbolsCloseRounded = (props) => {
     </svg>
   );
 };
+
+
+const LucideTrash2 = (props) => {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" viewBox="0 0 24 24" {...props}>{/* Icon from Lucide by Lucide Contributors - https://github.com/lucide-icons/lucide/blob/main/LICENSE */}<path fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 11v6m4-6v6m5-11v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6M3 6h18M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" /></svg>
+  )
+}
 
 export default PromptManagerModal;

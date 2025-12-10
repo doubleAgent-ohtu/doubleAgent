@@ -265,7 +265,7 @@ async def save_prompt(
     if agent_name_exists:
         raise HTTPException(
             status_code=409,
-            detail=f"Another prompt already saved as '{data.agent_name}'",
+            detail=f"Another agent already saved as '{data.agent_name}'",
         )
 
     prompt = Prompt(**data.model_dump(), user=user)
@@ -294,7 +294,7 @@ async def update_prompt(
     if agent_name_exists:
         raise HTTPException(
             status_code=409,
-            detail=f"Another prompt already saved as '{data.agent_name}'",
+            detail=f"Another agent already saved as '{data.agent_name}'",
         )
 
     updated_prompt = db.scalars(

@@ -11,7 +11,7 @@ const BotConfigurator = ({ title, prompt, agentName, onEditPrompt, onClearPrompt
 
       <div className="mb-2 text-base-content/70 shrink-0">
         <b>Current prompt:</b>
-        <h3 className="mt-2">{agentName}</h3>
+        <h3 className="mt-2 ml-2">{agentName}</h3>
       </div>
 
       <div className="grow min-h-0 mb-4">
@@ -64,7 +64,7 @@ const LucideMenu = (props) => {
     </svg>
   );
 };
-const LucidePencilLine = (props) => {
+export const LucidePencilLine = (props) => {
   return (
     <svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" viewBox="0 0 24 24" {...props}>
       {/* Icon from Lucide by Lucide Contributors - https://github.com/lucide-icons/lucide/blob/main/LICENSE */}
