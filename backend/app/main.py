@@ -259,8 +259,9 @@ async def save_prompt(
     db: Session = Depends(get_db),
 ):
     agent_name_exists = db.scalars(
-        select(models.Prompt)
-        .where(models.Prompt.user == user, models.Prompt.agent_name == data.agent_name)
+        select(models.Prompt).where(
+            models.Prompt.user == user, models.Prompt.agent_name == data.agent_name
+        )
     ).first()
 
     if agent_name_exists:
@@ -321,8 +322,9 @@ async def delete_prompt(
     db: Session = Depends(get_db),
 ):
     prompt = db.scalars(
-        select(models.Prompt)
-        .where(models.Prompt.user == user, models.Prompt.id == prompt_id)
+        select(models.Prompt).where(
+            models.Prompt.user == user, models.Prompt.id == prompt_id
+        )
     ).first()
 
     if not prompt:
