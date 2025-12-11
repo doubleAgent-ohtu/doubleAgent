@@ -221,22 +221,24 @@ const Menu = ({ onOpenUserGuide, onSelectConversation, onNewChat }) => {
               <span className="font-semibold">Chat History</span>
             </div>
             <div className="w-full space-y-1">
-              {starters.map((c) => (
-                <button
-                  key={c.id}
-                  className="btn btn-ghost btn-sm w-full justify-start text-left normal-case font-normal hover:bg-base-300 active:bg-base-300 rounded-lg p-3 h-auto min-h-0"
-                  onClick={() => {
-                    if (onSelectConversation) onSelectConversation(c);
-                    else console.log('open', c.id);
-                  }}
-                >
-                  <span className="whitespace-normal break-words text-xs leading-relaxed line-clamp-2">
-                    {c.conversation_starter && c.conversation_starter.length > 40
-                      ? c.conversation_starter.slice(0, 40) + '...'
-                      : c.conversation_starter || 'Untitled conversation'}
-                  </span>
-                </button>
-              ))}
+              {starters.map((c) => {
+                const text = c.conversation_starter || 'Untitled conversation';
+                const displayText = text.length > 80 ? text.slice(0, 80) + '...' : text;
+                return (
+                  <button
+                    key={c.id}
+                    className="btn btn-ghost btn-sm w-full justify-start text-left normal-case font-normal hover:bg-base-300 active:bg-base-300 rounded-lg p-3 h-[3.5rem]"
+                    onClick={() => {
+                      if (onSelectConversation) onSelectConversation(c);
+                      else console.log('open', c.id);
+                    }}
+                  >
+                    <span className="whitespace-normal break-words text-xs leading-tight line-clamp-2 overflow-hidden text-ellipsis">
+                      {displayText}
+                    </span>
+                  </button>
+                );
+              })}
             </div>
           </div>
         )}
