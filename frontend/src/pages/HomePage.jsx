@@ -90,7 +90,14 @@ const HomePage = () => {
         aria-controls="sidebar"
       />
       <div className="drawer-content flex flex-col min-h-screen">
-        <main className="p-8 grow" onClick={() => setIsConvoActive(false)}>
+        <main className="p-8 grow" onClick={(e) => {
+          setIsConvoActive(false);
+          // Close drawer when clicking main content
+          const drawer = document.getElementById('my-drawer-4');
+          if (drawer) {
+            drawer.checked = false;
+          }
+        }}>
           <HamburgerMenu />
           <h1 className="text-center text-4xl font-bold mb-8 tracking-widest">Double Agent AI</h1>
           <div
