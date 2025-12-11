@@ -247,7 +247,11 @@ async def get_prompts(
     user: str = Depends(get_user_id),
     db: Session = Depends(get_db),
 ):
-    prompts = db.scalars(select(models.Prompt).where(models.Prompt.user == user)).all()
+    prompts = db.scalars(
+        select(models.Prompt)
+        .where(models.Prompt.user == user)
+        .order_by(models.Prompt.created_at.desc())
+    ).all()
 
     return prompts
 

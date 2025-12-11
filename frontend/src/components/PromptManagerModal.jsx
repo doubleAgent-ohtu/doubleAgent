@@ -97,7 +97,7 @@ export const PromptEditor = ({
       const prompt = res.data;
 
       onSetPrompt(prompt);
-      setSavedPrompts((prev) => new Map(prev.set(prompt.id, prompt)));
+      setSavedPrompts((prev) => new Map([[prompt.id, prompt], ...prev]));
       onClose();
       showAlert(`Prompt ${promptData.id ? 'edited' : 'created'} and set.`, 'success');
     } catch (err) {
