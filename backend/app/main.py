@@ -399,9 +399,8 @@ async def get_conversations(
     return conversations
 
 
-@app.get("/conversation/{conversation_id}", response_model=schemas.ConversationSchema)
 @app.get("/conversations/{conversation_id}", response_model=schemas.ConversationSchema)
-async def get_converastion(
+async def get_conversation(
     conversation_id: int,
     user_id: str = Depends(get_user_id),
     db: Session = Depends(get_db),
