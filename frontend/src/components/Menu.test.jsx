@@ -59,7 +59,7 @@ test('3. Loads and renders conversation starters, clicking calls onSelectConvers
     {
       id: 2,
       conversation_starter:
-        'This is a longer starter that will be truncated at eighty characters for display purposes',
+        'This is a longer starter that will be truncated at forty characters for display',
       system_prompt_a: null,
       system_prompt_b: null,
     },
@@ -84,7 +84,7 @@ test('3. Loads and renders conversation starters, clicking calls onSelectConvers
   // first starter full text
   expect(screen.getByText('Hello world')).toBeInTheDocument();
 
-  // second starter should be truncated to 80 chars + '...'
+  // second starter should be truncated to 40 chars + '...'
   expect(
     screen.getByText((content) => content.startsWith('This is a longer starter')),
   ).toBeInTheDocument();
@@ -97,8 +97,8 @@ test('3. Loads and renders conversation starters, clicking calls onSelectConvers
   expect(onSelectConversation).toHaveBeenCalledWith(fakeConvos[0]);
 });
 
-test('4. Truncation produces exactly 80 chars + ellipsis', async () => {
-  const longStarter = 'x'.repeat(150);
+test('4. Truncation produces exactly 40 chars + ellipsis', async () => {
+  const longStarter = 'x'.repeat(100);
   const fakeConvos = [
     { id: 1, conversation_starter: longStarter, system_prompt_a: null, system_prompt_b: null },
   ];
@@ -112,8 +112,8 @@ test('4. Truncation produces exactly 80 chars + ellipsis', async () => {
   await waitFor(() => expect(screen.getByText('Chat History')).toBeInTheDocument());
 
   const truncated = screen.getByText((c) => c.endsWith('...'));
-  // should be 83 characters total: 80 + '...'
-  expect(truncated.textContent.length).toBe(83);
+  // should be 43 characters total: 40 + '...'
+  expect(truncated.textContent.length).toBe(43);
 });
 
 test('5. Logout calls axios.post and redirects', async () => {
