@@ -120,10 +120,3 @@ poetry run python -m app
 
 API: `http://localhost:8000`  
 Docs: `http://localhost:8000/docs`
-
-## Troubleshooting
-
-**Database errors:** Check `DA_DB_URL`, verify database is running  
-**OpenAI API errors:** Verify `DA_OPENAI_API_KEY`, check rate limits  
-**OIDC errors:** Verify OIDC environment variables, check redirect URI  
-**Migration conflicts:** Use `alembic history`, resolve manually if needed
