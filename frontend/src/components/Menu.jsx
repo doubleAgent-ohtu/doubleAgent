@@ -216,25 +216,30 @@ const Menu = ({ onOpenUserGuide, onSelectConversation, onNewChat }) => {
         </ul>
         {/* Conversation starters under the icons (only visible when menu is expanded) */}
         {starters && starters.length > 0 && (
-          <div className="mt-4 is-drawer-close:hidden">
-            <p className="label-text text-sm opacity-70 mb-2">Chat history</p>
-            <ul className="menu w-full">
-              {starters.map((c) => (
-                <li key={c.id}>
+          <div className="mt-4 is-drawer-close:hidden px-2">
+            <div className="divider divider-start text-xs opacity-60 my-2">
+              <span className="font-semibold">Chat History</span>
+            </div>
+            <div className="w-full space-y-1">
+              {starters.map((c) => {
+                const text = c.conversation_starter || 'Untitled conversation';
+                const displayText = text.length > 80 ? text.slice(0, 80) + '...' : text;
+                return (
                   <button
-                    className="btn btn-ghost btn-xs w-full justify-start text-sm whitespace-normal break-words"
+                    key={c.id}
+                    className="btn btn-ghost btn-sm w-full justify-start text-left normal-case font-normal hover:bg-base-300 active:bg-base-300 rounded-lg p-3 h-[3.5rem]"
                     onClick={() => {
                       if (onSelectConversation) onSelectConversation(c);
                       else console.log('open', c.id);
                     }}
                   >
-                    {c.conversation_starter && c.conversation_starter.length > 40
-                      ? c.conversation_starter.slice(0, 40) + '...'
-                      : c.conversation_starter}
+                    <span className="whitespace-normal break-words text-xs leading-tight line-clamp-2 overflow-hidden text-ellipsis">
+                      {displayText}
+                    </span>
                   </button>
-                </li>
-              ))}
-            </ul>
+                );
+              })}
+            </div>
           </div>
         )}
       </div>
