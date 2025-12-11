@@ -1,18 +1,26 @@
 import { useState, useRef, useEffect } from 'react';
+import axios from 'axios';
 import BotConfigurator from '../components/BotConfigurator';
 import Menu from '../components/Menu';
-import PromptEditorModal from '../components/PromptEditorModal';
 import Tietosuojaseloste from '../components/Tietosuojaseloste.jsx';
 import Kayttoohje from '../components/Kayttoohje.jsx';
 import Conversation from '../components/Conversation.jsx';
 import HamburgerMenu from '../components/HamburgerMenu';
+import PromptManagerModal from '../components/PromptManagerModal.jsx';
+import useAlert from '../components/useAlert.jsx';
 
 const HomePage = () => {
-  const [promptA, setPromptA] = useState('');
-  const [promptB, setPromptB] = useState('');
-  const [promptToEdit, setPromptToEdit] = useState(null);
+  const [savedPrompts, setSavedPrompts] = useState(null);
+  const init_prompt = {
+    id: null,
+    agent_name: '',
+    prompt: '',
+    created_at: null,
+  };
+  const [promptA, setPromptA] = useState(init_prompt);
+  const [promptB, setPromptB] = useState(init_prompt);
+  const [promptManagerContext, setPromptManagerContext] = useState(null);
 
-  const promptEditorRef = useRef(null);
   const privacyModalRef = useRef(null);
   const userGuideModalRef = useRef(null);
 
@@ -22,20 +30,20 @@ const HomePage = () => {
   const [openConversation, setOpenConversation] = useState(null);
   const [newChatSignal, setNewChatSignal] = useState(0);
 
-  const openPromptEditor = (prompt, setPrompt) => {
-    setPromptToEdit({ currentPrompt: prompt, onSetPrompt: setPrompt });
-  };
+  const { alertIsVisible, alertText, alertType, showAlert } = useAlert();
 
-  const closePromptEditor = () => {
-    if (promptEditorRef.current) {
-      promptEditorRef.current.close();
-    }
-    setPromptToEdit(null);
+  const openPromptManagerModal = (chatbot, promptData, setPrompt, isEditor) => {
+    setPromptManagerContext({
+      chatbot: chatbot,
+      promptData: promptData,
+      onSetPrompt: setPrompt,
+      isEditor: isEditor,
+    });
   };
 
   const handleClearPrompts = () => {
-    setPromptA('');
-    setPromptB('');
+    setPromptA(init_prompt);
+    setPromptB(init_prompt);
   };
 
   const openUserGuide = () => {
@@ -60,10 +68,20 @@ const HomePage = () => {
   };
 
   useEffect(() => {
-    if (promptToEdit && promptEditorRef.current) {
-      promptEditorRef.current.showModal();
-    }
-  }, [promptToEdit]);
+    const loadSavedPrompts = async () => {
+      try {
+        const { data } = await axios.get('api/get_prompts');
+        setSavedPrompts(
+          data.reduce((promptMap, prompt) => promptMap.set(prompt.id, prompt), new Map()),
+        );
+      } catch (err) {
+        console.log(err);
+      }
+    };
+    loadSavedPrompts();
+  }, []);
+
+  useEffect(() => {}, []);
 
   useEffect(() => {
     const handler = (e) => {
@@ -100,15 +118,19 @@ const HomePage = () => {
           >
             <BotConfigurator
               title="Chatbot A"
-              prompt={promptA}
-              onSetPrompt={() => openPromptEditor(promptA, setPromptA)}
+              prompt={promptA.prompt}
+              agentName={promptA.agent_name}
+              onEditPrompt={(isEditor) =>
+                openPromptManagerModal('A', promptA, setPromptA, isEditor)
+              }
+              onClearPrompt={() => setPromptA(init_prompt)}
               onActivate={() => setIsConvoActive(false)}
             />
 
             <div className="order-3 lg:order-2">
               <Conversation
-                promptA={promptA}
-                promptB={promptB}
+                promptA={promptA.prompt}
+                promptB={promptB.prompt}
                 onActivate={() => setIsConvoActive(true)}
                 onClearPrompts={handleClearPrompts}
                 openConversation={openConversation}
@@ -119,8 +141,12 @@ const HomePage = () => {
             <div className="order-2 lg:order-3">
               <BotConfigurator
                 title="Chatbot B"
-                prompt={promptB}
-                onSetPrompt={() => openPromptEditor(promptB, setPromptB)}
+                prompt={promptB.prompt}
+                agentName={promptB.agent_name}
+                onEditPrompt={(isEditor) =>
+                  openPromptManagerModal('B', promptB, setPromptB, isEditor)
+                }
+                onClearPrompt={() => setPromptB(init_prompt)}
                 onActivate={() => setIsConvoActive(false)}
               />
             </div>
@@ -146,12 +172,13 @@ const HomePage = () => {
         />
       </div>
 
-      {promptToEdit && (
-        <PromptEditorModal
-          modalRef={promptEditorRef}
-          currentPrompt={promptToEdit.currentPrompt}
-          onSetPrompt={promptToEdit.onSetPrompt}
-          onClose={closePromptEditor}
+      {promptManagerContext && (
+        <PromptManagerModal
+          promptManagerContext={promptManagerContext}
+          setPromptManagerContext={setPromptManagerContext}
+          savedPrompts={savedPrompts}
+          setSavedPrompts={setSavedPrompts}
+          showAlert={showAlert}
         />
       )}
 
@@ -184,6 +211,35 @@ const HomePage = () => {
           <button>close</button>
         </form>
       </dialog>
+
+      {alertIsVisible && (
+        <div className="top-8 left-25 fixed z-100">
+          <div
+            className={`alert ${alertType == 'success' ? 'alert-success' : alertType == 'error' ? 'alert-error' : 'alert-info'}`}
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              className="h-6 w-6 shrink-0 stroke-current"
+              fill="none"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth="2"
+                d={
+                  alertType == 'success'
+                    ? 'M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z'
+                    : alertType == 'error'
+                      ? 'M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z'
+                      : 'M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z'
+                }
+              ></path>
+            </svg>
+            <span>{alertText}</span>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

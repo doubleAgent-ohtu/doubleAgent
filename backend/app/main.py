@@ -11,6 +11,7 @@ from app.db.database import DBSession
 from sqlalchemy.orm import Session
 from app import schemas
 from app.db import models
+from sqlalchemy import select, update
 import asyncio
 from fastapi.responses import StreamingResponse, RedirectResponse
 import json
@@ -241,12 +242,33 @@ def get_db():
         db.close()
 
 
-@app.post("/save_prompt", response_model=schemas.Prompt)
-def save_prompt(
-    data: schemas.SavePrompt,
-    user: dict = Depends(get_user_id),
+@app.get("/get_prompts", response_model=list[schemas.Prompt])
+async def get_prompts(
+    user: str = Depends(get_user_id),
     db: Session = Depends(get_db),
 ):
+    prompts = db.scalars(select(models.Prompt).where(models.Prompt.user == user)).all()
+
+    return prompts
+
+
+@app.post("/save_prompt", response_model=schemas.Prompt)
+async def save_prompt(
+    data: schemas.SavePrompt,
+    user: str = Depends(get_user_id),
+    db: Session = Depends(get_db),
+):
+    agent_name_exists = db.scalars(
+        select(models.Prompt).where(
+            models.Prompt.user == user, models.Prompt.agent_name == data.agent_name
+        )
+    ).first()
+
+    if agent_name_exists:
+        raise HTTPException(
+            status_code=409,
+            detail=f"Another agent already saved as '{data.agent_name}'",
+        )
 
     prompt = models.Prompt(**data.model_dump(), user=user)
     db.add(prompt)
@@ -254,6 +276,66 @@ def save_prompt(
     db.refresh(prompt)
 
     return prompt
+
+
+@app.put("/update_prompt/{prompt_id}", response_model=schemas.Prompt)
+async def update_prompt(
+    prompt_id: int,
+    data: schemas.SavePrompt,
+    user: str = Depends(get_user_id),
+    db: Session = Depends(get_db),
+):
+    agent_name_exists = db.scalars(
+        select(models.Prompt).where(
+            models.Prompt.user == user,
+            models.Prompt.agent_name == data.agent_name,
+            models.Prompt.id != prompt_id,
+        )
+    ).first()
+
+    if agent_name_exists:
+        raise HTTPException(
+            status_code=409,
+            detail=f"Another agent already saved as '{data.agent_name}'",
+        )
+
+    updated_prompt = db.scalars(
+        update(models.Prompt)
+        .where(models.Prompt.user == user, models.Prompt.id == prompt_id)
+        .values(**data.model_dump())
+        .returning(models.Prompt)
+    ).first()
+
+    if not updated_prompt:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="Prompt not found"
+        )
+    db.commit()
+
+    return updated_prompt
+
+
+@app.delete("/delete_prompt/{prompt_id}")
+async def delete_prompt(
+    prompt_id: int,
+    user: str = Depends(get_user_id),
+    db: Session = Depends(get_db),
+):
+    prompt = db.scalars(
+        select(models.Prompt).where(
+            models.Prompt.user == user, models.Prompt.id == prompt_id
+        )
+    ).first()
+
+    if not prompt:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="Prompt not found"
+        )
+
+    db.delete(prompt)
+    db.commit()
+
+    return {"message": "Prompt deleted successfully"}
 
 
 @app.get("/download-chat/{thread_id}")
@@ -321,9 +403,8 @@ async def get_conversations(
     return conversations
 
 
-@app.get("/conversation/{conversation_id}", response_model=schemas.ConversationSchema)
 @app.get("/conversations/{conversation_id}", response_model=schemas.ConversationSchema)
-async def get_converastion(
+async def get_conversation(
     conversation_id: int,
     user_id: str = Depends(get_user_id),
     db: Session = Depends(get_db),
