@@ -70,7 +70,7 @@ const PromptManagerModal = ({
   );
 };
 
-const PromptEditor = ({
+export const PromptEditor = ({
   promptData,
   onSetPrompt,
   setSavedPrompts,
@@ -150,14 +150,14 @@ const PromptEditor = ({
       </div>
 
       <div className="mx-2 mt-2">
-        <label htmlFor="promptText" className="label mb-2">
+        <label htmlFor="savePromptText" className="label mb-2">
           <span className="label-text">System Prompt</span>
         </label>
         <textarea
           value={text}
           onChange={(e) => setText(e.target.value)}
           maxLength={15000}
-          id="promptText"
+          id="savePromptText"
           className="textarea textarea-bordered w-full h-40 transition delay-60 duration-120 ease-in-out hover:border-1 hover:border-base-content"
           placeholder="My Custom Prompt..."
           required
@@ -191,7 +191,7 @@ const PromptEditor = ({
   );
 };
 
-const PromptMenu = ({
+export const PromptMenu = ({
   selected,
   onSetPrompt,
   setPromptManagerContext,
@@ -222,7 +222,7 @@ const PromptMenu = ({
         await axios.delete(`api/delete_prompt/${id}`);
         savedPrompts.delete(id);
         setSavedPrompts((prev) => new Map(prev));
-        showAlert(`'${agentName} deleted'`, 'success');
+        showAlert(`'${agentName}' deleted`, 'success');
       } catch (err) {
         console.log(err);
         showAlert('Error occured while deleting', 'error');
@@ -238,9 +238,9 @@ const PromptMenu = ({
   };
 
   return (
-    <div className="flex flex-col">
+    <div className="flex flex-col" data-testid="promptManagerPromptMenu">
       <div>
-        <h3 className="text-lg">My prompts</h3>
+        <h3 className="text-lg">My Prompts</h3>
       </div>
       <div className="modal-action size-fit my-6">
         <button onClick={() => changeToPromptEditor()} className="btn btn-primary rounded-xl">
@@ -266,6 +266,7 @@ const PromptMenu = ({
                           changeToPromptEditor(prompt);
                         }}
                         className="btn btn-primary btn-soft rounded-xl mr-2"
+                        data-testid={`edit-${id}`}
                       >
                         Edit
                       </button>
@@ -275,6 +276,7 @@ const PromptMenu = ({
                           deletePrompt(id, prompt.agent_name);
                         }}
                         className="btn rounded-xl text-lg border-none bg-red-500/30 hover:bg-red-500/50"
+                        data-testid={`del-${id}`}
                       >
                         <LucideTrash2 />
                         {delIsLoading == id && (

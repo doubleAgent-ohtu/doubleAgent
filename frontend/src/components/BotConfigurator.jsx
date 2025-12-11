@@ -25,7 +25,7 @@ const BotConfigurator = ({ title, prompt, agentName, onEditPrompt, onClearPrompt
         <button
           onClick={() => onEditPrompt(false)}
           onFocus={onActivate}
-          className={`btn btn-primary shrink-0 ${prompt && 'btn-soft'}`}
+          className={`btn btn-primary shrink-0`}
         >
           <LucideMenu />
           {prompt ? 'Change Prompt' : 'Set Prompt'}
