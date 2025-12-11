@@ -10,7 +10,7 @@ from app.routers.oidc_router import oidc_router
 from app.db.database import DBSession
 from sqlalchemy.orm import Session
 from app import schemas
-from app.db.models import Prompt, Conversation, Message
+from app.db import models
 from sqlalchemy import select, update
 import asyncio
 from fastapi.responses import StreamingResponse, RedirectResponse
@@ -247,7 +247,7 @@ async def get_prompts(
     user: str = Depends(get_user_id),
     db: Session = Depends(get_db),
 ):
-    prompts = db.scalars(select(Prompt).where(Prompt.user == user)).all()
+    prompts = db.scalars(select(models.Prompt).where(models.Prompt.user == user)).all()
 
     return prompts
 
@@ -259,7 +259,8 @@ async def save_prompt(
     db: Session = Depends(get_db),
 ):
     agent_name_exists = db.scalars(
-        select(Prompt).where(Prompt.user == user, Prompt.agent_name == data.agent_name)
+        select(models.Prompt)
+        .where(models.Prompt.user == user, models.Prompt.agent_name == data.agent_name)
     ).first()
 
     if agent_name_exists:
@@ -268,7 +269,7 @@ async def save_prompt(
             detail=f"Another agent already saved as '{data.agent_name}'",
         )
 
-    prompt = Prompt(**data.model_dump(), user=user)
+    prompt = models.Prompt(**data.model_dump(), user=user)
     db.add(prompt)
     db.commit()
     db.refresh(prompt)
@@ -284,10 +285,10 @@ async def update_prompt(
     db: Session = Depends(get_db),
 ):
     agent_name_exists = db.scalars(
-        select(Prompt).where(
-            Prompt.user == user,
-            Prompt.agent_name == data.agent_name,
-            Prompt.id != prompt_id,
+        select(models.Prompt).where(
+            models.Prompt.user == user,
+            models.Prompt.agent_name == data.agent_name,
+            models.Prompt.id != prompt_id,
         )
     ).first()
 
@@ -298,10 +299,10 @@ async def update_prompt(
         )
 
     updated_prompt = db.scalars(
-        update(Prompt)
-        .where(Prompt.user == user, Prompt.id == prompt_id)
+        update(models.Prompt)
+        .where(models.Prompt.user == user, models.Prompt.id == prompt_id)
         .values(**data.model_dump())
-        .returning(Prompt)
+        .returning(models.Prompt)
     ).first()
 
     if not updated_prompt:
@@ -320,7 +321,8 @@ async def delete_prompt(
     db: Session = Depends(get_db),
 ):
     prompt = db.scalars(
-        select(Prompt).where(Prompt.user == user, Prompt.id == prompt_id)
+        select(models.Prompt)
+        .where(models.Prompt.user == user, models.Prompt.id == prompt_id)
     ).first()
 
     if not prompt:
@@ -357,7 +359,7 @@ async def save_conversation(
     db: Session = Depends(get_db),
 ):
     """Save a conversation with all its messages"""
-    conversation = Conversation(
+    conversation = models.Conversation(
         user=user_id,
         conversation_starter=data.conversation_starter,
         thread_id=data.thread_id,
@@ -371,7 +373,7 @@ async def save_conversation(
 
     # Add messages
     for idx, msg in enumerate(data.messages):
-        message = Message(
+        message = models.Message(
             conversation_id=conversation.id,
             chatbot=msg.get("chatbot", "unknown"),
             message=msg.get("message", ""),
@@ -391,9 +393,9 @@ async def get_conversations(
 ):
     """Get all conversations for the current user"""
     conversations = (
-        db.query(Conversation)
-        .filter(Conversation.user == user_id)
-        .order_by(Conversation.created_at.desc())
+        db.query(models.Conversation)
+        .filter(models.Conversation.user == user_id)
+        .order_by(models.Conversation.created_at.desc())
         .all()
     )
     return conversations
@@ -407,10 +409,10 @@ async def get_conversation(
 ):
     """Get a specific conversation with all messages"""
     conversation = (
-        db.query(Conversation)
+        db.query(models.Conversation)
         .filter(
-            Conversation.id == conversation_id,
-            Conversation.user == user_id,
+            models.Conversation.id == conversation_id,
+            models.Conversation.user == user_id,
         )
         .first()
     )
@@ -429,10 +431,10 @@ async def delete_conversation(
 ):
     """Delete a conversation"""
     conversation = (
-        db.query(Conversation)
+        db.query(models.Conversation)
         .filter(
-            Conversation.id == conversation_id,
-            Conversation.user == user_id,
+            models.Conversation.id == conversation_id,
+            models.Conversation.user == user_id,
         )
         .first()
     )
