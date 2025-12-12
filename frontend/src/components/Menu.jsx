@@ -80,7 +80,22 @@ const Menu = ({ onOpenUserGuide, onSelectConversation, onNewChat }) => {
     };
 
     window.addEventListener('conversations:updated', handler);
+    const deletedHandler = (e) => {
+      const id = e && e.detail;
+      if (!id) return;
+      setStarters((prev) => prev.filter((s) => (s.id || s) !== id));
+    };
+    window.addEventListener('conversation:deleted', deletedHandler);
     return () => window.removeEventListener('conversations:updated', handler);
+  }, []);
+
+  useEffect(() => {
+    const deletedHandler = (e) => {
+      const id = e && e.detail;
+      if (!id) return;
+      setStarters((prev) => prev.filter((s) => (s.id || s) !== id));
+    };
+    return () => window.removeEventListener('conversation:deleted', deletedHandler);
   }, []);
 
   return (
