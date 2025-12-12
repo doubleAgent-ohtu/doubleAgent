@@ -180,3 +180,43 @@ test('7. Toggle sidebar flips drawer checkbox checked state', async () => {
 
   document.body.removeChild(cb);
 });
+
+test('8. conversation:deleted event removes starter from list', async () => {
+  const fakeConvos = [
+    { id: 1, conversation_starter: 'Hello world', system_prompt_a: 'A', system_prompt_b: 'B' },
+    { id: 2, conversation_starter: 'Second starter', system_prompt_a: null, system_prompt_b: null },
+  ];
+
+  global.fetch = vi.fn(() =>
+    Promise.resolve({ ok: true, json: () => Promise.resolve(fakeConvos) }),
+  );
+
+  render(<Menu onOpenUserGuide={() => {}} onSelectConversation={() => {}} onNewChat={() => {}} />);
+
+  await waitFor(() => expect(screen.getByText('Chat History')).toBeInTheDocument());
+
+  expect(screen.getByText('Hello world')).toBeInTheDocument();
+  expect(screen.getByText('Second starter')).toBeInTheDocument();
+
+  window.dispatchEvent(new CustomEvent('conversation:deleted', { detail: 1 }));
+
+  await waitFor(() => expect(screen.queryByText('Hello world')).not.toBeInTheDocument());
+  expect(screen.getByText('Second starter')).toBeInTheDocument();
+});
+
+test('9. conversations:updated event reloads starters', async () => {
+  const initial = [{ id: 1, conversation_starter: 'Old starter' }];
+  global.fetch = vi.fn(() => Promise.resolve({ ok: true, json: () => Promise.resolve(initial) }));
+
+  render(<Menu onOpenUserGuide={() => {}} onSelectConversation={() => {}} onNewChat={() => {}} />);
+
+  await waitFor(() => expect(screen.getByText('Chat History')).toBeInTheDocument());
+  expect(screen.getByText('Old starter')).toBeInTheDocument();
+
+  const updated = [{ id: 2, conversation_starter: 'Fresh starter' }];
+  global.fetch = vi.fn(() => Promise.resolve({ ok: true, json: () => Promise.resolve(updated) }));
+
+  window.dispatchEvent(new Event('conversations:updated'));
+
+  await waitFor(() => expect(screen.getByText('Fresh starter')).toBeInTheDocument());
+});
