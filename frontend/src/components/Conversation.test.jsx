@@ -113,7 +113,10 @@ test('12. Input field updates when typing', () => {
 test('13. Start sends POST to /api/conversation and appends user message', async () => {
   global.fetch.mockImplementationOnce((url, opts) => {
     if (url === '/api/conversation') {
-      return Promise.resolve({ ok: true, body: { getReader: () => ({ read: async () => ({ done: true }) }) } });
+      return Promise.resolve({
+        ok: true,
+        body: { getReader: () => ({ read: async () => ({ done: true }) }) },
+      });
     }
     return Promise.resolve({ ok: true, json: async () => ({}) });
   });
@@ -124,7 +127,9 @@ test('13. Start sends POST to /api/conversation and appends user message', async
   fireEvent.change(input, { target: { value: 'Hello!' } });
   fireEvent.click(screen.getByText('Start'));
 
-  await waitFor(() => expect(global.fetch).toHaveBeenCalledWith('/api/conversation', expect.any(Object)));
+  await waitFor(() =>
+    expect(global.fetch).toHaveBeenCalledWith('/api/conversation', expect.any(Object)),
+  );
 
   expect(await screen.findByText('Hello!')).toBeInTheDocument();
 });
@@ -132,7 +137,10 @@ test('13. Start sends POST to /api/conversation and appends user message', async
 test('14. Save posts conversation with system prompts', async () => {
   global.fetch.mockImplementation((url, opts) => {
     if (url === '/api/conversation') {
-      return Promise.resolve({ ok: true, body: { getReader: () => ({ read: async () => ({ done: true }) }) } });
+      return Promise.resolve({
+        ok: true,
+        body: { getReader: () => ({ read: async () => ({ done: true }) }) },
+      });
     }
     if (url === '/api/conversations') {
       return Promise.resolve({ ok: true, json: async () => ({ id: 123 }) });
@@ -143,7 +151,9 @@ test('14. Save posts conversation with system prompts', async () => {
   const props = { ...defaultProps, promptA: 'Prompt A text', promptB: 'Prompt B text' };
   render(<Conversation {...props} />);
 
-  fireEvent.change(screen.getByPlaceholderText('Conversation starter...'), { target: { value: 'Hi' } });
+  fireEvent.change(screen.getByPlaceholderText('Conversation starter...'), {
+    target: { value: 'Hi' },
+  });
   fireEvent.click(screen.getByText('Start'));
 
   const saveButton = await screen.findByText('Save');
@@ -161,7 +171,10 @@ test('14. Save posts conversation with system prompts', async () => {
 test('15. Clear dispatches conversation:deleted and sends DELETE request', async () => {
   global.fetch.mockImplementation((url, opts) => {
     if (url === '/api/conversation') {
-      return Promise.resolve({ ok: true, body: { getReader: () => ({ read: async () => ({ done: true }) }) } });
+      return Promise.resolve({
+        ok: true,
+        body: { getReader: () => ({ read: async () => ({ done: true }) }) },
+      });
     }
     if (url.startsWith('/api/conversations/')) {
       return Promise.resolve({ ok: true });
@@ -172,7 +185,9 @@ test('15. Clear dispatches conversation:deleted and sends DELETE request', async
   const openConv = { id: 42 };
   render(<Conversation {...{ ...defaultProps, openConversation: openConv }} />);
 
-  fireEvent.change(screen.getByPlaceholderText('Conversation starter...'), { target: { value: 'Bye' } });
+  fireEvent.change(screen.getByPlaceholderText('Conversation starter...'), {
+    target: { value: 'Bye' },
+  });
   fireEvent.click(screen.getByText('Start'));
 
   const dispatchSpy = vi.spyOn(window, 'dispatchEvent');
@@ -180,9 +195,14 @@ test('15. Clear dispatches conversation:deleted and sends DELETE request', async
   const clearButton = await screen.findByText('Clear');
   fireEvent.click(clearButton);
 
-  expect(dispatchSpy.mock.calls.some((c) => c[0] && c[0].type === 'conversation:deleted')).toBe(true);
+  expect(dispatchSpy.mock.calls.some((c) => c[0] && c[0].type === 'conversation:deleted')).toBe(
+    true,
+  );
 
   await waitFor(() => {
-    expect(global.fetch).toHaveBeenCalledWith('/api/conversations/42', expect.objectContaining({ method: 'DELETE' }));
+    expect(global.fetch).toHaveBeenCalledWith(
+      '/api/conversations/42',
+      expect.objectContaining({ method: 'DELETE' }),
+    );
   });
 });
