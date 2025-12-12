@@ -224,19 +224,52 @@ const Menu = ({ onOpenUserGuide, onSelectConversation, onNewChat }) => {
               {starters.map((c) => {
                 const text = c.conversation_starter || 'Untitled conversation';
                 const displayText = text.length > 80 ? text.slice(0, 80) + '...' : text;
+                const id = c.id || c;
+
+                const handleDelete = async (e) => {
+                  e.stopPropagation();
+                  try {
+                    const res = await fetch(`/api/conversations/${id}`, {
+                      method: 'DELETE',
+                      credentials: 'include',
+                    });
+                    if (!res.ok) {
+                      console.warn('Failed to delete conversation', res.status);
+                    }
+                  } catch (err) {
+                    console.warn('Error deleting conversation', err);
+                  }
+
+                  // refresh starters
+                  const data = await loadStarters();
+                  if (data) setStarters(data);
+                };
+
                 return (
-                  <button
-                    key={c.id}
-                    className="btn btn-ghost btn-sm w-full justify-start text-left normal-case font-normal hover:bg-base-300 active:bg-base-300 rounded-lg p-3 h-[3.5rem]"
-                    onClick={() => {
-                      if (onSelectConversation) onSelectConversation(c);
-                      else console.log('open', c.id);
-                    }}
-                  >
-                    <span className="whitespace-normal break-words text-xs leading-tight line-clamp-2 overflow-hidden text-ellipsis">
-                      {displayText}
-                    </span>
-                  </button>
+                  <div key={id} className="flex items-center justify-between rounded-lg hover:bg-base-300 p-1">
+                    <button
+                      className="btn btn-ghost btn-sm flex-1 justify-start text-left normal-case font-normal rounded-lg px-3 py-4 h-[3.5rem] hover:bg-base-300 active:bg-base-300"
+                      onClick={() => {
+                        if (onSelectConversation) onSelectConversation(c);
+                        else console.log('open', id);
+                      }}
+                    >
+                      <span className="whitespace-normal break-words text-xs leading-tight line-clamp-2 overflow-hidden text-ellipsis">
+                        {displayText}
+                      </span>
+                    </button>
+
+                    <button
+                      onClick={handleDelete}
+                      aria-label="Delete conversation"
+                      className="btn btn-ghost btn-xs text-gray-500 hover:text-gray-700 ml-2 mr-1"
+                      title="Remove"
+                    >
+                      <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M18 6L6 18M6 6l12 12" />
+                      </svg>
+                    </button>
+                  </div>
                 );
               })}
             </div>
