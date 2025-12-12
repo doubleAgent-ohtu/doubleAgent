@@ -80,7 +80,6 @@ const Menu = ({ onOpenUserGuide, onSelectConversation, onNewChat }) => {
     };
 
     window.addEventListener('conversations:updated', handler);
-    // Also remove a starter optimistically when a conversation is deleted elsewhere
     const deletedHandler = (e) => {
       const id = e && e.detail;
       if (!id) return;
@@ -88,11 +87,8 @@ const Menu = ({ onOpenUserGuide, onSelectConversation, onNewChat }) => {
     };
     window.addEventListener('conversation:deleted', deletedHandler);
     return () => window.removeEventListener('conversations:updated', handler);
-    // cleanup deletedHandler as well
-    // Note: we cannot return two cleanup functions, so also remove listener explicitly below
   }, []);
 
-  // Because above effect returned only one cleanup, remove the deleted listener on unmount separately
   useEffect(() => {
     const deletedHandler = (e) => {
       const id = e && e.detail;

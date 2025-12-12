@@ -96,11 +96,9 @@ const Conversation = ({
     setError(null);
     setIsSaved(false);
     setThreadId(crypto.randomUUID());
-    // If there is an open, saved conversation, delete it from the server
     try {
       const convId = openConversation && (openConversation.id || openConversation);
       if (convId) {
-        // Optimistically notify other components so the sidebar can remove the item immediately
         try {
           window.dispatchEvent(new CustomEvent('conversation:deleted', { detail: convId }));
         } catch (e) {
@@ -122,7 +120,6 @@ const Conversation = ({
               console.log('✅ Conversation deleted from server:', convId);
             } else {
               console.warn('Failed to delete conversation from server', res.status);
-              // make sure sidebar reloads to reflect server state
               try {
                 window.dispatchEvent(new Event('conversations:updated'));
               } catch (e) {
