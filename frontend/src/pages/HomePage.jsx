@@ -54,8 +54,16 @@ const HomePage = () => {
     if (!c) return;
     // set the selected conversation immediately; Conversation component will fetch full data if needed
     // also set the system prompts so Conversation uses the same prompts
-    setPromptA({ ...init_prompt, prompt: c.system_prompt_a || '' });
-    setPromptB({ ...init_prompt, prompt: c.system_prompt_b || '' });
+    setPromptA({
+      ...init_prompt,
+      prompt: c.system_prompt_a || '',
+      agent_name: c.system_prompt_a_name || c.system_prompt_a_agent_name || '',
+    });
+    setPromptB({
+      ...init_prompt,
+      prompt: c.system_prompt_b || '',
+      agent_name: c.system_prompt_b_name || c.system_prompt_b_agent_name || '',
+    });
     setOpenConversation(c);
     setIsConvoActive(true);
   };
@@ -87,8 +95,16 @@ const HomePage = () => {
     const handler = (e) => {
       if (e && e.detail) {
         const c = e.detail;
-        setPromptA({ ...init_prompt, prompt: c.system_prompt_a || '' });
-        setPromptB({ ...init_prompt, prompt: c.system_prompt_b || '' });
+        setPromptA({
+          ...init_prompt,
+          prompt: c.system_prompt_a || '',
+          agent_name: c.system_prompt_a_name || c.system_prompt_a_agent_name || '',
+        });
+        setPromptB({
+          ...init_prompt,
+          prompt: c.system_prompt_b || '',
+          agent_name: c.system_prompt_b_name || c.system_prompt_b_agent_name || '',
+        });
         setOpenConversation(c);
         setIsConvoActive(true);
       }

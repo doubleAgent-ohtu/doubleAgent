@@ -27,6 +27,7 @@ const Conversation = ({
   const [error, setError] = useState(null);
   const [isSaving, setIsSaving] = useState(false);
   const [isSaved, setIsSaved] = useState(false);
+  const savedMessageCountRef = useRef(null);
 
   const abortControllerRef = useRef(null);
 
@@ -44,6 +45,16 @@ const Conversation = ({
     const loadConversation = async () => {
       if (!openConversation) return;
 
+      // Reset UI state immediately to avoid carrying over previous conversation
+      setMessages(null);
+      setError(null);
+      setIsSaved(false);
+      savedMessageCountRef.current = null;
+      setThreadId(openConversation.thread_id || crypto.randomUUID());
+
+      // If full messages were already provided on the openConversation object, use them
+      // (handled below)
+
       // If full messages are already present, use them
       if (openConversation.messages && openConversation.messages.length > 0) {
         const mapped = openConversation.messages.map((m) => ({
@@ -54,6 +65,7 @@ const Conversation = ({
         setThreadId(openConversation.thread_id || crypto.randomUUID());
         if (openConversation.model) setSelectedModel(openConversation.model);
         setIsSaved(true);
+        savedMessageCountRef.current = mapped.length;
         return;
       }
 
@@ -75,6 +87,7 @@ const Conversation = ({
         setThreadId(data.thread_id || crypto.randomUUID());
         if (data.model) setSelectedModel(data.model);
         setIsSaved(true);
+        if (data && data.messages) savedMessageCountRef.current = data.messages.length;
       } catch (err) {
         console.error('Error loading conversation', err);
       }
@@ -95,6 +108,7 @@ const Conversation = ({
     setMessages(null);
     setError(null);
     setIsSaved(false);
+    savedMessageCountRef.current = null;
     setThreadId(crypto.randomUUID());
     try {
       const convId = openConversation && (openConversation.id || openConversation);
@@ -200,8 +214,13 @@ const Conversation = ({
     };
 
     try {
-      const response = await fetch('/api/conversations', {
-        method: 'POST',
+      // If this conversation was previously saved on the server, update it
+      const convId = openConversation && (openConversation.id || openConversation);
+      const method = convId ? 'PUT' : 'POST';
+      const url = convId ? `/api/conversations/${convId}` : '/api/conversations';
+
+      const response = await fetch(url, {
+        method,
         headers: {
           'Content-Type': 'application/json',
         },
@@ -216,6 +235,7 @@ const Conversation = ({
       const saved = await response.json();
 
       setIsSaved(true);
+      savedMessageCountRef.current = messages ? messages.length : 0;
       try {
         window.dispatchEvent(new Event('conversations:updated'));
       } catch (e) {
@@ -232,8 +252,27 @@ const Conversation = ({
       alert(`Error saving conversation: ${err.message}`);
     } finally {
       setIsSaving(false);
+      // ensure saved count matches current messages after save
+      savedMessageCountRef.current = messages ? messages.length : 0;
     }
   };
+
+  // Re-enable the Save button when new messages differ from saved count
+  useEffect(() => {
+    if (!messages) {
+      // no messages -> not saved
+      setIsSaved(false);
+      return;
+    }
+
+    const savedCount = savedMessageCountRef.current;
+    if (savedCount === null || savedCount === undefined) {
+      setIsSaved(false);
+      return;
+    }
+
+    setIsSaved(messages.length === savedCount);
+  }, [messages]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -244,7 +283,8 @@ const Conversation = ({
     abortControllerRef.current = new AbortController();
 
     const userMsg = { chatbot: 'user', message: input };
-    setMessages((prev) => [...(prev || []), userMsg]);
+    const newMessages = [...(messages || []), userMsg];
+    setMessages(newMessages);
 
     const conversationData = {
       initial_message: input,
@@ -253,6 +293,7 @@ const Conversation = ({
       system_prompt_a: promptA,
       system_prompt_b: promptB,
       thread_id: threadId,
+      history: newMessages,
     };
     setInput('');
 

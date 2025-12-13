@@ -108,6 +108,7 @@ class ConversationStart(BaseModel):
     thread_id: str = "default"
     turns: int = 6
     model: str | None = None
+    history: list[dict] | None = None
 
 
 class ConversationResponse(BaseModel):
@@ -147,8 +148,34 @@ def chat_with_bot(
 async def conversation_generator(conv: ConversationStart, request: Request):
     print(f"\n--- 🚀 STARTING TOKEN STREAM for {conv.turns} turns ---")
     print(f"--- 📝 Thread ID: {conv.thread_id} ---")
+    # Build starting context from history if provided so model "remembers" past conversation
     current_message = conv.initial_message
     current_bot = "a"
+    if conv.history and isinstance(conv.history, list) and len(conv.history) > 0:
+        # Build a readable context string for the model from past messages
+        parts = []
+        for m in conv.history:
+            role = m.get('chatbot')
+            text = m.get('message', '')
+            if role == 'user':
+                parts.append(f"User: {text}")
+            else:
+                # chatbot 'a' and 'b'
+                parts.append(f"Chatbot {role.upper()}: {text}")
+
+        context_str = "\n".join(parts)
+        # Prepend history to the initial message so the model sees previous turns
+        current_message = context_str + "\n\n" + conv.initial_message
+
+        # Choose next bot to speak based on last message
+        last = conv.history[-1].get('chatbot')
+        if last == 'a':
+            current_bot = 'b'
+        elif last == 'b':
+            current_bot = 'a'
+        else:
+            # If last was user, start with chatbot A
+            current_bot = 'a'
 
     # Reset to default if empty, otherwise set custom prompt
     if conv.system_prompt_a:
@@ -448,3 +475,46 @@ async def delete_conversation(
     db.commit()
 
     return {"message": "Conversation deleted successfully"}
+
+
+@app.put("/conversations/{conversation_id}", response_model=schemas.ConversationSchema)
+async def update_conversation(
+    conversation_id: int,
+    data: schemas.SaveConversation,
+    user_id: str = Depends(get_user_id),
+    db: Session = Depends(get_db),
+):
+    """Update an existing conversation and replace its messages"""
+    conversation = (
+        db.query(models.Conversation)
+        .filter(models.Conversation.id == conversation_id, models.Conversation.user == user_id)
+        .first()
+    )
+
+    if not conversation:
+        raise HTTPException(status_code=404, detail="Conversation not found")
+
+    # Update fields
+    conversation.conversation_starter = data.conversation_starter
+    conversation.thread_id = data.thread_id
+    conversation.model = data.model
+    conversation.system_prompt_a = data.system_prompt_a
+    conversation.system_prompt_b = data.system_prompt_b
+    conversation.turns = data.turns
+
+    # Remove existing messages and add new ones
+    db.query(models.Message).filter(models.Message.conversation_id == conversation.id).delete()
+
+    for idx, msg in enumerate(data.messages):
+        message = models.Message(
+            conversation_id=conversation.id,
+            chatbot=msg.get("chatbot", "unknown"),
+            message=msg.get("message", ""),
+            order=idx,
+        )
+        db.add(message)
+
+    db.commit()
+    db.refresh(conversation)
+
+    return conversation
