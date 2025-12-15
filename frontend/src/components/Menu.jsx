@@ -127,7 +127,7 @@ const Menu = ({ onOpenUserGuide, onSelectConversation, onNewChat }) => {
                   onSelectConversation(null);
                   return;
                 }
-                console.log('New chat requested');
+                console.log('New Chat requested');
               }}
             >
               <span className="icon" aria-hidden="true">
@@ -145,7 +145,7 @@ const Menu = ({ onOpenUserGuide, onSelectConversation, onNewChat }) => {
                   <path d="M5 12h14"></path>
                 </svg>
               </span>
-              <span className="label-text">New chat</span>
+              <span className="label-text">New Chat</span>
             </button>
           </li>
 
