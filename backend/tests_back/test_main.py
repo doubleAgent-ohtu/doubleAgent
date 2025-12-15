@@ -5,6 +5,8 @@ from fastapi.testclient import TestClient
 
 os.environ.setdefault("DA_DB_URL", "sqlite:///:memory:")
 os.environ.setdefault("DA_ENVIRONMENT", "testing")
+os.environ.setdefault("OPENAI_API_KEY", "test-key-123")
+os.environ.setdefault("DA_OPENAI_API_KEY", "test-key-123")
 
 from app import main
 
