@@ -1,6 +1,10 @@
+import os
 import asyncio
 import pytest
 from fastapi.testclient import TestClient
+
+os.environ.setdefault("DA_DB_URL", "sqlite:///:memory:")
+os.environ.setdefault("DA_ENVIRONMENT", "testing")
 
 from app import main
 
