@@ -1,5 +1,3 @@
-import { HealthCheckButton } from '../components/HealthCheckButton';
-
 const LoginPage = () => {
   const handleLogin = () => {
     window.location.href = '/api/login';
@@ -16,8 +14,6 @@ const LoginPage = () => {
         <button onClick={handleLogin} className="btn btn-primary btn-lg mb-8">
           Kirjaudu yliopistotunnuksilla
         </button>
-
-        <HealthCheckButton />
       </div>
     </div>
   );

@@ -219,11 +219,6 @@ def get_messages(current_user: dict = Depends(get_current_user)):
     return {"messages": messages}
 
 
-@app.get("/health")
-def health_check():
-    return {"status": "healthy"}
-
-
 @app.get("/me")
 def get_current_user_from_session(current_user: dict = Depends(get_current_user)):
     return current_user
