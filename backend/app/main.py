@@ -155,9 +155,9 @@ async def conversation_generator(conv: ConversationStart, request: Request):
         # Build a readable context string for the model from past messages
         parts = []
         for m in conv.history:
-            role = m.get('chatbot')
-            text = m.get('message', '')
-            if role == 'user':
+            role = m.get("chatbot")
+            text = m.get("message", "")
+            if role == "user":
                 parts.append(f"User: {text}")
             else:
                 # chatbot 'a' and 'b'
@@ -168,14 +168,14 @@ async def conversation_generator(conv: ConversationStart, request: Request):
         current_message = context_str + "\n\n" + conv.initial_message
 
         # Choose next bot to speak based on last message
-        last = conv.history[-1].get('chatbot')
-        if last == 'a':
-            current_bot = 'b'
-        elif last == 'b':
-            current_bot = 'a'
+        last = conv.history[-1].get("chatbot")
+        if last == "a":
+            current_bot = "b"
+        elif last == "b":
+            current_bot = "a"
         else:
             # If last was user, start with chatbot A
-            current_bot = 'a'
+            current_bot = "a"
 
     # Reset to default if empty, otherwise set custom prompt
     if conv.system_prompt_a:
@@ -487,7 +487,10 @@ async def update_conversation(
     """Update an existing conversation and replace its messages"""
     conversation = (
         db.query(models.Conversation)
-        .filter(models.Conversation.id == conversation_id, models.Conversation.user == user_id)
+        .filter(
+            models.Conversation.id == conversation_id,
+            models.Conversation.user == user_id,
+        )
         .first()
     )
 
@@ -503,7 +506,9 @@ async def update_conversation(
     conversation.turns = data.turns
 
     # Remove existing messages and add new ones
-    db.query(models.Message).filter(models.Message.conversation_id == conversation.id).delete()
+    db.query(models.Message).filter(
+        models.Message.conversation_id == conversation.id
+    ).delete()
 
     for idx, msg in enumerate(data.messages):
         message = models.Message(
