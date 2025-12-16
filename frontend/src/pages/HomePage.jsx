@@ -110,7 +110,7 @@ const HomePage = () => {
       <div className="drawer-content flex flex-col min-h-screen">
         <main
           className="p-8 grow"
-          onClick={(e) => {
+          onClick={() => {
             setIsConvoActive(false);
             // Close drawer when clicking main content
             const drawer = document.getElementById('my-drawer-4');
