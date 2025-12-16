@@ -1,5 +1,5 @@
 import React from 'react';
-import { render, screen, fireEvent } from '@testing-library/react';
+import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import '@testing-library/jest-dom';
 
 import Conversation from './Conversation';
@@ -108,4 +108,101 @@ test('12. Input field updates when typing', () => {
   fireEvent.change(input, { target: { value: 'Test message' } });
 
   expect(input.value).toBe('Test message');
+});
+
+test('13. Start sends POST to /api/conversation and appends user message', async () => {
+  global.fetch.mockImplementationOnce((url, opts) => {
+    if (url === '/api/conversation') {
+      return Promise.resolve({
+        ok: true,
+        body: { getReader: () => ({ read: async () => ({ done: true }) }) },
+      });
+    }
+    return Promise.resolve({ ok: true, json: async () => ({}) });
+  });
+
+  render(<Conversation {...defaultProps} />);
+
+  const input = screen.getByPlaceholderText('Conversation starter...');
+  fireEvent.change(input, { target: { value: 'Hello!' } });
+  fireEvent.click(screen.getByText('Start'));
+
+  await waitFor(() =>
+    expect(global.fetch).toHaveBeenCalledWith('/api/conversation', expect.any(Object)),
+  );
+
+  expect(await screen.findByText('Hello!')).toBeInTheDocument();
+});
+
+test('14. Save posts conversation with system prompts', async () => {
+  global.fetch.mockImplementation((url, opts) => {
+    if (url === '/api/conversation') {
+      return Promise.resolve({
+        ok: true,
+        body: { getReader: () => ({ read: async () => ({ done: true }) }) },
+      });
+    }
+    if (url === '/api/conversations') {
+      return Promise.resolve({ ok: true, json: async () => ({ id: 123 }) });
+    }
+    return Promise.resolve({ ok: true, json: async () => ({}) });
+  });
+
+  const props = { ...defaultProps, promptA: 'Prompt A text', promptB: 'Prompt B text' };
+  render(<Conversation {...props} />);
+
+  fireEvent.change(screen.getByPlaceholderText('Conversation starter...'), {
+    target: { value: 'Hi' },
+  });
+  fireEvent.click(screen.getByText('Start'));
+
+  const saveButton = await screen.findByText('Save');
+  fireEvent.click(saveButton);
+
+  await waitFor(() => {
+    const postCall = global.fetch.mock.calls.find((c) => c[0] === '/api/conversations');
+    expect(postCall).toBeTruthy();
+    const body = JSON.parse(postCall[1].body);
+    expect(body.system_prompt_a).toBe('Prompt A text');
+    expect(body.system_prompt_b).toBe('Prompt B text');
+  });
+});
+
+test('15. Clear dispatches conversation:deleted and sends DELETE request', async () => {
+  global.fetch.mockImplementation((url, opts) => {
+    if (url === '/api/conversation') {
+      return Promise.resolve({
+        ok: true,
+        body: { getReader: () => ({ read: async () => ({ done: true }) }) },
+      });
+    }
+    if (url.startsWith('/api/conversations/')) {
+      return Promise.resolve({ ok: true });
+    }
+    return Promise.resolve({ ok: true, json: async () => ({}) });
+  });
+
+  const openConv = { id: 42 };
+  render(<Conversation {...{ ...defaultProps, openConversation: openConv }} />);
+
+  fireEvent.change(screen.getByPlaceholderText('Conversation starter...'), {
+    target: { value: 'Bye' },
+  });
+  fireEvent.click(screen.getByText('Start'));
+
+  const dispatchSpy = vi.spyOn(window, 'dispatchEvent');
+
+  const clearButton = await screen.findByText('Clear');
+  fireEvent.click(clearButton);
+
+  expect(dispatchSpy.mock.calls.some((c) => c[0] && c[0].type === 'conversation:deleted')).toBe(
+    true,
+  );
+
+  await waitFor(() => {
+    expect(global.fetch).toHaveBeenCalledWith(
+      '/api/conversations/42',
+      expect.objectContaining({ method: 'DELETE' }),
+    );
+  });
 });

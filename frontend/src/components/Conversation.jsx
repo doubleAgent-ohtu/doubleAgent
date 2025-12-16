@@ -96,6 +96,50 @@ const Conversation = ({
     setError(null);
     setIsSaved(false);
     setThreadId(crypto.randomUUID());
+    try {
+      const convId = openConversation && (openConversation.id || openConversation);
+      if (convId) {
+        try {
+          window.dispatchEvent(new CustomEvent('conversation:deleted', { detail: convId }));
+        } catch (e) {
+          /* ignore */
+        }
+
+        (async () => {
+          try {
+            const res = await fetch(`/api/conversations/${convId}`, {
+              method: 'DELETE',
+              credentials: 'include',
+            });
+            if (res.ok) {
+              try {
+                window.dispatchEvent(new Event('conversations:updated'));
+              } catch (e) {
+                /* ignore */
+              }
+              console.log('✅ Conversation deleted from server:', convId);
+            } else {
+              console.warn('Failed to delete conversation from server', res.status);
+              try {
+                window.dispatchEvent(new Event('conversations:updated'));
+              } catch (e) {
+                /* ignore */
+              }
+            }
+          } catch (e) {
+            console.warn('Error deleting conversation', e);
+            try {
+              window.dispatchEvent(new Event('conversations:updated'));
+            } catch (ee) {
+              /* ignore */
+            }
+          }
+        })();
+      }
+    } catch (e) {
+      console.warn('Error while attempting to delete conversation', e);
+    }
+
     if (onClearPrompts) onClearPrompts();
     console.log('--- 🗑️ Conversation cleared ---');
   };
