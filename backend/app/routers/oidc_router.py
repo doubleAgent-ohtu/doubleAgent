@@ -10,7 +10,8 @@ DA_OIDC_CLIENT_ID = os.getenv("DA_OIDC_CLIENT_ID")
 DA_OIDC_CLIENT_SECRET = os.getenv("DA_OIDC_CLIENT_SECRET")
 DA_OIDC_REDIRECT_URI = os.getenv("DA_OIDC_REDIRECT_URI")
 DA_ALLOWED_GROUP = os.getenv("DA_ALLOWED_GROUP", "grp-doubleagent")
-DA_ENFORCE_GROUP_CHECK = os.getenv("DA_ENFORCE_GROUP_CHECK", "true").lower() == "true"
+# Parse boolean from DA_ENFORCE_GROUP_CHECK env var (temporary for testing)
+ENFORCE_GROUP_CHECK = os.getenv("DA_ENFORCE_GROUP_CHECK", "true").lower() == "true"
 
 oauth = OAuth()
 
@@ -49,7 +50,7 @@ async def auth_callback(request: Request):
         # Check if user belongs to the allowed group
         user_group = userinfo.get("hyGroupCn")
 
-        if DA_ENFORCE_GROUP_CHECK:
+        if ENFORCE_GROUP_CHECK:
             if not user_group:
                 print(
                     f"Login denied: No hyGroupCn found for user {userinfo.get('sub')}"
