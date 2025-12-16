@@ -29,19 +29,19 @@ test('1. Renders main menu buttons', () => {
   render(<Menu onOpenUserGuide={() => {}} onSelectConversation={() => {}} onNewChat={() => {}} />);
 
   expect(screen.getByText('Homepage')).toBeInTheDocument();
-  expect(screen.getByText('New chat')).toBeInTheDocument();
+  expect(screen.getByText('New Chat')).toBeInTheDocument();
   expect(screen.getByText('User Guide')).toBeInTheDocument();
   expect(screen.getByText('Settings')).toBeInTheDocument();
   expect(screen.getByText('Logout')).toBeInTheDocument();
 });
 
-test('2. Clicking New chat dispatches event and calls onNewChat prop', async () => {
+test('2. Clicking New Chat dispatches event and calls onNewChat prop', async () => {
   const onNewChat = vi.fn();
   const dispatchSpy = vi.spyOn(window, 'dispatchEvent');
 
   render(<Menu onOpenUserGuide={() => {}} onSelectConversation={() => {}} onNewChat={onNewChat} />);
 
-  const btn = screen.getByText('New chat');
+  const btn = screen.getByText('New Chat');
   fireEvent.click(btn);
 
   expect(onNewChat).toHaveBeenCalledTimes(1);
