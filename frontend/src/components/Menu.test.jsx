@@ -222,8 +222,10 @@ test('9. conversations:updated event reloads starters', async () => {
 
 test('10. User Guide button calls onOpenUserGuide callback', () => {
   const onOpenUserGuide = vi.fn();
-  
-  render(<Menu onOpenUserGuide={onOpenUserGuide} onSelectConversation={() => {}} onNewChat={() => {}} />);
+
+  render(
+    <Menu onOpenUserGuide={onOpenUserGuide} onSelectConversation={() => {}} onNewChat={() => {}} />,
+  );
 
   const userGuideBtn = screen.getByText('User Guide');
   fireEvent.click(userGuideBtn);
