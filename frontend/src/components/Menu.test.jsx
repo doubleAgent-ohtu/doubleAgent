@@ -28,10 +28,9 @@ afterEach(() => {
 test('1. Renders main menu buttons', () => {
   render(<Menu onOpenUserGuide={() => {}} onSelectConversation={() => {}} onNewChat={() => {}} />);
 
-  expect(screen.getByText('Homepage')).toBeInTheDocument();
+  // Only test for buttons that still exist
   expect(screen.getByText('New Chat')).toBeInTheDocument();
   expect(screen.getByText('User Guide')).toBeInTheDocument();
-  expect(screen.getByText('Settings')).toBeInTheDocument();
   expect(screen.getByText('Logout')).toBeInTheDocument();
 });
 
@@ -219,4 +218,22 @@ test('9. conversations:updated event reloads starters', async () => {
   window.dispatchEvent(new Event('conversations:updated'));
 
   await waitFor(() => expect(screen.getByText('Fresh starter')).toBeInTheDocument());
+});
+
+test('10. User Guide button calls onOpenUserGuide callback', () => {
+  const onOpenUserGuide = vi.fn();
+  
+  render(<Menu onOpenUserGuide={onOpenUserGuide} onSelectConversation={() => {}} onNewChat={() => {}} />);
+
+  const userGuideBtn = screen.getByText('User Guide');
+  fireEvent.click(userGuideBtn);
+
+  expect(onOpenUserGuide).toHaveBeenCalledTimes(1);
+});
+
+test('11. Menu items have proper spacing in expanded view', () => {
+  render(<Menu onOpenUserGuide={() => {}} onSelectConversation={() => {}} onNewChat={() => {}} />);
+
+  const menu = screen.getByText('New Chat').closest('ul');
+  expect(menu).toHaveClass('space-y-1');
 });
