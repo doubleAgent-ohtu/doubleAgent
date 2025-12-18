@@ -1,6 +1,7 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import ModelSelection from './ModelSelection.jsx';
 import DownloadChatButton from './DownloadChatButton.jsx';
+import axios from 'axios';
 
 const Conversation = ({
   promptA,
@@ -9,20 +10,13 @@ const Conversation = ({
   onClearPrompts,
   openConversation,
   newChatSignal,
-  threadId: propThreadId,
-  setThreadId: propSetThreadId,
 }) => {
   const [input, setInput] = useState('');
   const [messages, setMessages] = useState(null);
   const messagesRef = useRef(null);
   const [turns, setTurns] = useState(3);
   const [selectedModel, setSelectedModel] = useState('gpt-4o');
-  const [threadId, setThreadId] = useState(() => propThreadId ?? crypto.randomUUID());
-
-  useEffect(() => {
-    if (propThreadId) setThreadId(propThreadId);
-  }, [propThreadId]);
-
+  const [threadId, setThreadId] = useState(crypto.randomUUID());
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
   const [isSaving, setIsSaving] = useState(false);
@@ -31,6 +25,7 @@ const Conversation = ({
 
   const abortControllerRef = useRef(null);
 
+  // Auto-scroll to bottom when messages change
   useEffect(() => {
     if (messagesRef.current) {
       messagesRef.current.scrollTo({
@@ -42,58 +37,55 @@ const Conversation = ({
 
   // Load a conversation provided by parent or other components
   useEffect(() => {
+    const controller = new AbortController();
+
     const loadConversation = async () => {
       if (!openConversation) return;
 
-      // Reset UI state immediately to avoid carrying over previous conversation
-      setMessages(null);
-      setError(null);
-      setIsSaved(false);
-      savedMessageCountRef.current = null;
-      setThreadId(openConversation.thread_id || crypto.randomUUID());
-
-      // If full messages were already provided on the openConversation object, use them
-      // (handled below)
-
-      // If full messages are already present, use them
-      if (openConversation.messages && openConversation.messages.length > 0) {
-        const mapped = openConversation.messages.map((m) => ({
-          chatbot: m.chatbot,
-          message: m.message,
-        }));
-        setMessages(mapped);
-        setThreadId(openConversation.thread_id || crypto.randomUUID());
-        if (openConversation.model) setSelectedModel(openConversation.model);
-        setIsSaved(true);
-        savedMessageCountRef.current = mapped.length;
-        return;
-      }
-
-      // Otherwise fetch the conversation by id
       try {
-        const id = openConversation.id || openConversation;
-        console.log('Loading conversation id:', id);
-        const res = await fetch(`/api/conversations/${id}`, { credentials: 'include' });
-        if (!res.ok) {
-          console.warn('Failed to load conversation', res.status);
-          return;
+        let data = openConversation;
+        const hasLocalMessages = data.messages && data.messages.length > 0;
+
+        // Fetch data if we don't have messages locally
+        if (!hasLocalMessages) {
+          const id = data.id || data;
+          console.log('Loading conversation id:', id);
+
+          const res = await axios.get(`/api/conversations/${id}`, {
+            withCredentials: true,
+            signal: controller.signal,
+          });
+
+          data = res.data;
+          console.log('Loaded conversation data:', data);
         }
-        const data = await res.json();
-        console.log('Loaded conversation data:', data);
-        if (data && data.messages) {
-          const mapped = data.messages.map((m) => ({ chatbot: m.chatbot, message: m.message }));
-          setMessages(mapped);
+
+        if (data.messages) {
+          setMessages(data.messages.map(({ chatbot, message }) => ({ chatbot, message })));
         }
+
         setThreadId(data.thread_id || crypto.randomUUID());
+
         if (data.model) setSelectedModel(data.model);
+
         setIsSaved(true);
         if (data && data.messages) savedMessageCountRef.current = data.messages.length;
       } catch (err) {
-        console.error('Error loading conversation', err);
+        // Ignore errors caused by us cancelling the request
+        if (axios.isCancel(err)) {
+          console.log('Previous conversation load canceled');
+        } else {
+          console.error('Error loading conversation', err);
+        }
       }
     };
 
     loadConversation();
+
+    // 5. Cleanup function: Cancel the request if openConversation changes
+    return () => {
+      controller.abort();
+    };
   }, [openConversation]);
 
   const handleStopConversation = () => {
@@ -104,152 +96,92 @@ const Conversation = ({
     }
   };
 
-  const handleClearConversation = () => {
+  const onClearPromptsRef = useRef(onClearPrompts);
+  const openConversationRef = useRef(openConversation);
+
+  useEffect(() => {
+    onClearPromptsRef.current = onClearPrompts;
+    openConversationRef.current = openConversation;
+  }, [onClearPrompts, openConversation]);
+
+  const handleClearConversation = useCallback(() => {
     setMessages(null);
     setError(null);
     setIsSaved(false);
-    savedMessageCountRef.current = null;
+    setInput('');
     setThreadId(crypto.randomUUID());
-    try {
-      const convId = openConversation && (openConversation.id || openConversation);
-      if (convId) {
-        try {
-          window.dispatchEvent(new CustomEvent('conversation:deleted', { detail: convId }));
-        } catch (e) {
-          /* ignore */
-        }
 
-        (async () => {
-          try {
-            const res = await fetch(`/api/conversations/${convId}`, {
-              method: 'DELETE',
-              credentials: 'include',
-            });
-            if (res.ok) {
-              try {
-                window.dispatchEvent(new Event('conversations:updated'));
-              } catch (e) {
-                /* ignore */
-              }
-              console.log('✅ Conversation deleted from server:', convId);
-            } else {
-              console.warn('Failed to delete conversation from server', res.status);
-              try {
-                window.dispatchEvent(new Event('conversations:updated'));
-              } catch (e) {
-                /* ignore */
-              }
-            }
-          } catch (e) {
-            console.warn('Error deleting conversation', e);
-            try {
-              window.dispatchEvent(new Event('conversations:updated'));
-            } catch (ee) {
-              /* ignore */
-            }
-          }
-        })();
-      }
-    } catch (e) {
-      console.warn('Error while attempting to delete conversation', e);
+    const currentConv = openConversationRef.current;
+    const convId = currentConv?.id || currentConv;
+
+    if (convId) {
+      window.dispatchEvent(new CustomEvent('conversation:deleted', { detail: convId }));
+
+      // We do NOT await this because we want the screen to wipe instantly.
+      axios
+        .delete(`/api/conversations/${convId}`, { withCredentials: true })
+        .then(() => {
+          console.log('✅ Conversation deleted from server:', convId);
+        })
+        .catch((err) => {
+          console.warn('Failed to delete conversation:', err);
+        })
+        .finally(() => {
+          // Even if delete failed
+          window.dispatchEvent(new Event('conversations:updated'));
+        });
     }
 
-    if (onClearPrompts) onClearPrompts();
-    console.log('--- 🗑️ Conversation cleared ---');
-  };
+    if (onClearPromptsRef.current) onClearPromptsRef.current();
 
-  // Clear conversation when parent signals a new chat
+    console.log('--- 🗑️ Conversation cleared ---');
+  }, []);
+
   useEffect(() => {
     if (typeof newChatSignal === 'undefined') return;
     handleClearConversation();
-  }, [newChatSignal]);
+  }, [newChatSignal, handleClearConversation]);
 
-  // Also respond to global new-chat events (dispatched from Menu)
   useEffect(() => {
-    const handler = () => handleClearConversation();
-    try {
-      window.addEventListener('new-chat:start', handler);
-    } catch (e) {
-      // ignore
-    }
-    return () => {
-      try {
-        window.removeEventListener('new-chat:start', handler);
-      } catch (e) {
-        // ignore
-      }
-    };
-  }, []);
+    window.addEventListener('new-chat:start', handleClearConversation);
+    return () => window.removeEventListener('new-chat:start', handleClearConversation);
+  }, [handleClearConversation]);
 
   const handleSaveConversation = async () => {
-    if (!messages || messages.length === 0) {
-      alert('No messages to save');
-      return;
-    }
-
-    if (isSaved) {
-      alert('Conversation already saved');
-      return;
-    }
+    if (!messages?.length) return alert('No messages to save');
+    if (isSaved) return alert('Conversation already saved');
 
     setIsSaving(true);
 
-    // Generate conversation_starter from first user message
-    const firstUserMsg = messages.find((m) => m.chatbot === 'user');
-    const conversation_starter = firstUserMsg
-      ? firstUserMsg.message.substring(0, 50) + (firstUserMsg.message.length > 50 ? '...' : '')
-      : 'Conversation';
-
-    const conversationData = {
-      conversation_starter,
-      thread_id: threadId,
-      model: selectedModel,
-      system_prompt_a: promptA || null,
-      system_prompt_b: promptB || null,
-      turns,
-      messages: messages.map((msg) => ({
-        chatbot: msg.chatbot,
-        message: msg.message,
-      })),
-    };
-
     try {
-      // If this conversation was previously saved on the server, update it
-      const convId = openConversation && (openConversation.id || openConversation);
-      const method = convId ? 'PUT' : 'POST';
-      const url = convId ? `/api/conversations/${convId}` : '/api/conversations';
+      const firstUserMsg = messages.find((m) => m.chatbot === 'user');
+      const rawTitle = firstUserMsg?.message || 'Conversation';
+      const conversation_starter =
+        rawTitle.length > 50 ? `${rawTitle.substring(0, 50)}...` : rawTitle;
 
-      const response = await fetch(url, {
-        method,
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(conversationData),
-      });
+      const conversationData = {
+        conversation_starter,
+        thread_id: threadId,
+        model: selectedModel,
+        system_prompt_a: promptA || null,
+        system_prompt_b: promptB || null,
+        turns,
+        messages: messages.map(({ chatbot, message }) => ({ chatbot, message })),
+      };
 
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.detail || 'Save failed');
-      }
-
-      const saved = await response.json();
+      const response = await axios.post('/api/conversations', conversationData);
+      const saved = response.data;
 
       setIsSaved(true);
-      savedMessageCountRef.current = messages ? messages.length : 0;
-      try {
-        window.dispatchEvent(new Event('conversations:updated'));
-      } catch (e) {
-        /* ignore */
-      }
-      try {
-        window.dispatchEvent(new CustomEvent('conversation:opened', { detail: saved }));
-      } catch (e) {
-        /* ignore */
-      }
+
+      window.dispatchEvent(new Event('conversations:updated'));
+      window.dispatchEvent(new CustomEvent('conversation:opened', { detail: saved }));
+
       console.log('✅ Conversation saved');
     } catch (err) {
       console.error('Error saving conversation:', err);
-      alert(`Error saving conversation: ${err.message}`);
+      const errorMessage = err.response?.data?.detail || err.message;
+      alert(`Error saving conversation: ${errorMessage}`);
     } finally {
       setIsSaving(false);
       // ensure saved count matches current messages after save
