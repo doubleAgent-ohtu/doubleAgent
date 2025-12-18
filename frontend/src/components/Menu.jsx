@@ -101,28 +101,7 @@ const Menu = ({ onOpenUserGuide, onSelectConversation, onNewChat }) => {
   return (
     <div className="bg-base-200 flex flex-col justify-between min-h-full sidebar p-2">
       <div>
-        <ul className="menu w-full">
-          <li>
-            <button>
-              <span className="icon" aria-hidden="true">
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  viewBox="0 0 24 24"
-                  strokeLinejoin="round"
-                  strokeLinecap="round"
-                  strokeWidth="2"
-                  fill="none"
-                  stroke="currentColor"
-                  className="inline-block size-4 my-1.5"
-                >
-                  <path d="M15 21v-8a1 1 0 0 0-1-1h-4a1 1 0 0 0-1 1v8"></path>
-                  <path d="M3 10a2 2 0 0 1 .709-1.528l7-5.999a2 2 0 0 1 2.582 0l7 5.999A2 2 0 0 1 21 10v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
-                </svg>
-              </span>
-              <span className="label-text">Homepage</span>
-            </button>
-          </li>
-
+        <ul className="menu w-full space-y-1">
           <li>
             <button
               onClick={() => {
@@ -142,8 +121,9 @@ const Menu = ({ onOpenUserGuide, onSelectConversation, onNewChat }) => {
                   onSelectConversation(null);
                   return;
                 }
-                console.log('New chat requested');
+                console.log('New Chat requested');
               }}
+              className="gap-3"
             >
               <span className="icon" aria-hidden="true">
                 <svg
@@ -154,18 +134,18 @@ const Menu = ({ onOpenUserGuide, onSelectConversation, onNewChat }) => {
                   strokeWidth="2"
                   fill="none"
                   stroke="currentColor"
-                  className="inline-block h-4 w-4 my-1.5"
+                  className="inline-block h-5 w-5"
                 >
                   <path d="M12 5v14"></path>
                   <path d="M5 12h14"></path>
                 </svg>
               </span>
-              <span className="label-text">New chat</span>
+              <span className="label-text">New Chat</span>
             </button>
           </li>
 
           <li>
-            <button onClick={onOpenUserGuide}>
+            <button onClick={onOpenUserGuide} className="gap-3">
               <span className="icon" aria-hidden="true">
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
@@ -175,7 +155,7 @@ const Menu = ({ onOpenUserGuide, onSelectConversation, onNewChat }) => {
                   strokeWidth="2"
                   fill="none"
                   stroke="currentColor"
-                  className="inline-block size-4 my-1.5"
+                  className="inline-block h-5 w-5"
                 >
                   <path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1 0-5H20"></path>
                 </svg>
@@ -185,7 +165,7 @@ const Menu = ({ onOpenUserGuide, onSelectConversation, onNewChat }) => {
           </li>
 
           <li>
-            <button>
+            <button onClick={handleLogout} className="gap-3">
               <span className="icon" aria-hidden="true">
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
@@ -195,30 +175,7 @@ const Menu = ({ onOpenUserGuide, onSelectConversation, onNewChat }) => {
                   strokeWidth="2"
                   fill="none"
                   stroke="currentColor"
-                  className="inline-block size-4 my-1.5"
-                >
-                  <path d="M20 7h-9"></path>
-                  <path d="M14 17H5"></path>
-                  <circle cx="17" cy="17" r="3"></circle>
-                  <circle cx="7" cy="7" r="3"></circle>
-                </svg>
-              </span>
-              <span className="label-text">Settings</span>
-            </button>
-          </li>
-
-          <li>
-            <button onClick={handleLogout}>
-              <span className="icon" aria-hidden="true">
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  viewBox="0 0 24 24"
-                  strokeLinejoin="round"
-                  strokeLinecap="round"
-                  strokeWidth="2"
-                  fill="none"
-                  stroke="currentColor"
-                  className="inline-block size-4 my-1.5"
+                  className="inline-block h-5 w-5"
                 >
                   <path d="M14 8V6a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h7a2 2 0 0 0 2-2v-2"></path>
                   <path d="M9 12h12l-3-3"></path>
@@ -231,7 +188,7 @@ const Menu = ({ onOpenUserGuide, onSelectConversation, onNewChat }) => {
         </ul>
         {/* Conversation starters under the icons (only visible when menu is expanded) */}
         {starters && starters.length > 0 && (
-          <div className="mt-4 is-drawer-close:hidden px-2">
+          <div className="mt-6 is-drawer-close:hidden px-2">
             <div className="divider divider-start text-xs opacity-60 my-2">
               <span className="font-semibold">Chat History</span>
             </div>
@@ -242,7 +199,7 @@ const Menu = ({ onOpenUserGuide, onSelectConversation, onNewChat }) => {
                 return (
                   <button
                     key={c.id}
-                    className="btn btn-ghost btn-sm w-full justify-start text-left normal-case font-normal hover:bg-base-300 active:bg-base-300 rounded-lg p-3 h-[3.5rem]"
+                    className="btn btn-ghost btn-sm w-full justify-start text-left normal-case font-normal hover:bg-base-300 active:bg-base-300 rounded-lg p-3 h-auto min-h-[3rem]"
                     onClick={() => {
                       if (onSelectConversation) onSelectConversation(c);
                       else console.log('open', c.id);
@@ -263,11 +220,11 @@ const Menu = ({ onOpenUserGuide, onSelectConversation, onNewChat }) => {
         <button
           onClick={toggleTheme}
           aria-label="Toggle theme"
-          className="btn btn-ghost btn-circle btn-sm flex items-center justify-center mr-1"
+          className="btn btn-ghost btn-circle btn-sm flex items-center justify-center"
         >
           {isDark ? (
             <svg
-              className="h-4 w-4 fill-current"
+              className="h-5 w-5 fill-current"
               xmlns="http://www.w3.org/2000/svg"
               viewBox="0 0 24 24"
             >
@@ -275,7 +232,7 @@ const Menu = ({ onOpenUserGuide, onSelectConversation, onNewChat }) => {
             </svg>
           ) : (
             <svg
-              className="h-4 w-4 fill-current"
+              className="h-5 w-5 fill-current"
               xmlns="http://www.w3.org/2000/svg"
               viewBox="0 0 24 24"
             >
@@ -287,7 +244,7 @@ const Menu = ({ onOpenUserGuide, onSelectConversation, onNewChat }) => {
         <button
           onClick={toggleDrawer}
           aria-label="Toggle sidebar"
-          className="btn btn-ghost btn-circle"
+          className="btn btn-ghost btn-circle btn-sm flex items-center justify-center"
         >
           <svg
             xmlns="http://www.w3.org/2000/svg"
@@ -297,7 +254,7 @@ const Menu = ({ onOpenUserGuide, onSelectConversation, onNewChat }) => {
             strokeWidth="2"
             fill="none"
             stroke="currentColor"
-            className="inline-block size-4 my-1.5"
+            className="inline-block h-5 w-5"
           >
             <path d="M4 4m0 2a2 2 0 0 1 2 -2h12a2 2 0 0 1 2 2v12a2 2 0 0 1 -2 2h-12a2 2 0 0 1 -2 -2z"></path>
             <path d="M9 4v16"></path>

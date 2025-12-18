@@ -246,11 +246,6 @@ def get_messages(current_user: dict = Depends(get_current_user)):
     return {"messages": messages}
 
 
-@app.get("/health")
-def health_check():
-    return {"status": "healthy"}
-
-
 @app.get("/me")
 def get_current_user_from_session(current_user: dict = Depends(get_current_user)):
     return current_user
@@ -274,7 +269,11 @@ async def get_prompts(
     user: str = Depends(get_user_id),
     db: Session = Depends(get_db),
 ):
-    prompts = db.scalars(select(models.Prompt).where(models.Prompt.user == user)).all()
+    prompts = db.scalars(
+        select(models.Prompt)
+        .where(models.Prompt.user == user)
+        .order_by(models.Prompt.created_at.desc())
+    ).all()
 
     return prompts
 
