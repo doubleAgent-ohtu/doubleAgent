@@ -56,6 +56,7 @@ def test_client(test_db, mocker):
 
     app.dependency_overrides.clear()
 
+
 def test_save_and_get_prompts(test_client):
     """Save a prompt and retrieve it via /get_prompts."""
     payload = {"agent_name": "agent1", "prompt": "This is a test prompt"}
@@ -71,8 +72,7 @@ def test_save_and_get_prompts(test_client):
 
 
 def test_save_long_prompt(test_client):
-    prompt_text = (
-'''You are Olga Zemp, a 56-year-old woman with elevated blood pressure, high cholesterol, and prediabetes seeking guidance on weight management and overall health.
+    prompt_text = """You are Olga Zemp, a 56-year-old woman with elevated blood pressure, high cholesterol, and prediabetes seeking guidance on weight management and overall health.
 Persona: 
 Olga has mildly elevated hypertension (~134/83 mmHg), high LDL cholesterol (3.2 mmol/L), and prediabetes (fasting glucose 6.8 mmol/L). She measures her blood pressure monthly, takes Cardace and Atorvastatin daily, and uses Panadol for occasional headaches. Her height is 167 cm, weight 85 kg (BMI 30.5 kg/m²), and waist circumference 102 cm. She has a family history of cardiovascular disease, type 2 diabetes, and central obesity.
 Topics on Persona (Background & Context): 
@@ -101,17 +101,13 @@ General Instructions & Directives:
 - Philosophical Pondering: Avoid venturing into complex philosophical discussions.
 Light Audit Checklist:
 Post-session, Olga should reflect on key takeaways and potential action points to naturally conclude the conversation. For example, confirming intent to follow through on a small goal discussed.
-Now behave exactly like Olga Zemp when I start chatting. Respond only as she would, following the background, goals, and rules above.'''
-    )
-    prompt_data = {
-        'agent_name': 'Olga Zemp',
-        'prompt': prompt_text
-    }
+Now behave exactly like Olga Zemp when I start chatting. Respond only as she would, following the background, goals, and rules above."""
+    prompt_data = {"agent_name": "Olga Zemp", "prompt": prompt_text}
     response = test_client.post("/save_prompt", json=prompt_data)
     assert response.status_code == 200
     data = response.json()
-    assert data['agent_name'] == 'Olga Zemp'
-    assert data['prompt'] == prompt_text
+    assert data["agent_name"] == "Olga Zemp"
+    assert data["prompt"] == prompt_text
 
 
 def test_save_duplicate_agent_name_returns_409(test_client):
@@ -163,20 +159,14 @@ def test_delete_prompt(test_client):
 
 
 def test_error_saving_empty_prompt(test_client):
-    prompt_data = {
-        'agent_name': 'Pirate',
-        'prompt': ' '
-    }
+    prompt_data = {"agent_name": "Pirate", "prompt": " "}
     response = test_client.post("/save_prompt", json=prompt_data)
     assert response.status_code == 422
-    assert response.json()['detail'][0]['msg'] == 'Value error, Missing prompt'
+    assert response.json()["detail"][0]["msg"] == "Value error, Missing prompt"
 
 
 def test_error_saving_empty_agent_name(test_client):
-    prompt_data = {
-        'agent_name': ' ',
-        'prompt': 'Talk like a pirate.'
-    }
+    prompt_data = {"agent_name": " ", "prompt": "Talk like a pirate."}
     response = test_client.post("/save_prompt", json=prompt_data)
     assert response.status_code == 422
-    assert response.json()['detail'][0]['msg'] == 'Value error, Missing agent name'
+    assert response.json()["detail"][0]["msg"] == "Value error, Missing agent name"

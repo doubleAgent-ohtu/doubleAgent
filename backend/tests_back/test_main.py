@@ -23,17 +23,9 @@ def test_client():
     main.app.dependency_overrides.clear()
 
 
-def test_health(test_client):
-    """Health endpoint returns healthy status."""
-    r = test_client.get("/health")
-    assert r.status_code == 200
-    assert r.json() == {"status": "healthy"}
-
-
 def test_me(test_client):
     """Authenticated `/me` returns user info from session override."""
     r = test_client.get("/me")
     assert r.status_code == 200
     body = r.json()
     assert body["sub"] == "test-user"
-

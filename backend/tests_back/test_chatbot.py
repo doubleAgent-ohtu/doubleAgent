@@ -212,6 +212,3 @@ async def test_stream_chat_error_handling(chatbot_service):
     assert len(chunks) == 1
     assert "Error:" in chunks[0]
     assert "Stream error" in chunks[0]
-
-
-
