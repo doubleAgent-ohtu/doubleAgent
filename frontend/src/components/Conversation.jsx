@@ -21,6 +21,7 @@ const Conversation = ({
   const [error, setError] = useState(null);
   const [isSaving, setIsSaving] = useState(false);
   const [isSaved, setIsSaved] = useState(false);
+  const savedMessageCountRef = useRef(null);
 
   const abortControllerRef = useRef(null);
 
@@ -68,6 +69,7 @@ const Conversation = ({
         if (data.model) setSelectedModel(data.model);
 
         setIsSaved(true);
+        if (data && data.messages) savedMessageCountRef.current = data.messages.length;
       } catch (err) {
         // Ignore errors caused by us cancelling the request
         if (axios.isCancel(err)) {
@@ -182,8 +184,27 @@ const Conversation = ({
       alert(`Error saving conversation: ${errorMessage}`);
     } finally {
       setIsSaving(false);
+      // ensure saved count matches current messages after save
+      savedMessageCountRef.current = messages ? messages.length : 0;
     }
   };
+
+  // Re-enable the Save button when new messages differ from saved count
+  useEffect(() => {
+    if (!messages) {
+      // no messages -> not saved
+      setIsSaved(false);
+      return;
+    }
+
+    const savedCount = savedMessageCountRef.current;
+    if (savedCount === null || savedCount === undefined) {
+      setIsSaved(false);
+      return;
+    }
+
+    setIsSaved(messages.length === savedCount);
+  }, [messages]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -194,7 +215,8 @@ const Conversation = ({
     abortControllerRef.current = new AbortController();
 
     const userMsg = { chatbot: 'user', message: input };
-    setMessages((prev) => [...(prev || []), userMsg]);
+    const newMessages = [...(messages || []), userMsg];
+    setMessages(newMessages);
 
     const conversationData = {
       initial_message: input,
@@ -203,6 +225,7 @@ const Conversation = ({
       system_prompt_a: promptA,
       system_prompt_b: promptB,
       thread_id: threadId,
+      history: newMessages,
     };
     setInput('');
 
