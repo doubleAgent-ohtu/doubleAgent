@@ -478,48 +478,53 @@ async def delete_conversation(
 
 
 @app.put("/conversations/{conversation_id}", response_model=schemas.ConversationSchema)
-async def update_conversation(
+def update_conversation(
     conversation_id: int,
     data: schemas.SaveConversation,
     user_id: str = Depends(get_user_id),
     db: Session = Depends(get_db),
 ):
-    """Update an existing conversation and replace its messages"""
-    conversation = (
-        db.query(models.Conversation)
-        .filter(
-            models.Conversation.id == conversation_id,
-            models.Conversation.user == user_id,
+    """Update an existing conversation and replace its messages.
+
+    Use a transaction context so any error during the update or message
+    replacement will roll back automatically.
+    """
+    with db.begin():
+        conversation = (
+            db.query(models.Conversation)
+            .filter(
+                models.Conversation.id == conversation_id,
+                models.Conversation.user == user_id,
+            )
+            .first()
         )
-        .first()
-    )
 
-    if not conversation:
-        raise HTTPException(status_code=404, detail="Conversation not found")
+        if not conversation:
+            raise HTTPException(status_code=404, detail="Conversation not found")
 
-    # Update fields
-    conversation.conversation_starter = data.conversation_starter
-    conversation.thread_id = data.thread_id
-    conversation.model = data.model
-    conversation.system_prompt_a = data.system_prompt_a
-    conversation.system_prompt_b = data.system_prompt_b
-    conversation.turns = data.turns
+        # Update fields
+        conversation.conversation_starter = data.conversation_starter
+        conversation.thread_id = data.thread_id
+        conversation.model = data.model
+        conversation.system_prompt_a = data.system_prompt_a
+        conversation.system_prompt_b = data.system_prompt_b
+        conversation.turns = data.turns
 
-    # Remove existing messages and add new ones
-    db.query(models.Message).filter(
-        models.Message.conversation_id == conversation.id
-    ).delete()
+        # Remove existing messages and add new ones within the transaction
+        db.query(models.Message).filter(
+            models.Message.conversation_id == conversation.id
+        ).delete(synchronize_session=False)
 
-    for idx, msg in enumerate(data.messages):
-        message = models.Message(
-            conversation_id=conversation.id,
-            chatbot=msg.get("chatbot", "unknown"),
-            message=msg.get("message", ""),
-            order=idx,
-        )
-        db.add(message)
+        for idx, msg in enumerate(data.messages):
+            message = models.Message(
+                conversation_id=conversation.id,
+                chatbot=msg.get("chatbot", "unknown"),
+                message=msg.get("message", ""),
+                order=idx,
+            )
+            db.add(message)
 
-    db.commit()
+    # Transaction is committed (or rolled back) by the context manager
     db.refresh(conversation)
 
     return conversation
