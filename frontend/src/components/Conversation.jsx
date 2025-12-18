@@ -140,19 +140,19 @@ const Conversation = ({
       console.warn('Error while attempting to delete conversation', e);
     }
 
-    if (onClearPrompts) onClearPrompts();
     console.log('--- 🗑️ Conversation cleared ---');
   };
 
   // Clear conversation when parent signals a new chat
   useEffect(() => {
     if (typeof newChatSignal === 'undefined') return;
-    handleClearConversation();
+    handleClearConversation(); 
+    onClearPrompts();
   }, [newChatSignal]);
 
   // Also respond to global new-chat events (dispatched from Menu)
   useEffect(() => {
-    const handler = () => handleClearConversation();
+    const handler = () => {handleClearConversation(); onClearPrompts();}
     try {
       window.addEventListener('new-chat:start', handler);
     } catch (e) {
