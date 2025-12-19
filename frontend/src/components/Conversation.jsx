@@ -104,17 +104,18 @@ const Conversation = ({
     openConversationRef.current = openConversation;
   }, [onClearPrompts, openConversation]);
 
-  const handleClearConversation = useCallback(() => {
+  const handleClearConversation = useCallback((deleteRemote = false) => {
     setMessages(null);
     setError(null);
     setIsSaved(false);
     setInput('');
     setThreadId(crypto.randomUUID());
+    savedMessageCountRef.current = null;
 
     const currentConv = openConversationRef.current;
     const convId = currentConv?.id || currentConv;
 
-    if (convId) {
+    if (convId && deleteRemote) {
       window.dispatchEvent(new CustomEvent('conversation:deleted', { detail: convId }));
 
       // We do NOT await this because we want the screen to wipe instantly.
@@ -413,7 +414,7 @@ const Conversation = ({
               <button
                 type="button"
                 className="btn btn-outline btn-secondary"
-                onClick={handleClearConversation}
+                onClick={() => handleClearConversation(true)}
               >
                 Clear
               </button>
