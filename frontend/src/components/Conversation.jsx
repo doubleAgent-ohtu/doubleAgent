@@ -104,7 +104,6 @@ const Conversation = ({
     openConversationRef.current = openConversation;
   }, [onClearPrompts, openConversation]);
 
-
   const handleClearConversation = useCallback((maybeDelete) => {
     const deleteRemote = typeof maybeDelete === 'boolean' ? maybeDelete : false;
 
