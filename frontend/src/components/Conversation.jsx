@@ -105,8 +105,6 @@ const Conversation = ({
   }, [onClearPrompts, openConversation]);
 
   const handleClearConversation = useCallback((deleteRemote = false) => {
-    const deleteRemote = typeof maybeDelete === 'boolean' ? maybeDelete : false;
-
     setMessages(null);
     setError(null);
     setIsSaved(false);
