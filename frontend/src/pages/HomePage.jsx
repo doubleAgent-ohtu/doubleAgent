@@ -7,7 +7,7 @@ import Kayttoohje from '../components/Kayttoohje.jsx';
 import Conversation from '../components/Conversation.jsx';
 import HamburgerMenu from '../components/HamburgerMenu';
 import PromptManagerModal from '../components/PromptManagerModal.jsx';
-import useAlert from '../hooks/useAlert.jsx';
+import useAlert from '../hooks/useAlert.js';
 
 const HomePage = () => {
   const [savedPrompts, setSavedPrompts] = useState(null);
