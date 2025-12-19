@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
+import { useBotConfig } from '../contexts/BotConfigContext';
 import axios from 'axios';
 import BotConfigurator from '../components/BotConfigurator';
 import Menu from '../components/Menu';
@@ -10,15 +11,9 @@ import PromptManagerModal from '../components/PromptManagerModal.jsx';
 import useAlert from '../components/useAlert.jsx';
 
 const HomePage = () => {
+  const { promptA, setPromptA, promptB, setPromptB, initPrompt } = useBotConfig();
+
   const [savedPrompts, setSavedPrompts] = useState(null);
-  const init_prompt = {
-    id: null,
-    agent_name: '',
-    prompt: '',
-    created_at: null,
-  };
-  const [promptA, setPromptA] = useState(init_prompt);
-  const [promptB, setPromptB] = useState(init_prompt);
   const [promptManagerContext, setPromptManagerContext] = useState(null);
 
   const privacyModalRef = useRef(null);
@@ -41,11 +36,6 @@ const HomePage = () => {
     });
   };
 
-  const handleClearPrompts = () => {
-    setPromptA(init_prompt);
-    setPromptB(init_prompt);
-  };
-
   const openUserGuide = () => {
     userGuideModalRef.current.showModal();
   };
@@ -55,12 +45,12 @@ const HomePage = () => {
     // set the selected conversation immediately; Conversation component will fetch full data if needed
     // also set the system prompts so Conversation uses the same prompts
     setPromptA({
-      ...init_prompt,
+      ...initPrompt,
       prompt: c.system_prompt_a || '',
       agent_name: c.system_prompt_a_name || c.system_prompt_a_agent_name || '',
     });
     setPromptB({
-      ...init_prompt,
+      ...initPrompt,
       prompt: c.system_prompt_b || '',
       agent_name: c.system_prompt_b_name || c.system_prompt_b_agent_name || '',
     });
@@ -89,19 +79,17 @@ const HomePage = () => {
     loadSavedPrompts();
   }, []);
 
-  useEffect(() => {}, []);
-
   useEffect(() => {
     const handler = (e) => {
       if (e && e.detail) {
         const c = e.detail;
         setPromptA({
-          ...init_prompt,
+          ...initPrompt,
           prompt: c.system_prompt_a || '',
           agent_name: c.system_prompt_a_name || c.system_prompt_a_agent_name || '',
         });
         setPromptB({
-          ...init_prompt,
+          ...initPrompt,
           prompt: c.system_prompt_b || '',
           agent_name: c.system_prompt_b_name || c.system_prompt_b_agent_name || '',
         });
@@ -109,10 +97,9 @@ const HomePage = () => {
         setIsConvoActive(true);
       }
     };
-
     window.addEventListener('conversation:opened', handler);
     return () => window.removeEventListener('conversation:opened', handler);
-  }, []);
+  }, [setPromptA, setPromptB, initPrompt]);
 
   return (
     <div className="drawer lg:drawer-open">
@@ -149,16 +136,13 @@ const HomePage = () => {
               onEditPrompt={(isEditor) =>
                 openPromptManagerModal('A', promptA, setPromptA, isEditor)
               }
-              onClearPrompt={() => setPromptA(init_prompt)}
+              onClearPrompt={() => setPromptA(initPrompt)}
               onActivate={() => setIsConvoActive(false)}
             />
 
             <div className="order-3 lg:order-2">
               <Conversation
-                promptA={promptA.prompt}
-                promptB={promptB.prompt}
                 onActivate={() => setIsConvoActive(true)}
-                onClearPrompts={handleClearPrompts}
                 openConversation={openConversation}
                 newChatSignal={newChatSignal}
               />
@@ -172,7 +156,7 @@ const HomePage = () => {
                 onEditPrompt={(isEditor) =>
                   openPromptManagerModal('B', promptB, setPromptB, isEditor)
                 }
-                onClearPrompt={() => setPromptB(init_prompt)}
+                onClearPrompt={() => setPromptB(initPrompt)}
                 onActivate={() => setIsConvoActive(false)}
               />
             </div>
