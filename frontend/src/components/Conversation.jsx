@@ -132,20 +132,22 @@ const Conversation = ({
           window.dispatchEvent(new Event('conversations:updated'));
         });
     }
-
-    if (onClearPromptsRef.current) onClearPromptsRef.current();
-
     console.log('--- 🗑️ Conversation cleared ---');
   }, []);
 
+  const handleClearConversationAndPrompts = () => {
+    handleClearConversation();
+    onClearPrompts();
+  };
+
   useEffect(() => {
     if (typeof newChatSignal === 'undefined') return;
-    handleClearConversation();
+    handleClearConversationAndPrompts();
   }, [newChatSignal, handleClearConversation]);
 
   useEffect(() => {
-    window.addEventListener('new-chat:start', handleClearConversation);
-    return () => window.removeEventListener('new-chat:start', handleClearConversation);
+    window.addEventListener('new-chat:start', handleClearConversationAndPrompts);
+    return () => window.removeEventListener('new-chat:start', handleClearConversationAndPrompts);
   }, [handleClearConversation]);
 
   const handleSaveConversation = async () => {

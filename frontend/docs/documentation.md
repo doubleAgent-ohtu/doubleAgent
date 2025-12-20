@@ -1,4 +1,3 @@
-
 # Frontend Documentation
 
 ## Requirements
@@ -6,11 +5,13 @@
 **Preferred:** Docker-compose Development Setup. Use the root `docker-compose.yml` to build and run the entire application (frontend + backend). See `README.md` for more details.
 
 **Development Requirements:**
+
 - Node.js 24+
 - npm (for installing dependencies and running scripts)
 - Vite dev server for local development
 
 **Production Build:**
+
 - Use the provided `Dockerfile` to build a production-ready image that installs all dependencies and outputs an optimized bundle ready for static hosting.
 
 ## Technologies
@@ -18,6 +19,7 @@
 The frontend is a Single Page Application built with **React** and bundled with **Vite**.
 
 **Key Technologies:**
+
 - **React** — UI library for building the SPA
 - **Vite** — Development server and bundler
 - **CSS / Tailwind (optional)** — Global styles (see `src/index.css`)
