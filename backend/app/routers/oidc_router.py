@@ -15,7 +15,6 @@ DA_OIDC_REDIRECT_URI = os.getenv("DA_OIDC_REDIRECT_URI")
 # Pull the comma-separated string from OpenShift
 DA_ALLOWED_USERS = os.getenv("DA_ALLOWED_USERS", "")
 
-# Use camelCase as requested by Aappo
 isMailCheckEnforced = os.getenv("DA_ENFORCE_MAIL_CHECK", "true").lower() == "true"
 
 oauth = OAuth()
