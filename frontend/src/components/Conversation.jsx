@@ -5,7 +5,7 @@ import { useBotConfig } from '../contexts/BotConfigContext';
 import axios from 'axios';
 
 const Conversation = ({ onActivate, openConversation, newChatSignal }) => {
-  const { promptA, promptB, resetPrompts } = useBotConfig();
+  const { promptA, promptB } = useBotConfig();
 
   const [input, setInput] = useState('');
   const [messages, setMessages] = useState(null);
@@ -98,42 +98,37 @@ const Conversation = ({ onActivate, openConversation, newChatSignal }) => {
     openConversationRef.current = openConversation;
   }, [openConversation]);
 
-  const handleClearConversation = useCallback(
-    (deleteRemote = false) => {
-      setMessages(null);
-      setError(null);
-      setIsSaved(false);
-      setInput('');
-      setThreadId(crypto.randomUUID());
-      savedMessageCountRef.current = null;
+  const handleClearConversation = useCallback((deleteRemote = false) => {
+    setMessages(null);
+    setError(null);
+    setIsSaved(false);
+    setInput('');
+    setThreadId(crypto.randomUUID());
+    savedMessageCountRef.current = null;
 
-      const currentConv = openConversationRef.current;
-      const convId = currentConv?.id || currentConv;
+    const currentConv = openConversationRef.current;
+    const convId = currentConv?.id || currentConv;
 
-      if (convId && deleteRemote) {
-        window.dispatchEvent(new CustomEvent('conversation:deleted', { detail: convId }));
+    if (convId && deleteRemote) {
+      window.dispatchEvent(new CustomEvent('conversation:deleted', { detail: convId }));
 
-        // We do NOT await this because we want the screen to wipe instantly.
-        axios
-          .delete(`/api/conversations/${convId}`, { withCredentials: true })
-          .then(() => {
-            console.log('✅ Conversation deleted from server:', convId);
-          })
-          .catch((err) => {
-            console.warn('Failed to delete conversation:', err);
-          })
-          .finally(() => {
-            // Even if delete failed
-            window.dispatchEvent(new Event('conversations:updated'));
-          });
-      }
+      // We do NOT await this because we want the screen to wipe instantly.
+      axios
+        .delete(`/api/conversations/${convId}`, { withCredentials: true })
+        .then(() => {
+          console.log('✅ Conversation deleted from server:', convId);
+        })
+        .catch((err) => {
+          console.warn('Failed to delete conversation:', err);
+        })
+        .finally(() => {
+          // Even if delete failed
+          window.dispatchEvent(new Event('conversations:updated'));
+        });
+    }
 
-      resetPrompts();
-
-      console.log('--- 🗑️ Conversation cleared ---');
-    },
-    [resetPrompts],
-  );
+    console.log('--- 🗑️ Conversation cleared ---');
+  }, []);
 
   useEffect(() => {
     if (typeof newChatSignal === 'undefined') return;
