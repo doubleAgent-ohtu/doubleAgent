@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { vi, test, expect, beforeEach } from 'vitest';
+import { vi, test, expect, beforeEach, afterEach } from 'vitest';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import '@testing-library/jest-dom';
 import Conversation from './Conversation';
@@ -26,6 +26,7 @@ vi.mock('axios');
 
 Element.prototype.scrollTo = vi.fn();
 
+// We removed promptA/promptB/onClearPrompts from props, so we clean this up
 const defaultProps = {
   onActivate: vi.fn(),
 };
@@ -191,6 +192,7 @@ test('14. Save posts conversation with system prompts from Context', async () =>
     expect(axios.post).toHaveBeenCalledWith(
       '/api/conversations',
       expect.objectContaining({
+        // The component now extracts .prompt from the context object
         system_prompt_a: 'Prompt A text',
         system_prompt_b: 'Prompt B text',
       }),
