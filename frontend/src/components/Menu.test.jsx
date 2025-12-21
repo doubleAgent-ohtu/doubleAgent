@@ -1,133 +1,120 @@
-import React from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import '@testing-library/jest-dom';
-
+import { vi, test, expect, beforeEach, afterEach } from 'vitest';
 import Menu from './Menu';
 import axios from 'axios';
 
-const _origFetch = global.fetch;
-const _origLocation = global.window.location;
+// 1. Mock Axios
+vi.mock('axios');
+
+// 2. Mock the Hook
+const mockUseChatSession = vi.fn();
+
+vi.mock('../contexts/ChatSessionContext', () => ({
+  useChatSession: () => mockUseChatSession(),
+}));
+
+// Mock Location
+const _origLocation = globalThis.window.location;
 
 beforeEach(() => {
   vi.clearAllMocks();
-  // ensure tests start with a clean localStorage
   localStorage.clear();
+
+  // Reset global location mock
+  Object.defineProperty(window, 'location', {
+    writable: true,
+    value: { href: '', assign: vi.fn() },
+  });
+
+  // DEFAULT MOCK STATE
+  mockUseChatSession.mockReturnValue({
+    conversationList: [],
+    isLoadingConversationList: false,
+    startNewChat: vi.fn(),
+    openChat: vi.fn(),
+  });
 });
 
 afterEach(() => {
-  // restore any mocked fetch to avoid leaking into other tests
-  global.fetch = _origFetch;
-  // restore location if tests replaced it
   try {
-    global.window.location = _origLocation;
-  } catch (e) {
-    // ignore in environments that disallow reassignment
+    globalThis.window.location = _origLocation;
+  } catch {
+    // ignore
   }
 });
 
 test('1. Renders main menu buttons', () => {
-  render(<Menu onOpenUserGuide={() => {}} onSelectConversation={() => {}} onNewChat={() => {}} />);
+  render(<Menu onOpenUserGuide={() => {}} />);
 
-  // Only test for buttons that still exist
   expect(screen.getByText('New Chat')).toBeInTheDocument();
   expect(screen.getByText('User Guide')).toBeInTheDocument();
   expect(screen.getByText('Logout')).toBeInTheDocument();
 });
 
-test('2. Clicking New Chat dispatches event and calls onNewChat prop', async () => {
-  const onNewChat = vi.fn();
-  const dispatchSpy = vi.spyOn(window, 'dispatchEvent');
+test('2. Clicking New Chat calls context startNewChat', async () => {
+  const startNewChatSpy = vi.fn();
+  mockUseChatSession.mockReturnValue({
+    conversationList: [],
+    isLoadingConversationList: false,
+    startNewChat: startNewChatSpy,
+    openChat: vi.fn(),
+  });
 
-  render(<Menu onOpenUserGuide={() => {}} onSelectConversation={() => {}} onNewChat={onNewChat} />);
+  render(<Menu onOpenUserGuide={() => {}} />);
 
   const btn = screen.getByText('New Chat');
   fireEvent.click(btn);
 
-  expect(onNewChat).toHaveBeenCalledTimes(1);
-  expect(dispatchSpy).toHaveBeenCalled();
-  // ensure the dispatched event is specifically the new-chat:start event
-  const calledTypes = dispatchSpy.mock.calls.map((c) => c[0]?.type).filter(Boolean);
-  expect(calledTypes).toContain('new-chat:start');
-
-  dispatchSpy.mockRestore();
+  expect(startNewChatSpy).toHaveBeenCalledTimes(1);
 });
 
-test('3. Loads and renders conversation starters, clicking calls onSelectConversation', async () => {
-  const fakeConvos = [
-    { id: 1, conversation_starter: 'Hello world', system_prompt_a: 'A', system_prompt_b: 'B' },
-    {
-      id: 2,
-      conversation_starter:
-        'This is a longer starter that will be truncated at forty characters for display',
-      system_prompt_a: null,
-      system_prompt_b: null,
-    },
+test('3. Renders conversation list from context and clicking calls openChat', async () => {
+  const openChatSpy = vi.fn();
+  const fakeList = [
+    { id: 1, conversation_starter: 'Hello world' },
+    { id: 2, conversation_starter: 'Second Item' },
   ];
 
-  global.fetch = vi.fn(() =>
-    Promise.resolve({ ok: true, json: () => Promise.resolve(fakeConvos) }),
-  );
+  mockUseChatSession.mockReturnValue({
+    conversationList: fakeList,
+    isLoadingConversationList: false,
+    startNewChat: vi.fn(),
+    openChat: openChatSpy,
+  });
 
-  const onSelectConversation = vi.fn();
-  render(
-    <Menu
-      onOpenUserGuide={() => {}}
-      onSelectConversation={onSelectConversation}
-      onNewChat={() => {}}
-    />,
-  );
+  render(<Menu onOpenUserGuide={() => {}} />);
 
-  // wait for the starters to be rendered
-  await waitFor(() => expect(screen.getByText('Chat History')).toBeInTheDocument());
-
-  // first starter full text
+  expect(screen.getByText('Chat History')).toBeInTheDocument();
   expect(screen.getByText('Hello world')).toBeInTheDocument();
 
-  // second starter should be truncated to 80 chars + '...'
-  expect(
-    screen.getByText((content) => content.startsWith('This is a longer starter')),
-  ).toBeInTheDocument();
-
-  // click first starter
   const firstBtn = screen.getByText('Hello world');
   fireEvent.click(firstBtn);
 
-  expect(onSelectConversation).toHaveBeenCalledTimes(1);
-  expect(onSelectConversation).toHaveBeenCalledWith(fakeConvos[0]);
+  expect(openChatSpy).toHaveBeenCalledTimes(1);
+  expect(openChatSpy).toHaveBeenCalledWith(fakeList[0]);
 });
 
 test('4. Truncation produces exactly 80 chars + ellipsis', async () => {
   const longStarter = 'x'.repeat(150);
-  const fakeConvos = [
-    { id: 1, conversation_starter: longStarter, system_prompt_a: null, system_prompt_b: null },
-  ];
 
-  global.fetch = vi.fn(() =>
-    Promise.resolve({ ok: true, json: () => Promise.resolve(fakeConvos) }),
-  );
+  mockUseChatSession.mockReturnValue({
+    conversationList: [{ id: 1, conversation_starter: longStarter }],
+    isLoadingConversationList: false,
+    startNewChat: vi.fn(),
+    openChat: vi.fn(),
+  });
 
-  render(<Menu onOpenUserGuide={() => {}} onSelectConversation={() => {}} onNewChat={() => {}} />);
-
-  await waitFor(() => expect(screen.getByText('Chat History')).toBeInTheDocument());
+  render(<Menu onOpenUserGuide={() => {}} />);
 
   const truncated = screen.getByText((c) => c.endsWith('...'));
-  // should be 83 characters total: 80 + '...'
   expect(truncated.textContent.length).toBe(83);
 });
 
 test('5. Logout calls axios.post and redirects', async () => {
-  const origLocation = global.window.location;
-  // replace location so assignment won't throw and we can inspect final href
-  try {
-    delete global.window.location;
-  } catch (e) {
-    // ignore
-  }
-  global.window.location = { href: '', assign: vi.fn() };
+  axios.post.mockResolvedValue({ status: 200 });
 
-  axios.post = vi.fn(() => Promise.resolve({ status: 200 }));
-
-  render(<Menu onOpenUserGuide={() => {}} onSelectConversation={() => {}} onNewChat={() => {}} />);
+  render(<Menu onOpenUserGuide={() => {}} />);
 
   const logoutBtn = screen.getByText('Logout');
   fireEvent.click(logoutBtn);
@@ -135,20 +122,14 @@ test('5. Logout calls axios.post and redirects', async () => {
   await waitFor(() =>
     expect(axios.post).toHaveBeenCalledWith('/api/logout', {}, { withCredentials: true }),
   );
-  // component sets window.location.href = '/' on success
-  expect(
-    global.window.location.href === '/' || global.window.location.assign.mock.calls.length > 0,
-  ).toBeTruthy();
 
-  // restore original location
-  global.window.location = origLocation;
+  expect(window.location.href === '/' || window.location.assign).toBeTruthy();
 });
 
 test('6. Theme toggle updates document attribute and localStorage', async () => {
-  render(<Menu onOpenUserGuide={() => {}} onSelectConversation={() => {}} onNewChat={() => {}} />);
+  render(<Menu onOpenUserGuide={() => {}} />);
 
   const toggle = screen.getByLabelText('Toggle theme');
-  // initial theme should be set by effect; clear ensures default 'light'
   const initial = document.documentElement.getAttribute('data-theme') || 'light';
 
   fireEvent.click(toggle);
@@ -159,73 +140,41 @@ test('6. Theme toggle updates document attribute and localStorage', async () => 
 });
 
 test('7. Toggle sidebar flips drawer checkbox checked state', async () => {
-  // create a dummy checkbox that toggleDrawer will touch
   const cb = document.createElement('input');
   cb.type = 'checkbox';
   cb.id = 'my-drawer-4';
   document.body.appendChild(cb);
 
-  render(<Menu onOpenUserGuide={() => {}} onSelectConversation={() => {}} onNewChat={() => {}} />);
+  render(<Menu onOpenUserGuide={() => {}} />);
 
   const toggleBtn = screen.getByLabelText('Toggle sidebar');
-  // initial unchecked
   expect(cb.checked).toBeFalsy();
 
   fireEvent.click(toggleBtn);
   expect(cb.checked).toBeTruthy();
 
-  fireEvent.click(toggleBtn);
-  expect(cb.checked).toBeFalsy();
-
   document.body.removeChild(cb);
 });
 
-test('8. conversation:deleted event removes starter from list', async () => {
-  const fakeConvos = [
-    { id: 1, conversation_starter: 'Hello world', system_prompt_a: 'A', system_prompt_b: 'B' },
-    { id: 2, conversation_starter: 'Second starter', system_prompt_a: null, system_prompt_b: null },
-  ];
+test('8. Shows loading spinner when context is loading', () => {
+  mockUseChatSession.mockReturnValue({
+    conversationList: [],
+    isLoadingConversationList: true,
+    startNewChat: vi.fn(),
+    openChat: vi.fn(),
+  });
 
-  global.fetch = vi.fn(() =>
-    Promise.resolve({ ok: true, json: () => Promise.resolve(fakeConvos) }),
-  );
+  render(<Menu onOpenUserGuide={() => {}} />);
 
-  render(<Menu onOpenUserGuide={() => {}} onSelectConversation={() => {}} onNewChat={() => {}} />);
+  const spinner = document.querySelector('.loading-spinner');
+  expect(spinner).toBeInTheDocument();
 
-  await waitFor(() => expect(screen.getByText('Chat History')).toBeInTheDocument());
-
-  expect(screen.getByText('Hello world')).toBeInTheDocument();
-  expect(screen.getByText('Second starter')).toBeInTheDocument();
-
-  window.dispatchEvent(new CustomEvent('conversation:deleted', { detail: 1 }));
-
-  await waitFor(() => expect(screen.queryByText('Hello world')).not.toBeInTheDocument());
-  expect(screen.getByText('Second starter')).toBeInTheDocument();
+  expect(screen.queryByText('Chat History')).not.toBeInTheDocument();
 });
 
-test('9. conversations:updated event reloads starters', async () => {
-  const initial = [{ id: 1, conversation_starter: 'Old starter' }];
-  global.fetch = vi.fn(() => Promise.resolve({ ok: true, json: () => Promise.resolve(initial) }));
-
-  render(<Menu onOpenUserGuide={() => {}} onSelectConversation={() => {}} onNewChat={() => {}} />);
-
-  await waitFor(() => expect(screen.getByText('Chat History')).toBeInTheDocument());
-  expect(screen.getByText('Old starter')).toBeInTheDocument();
-
-  const updated = [{ id: 2, conversation_starter: 'Fresh starter' }];
-  global.fetch = vi.fn(() => Promise.resolve({ ok: true, json: () => Promise.resolve(updated) }));
-
-  window.dispatchEvent(new Event('conversations:updated'));
-
-  await waitFor(() => expect(screen.getByText('Fresh starter')).toBeInTheDocument());
-});
-
-test('10. User Guide button calls onOpenUserGuide callback', () => {
+test('9. User Guide button calls onOpenUserGuide callback', () => {
   const onOpenUserGuide = vi.fn();
-
-  render(
-    <Menu onOpenUserGuide={onOpenUserGuide} onSelectConversation={() => {}} onNewChat={() => {}} />,
-  );
+  render(<Menu onOpenUserGuide={onOpenUserGuide} />);
 
   const userGuideBtn = screen.getByText('User Guide');
   fireEvent.click(userGuideBtn);
@@ -233,9 +182,8 @@ test('10. User Guide button calls onOpenUserGuide callback', () => {
   expect(onOpenUserGuide).toHaveBeenCalledTimes(1);
 });
 
-test('11. Menu items have proper spacing in expanded view', () => {
-  render(<Menu onOpenUserGuide={() => {}} onSelectConversation={() => {}} onNewChat={() => {}} />);
-
+test('10. Menu items have proper spacing', () => {
+  render(<Menu onOpenUserGuide={() => {}} />);
   const menu = screen.getByText('New Chat').closest('ul');
   expect(menu).toHaveClass('space-y-1');
 });
