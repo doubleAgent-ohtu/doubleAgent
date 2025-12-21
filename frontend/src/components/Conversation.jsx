@@ -2,10 +2,13 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 import ModelSelection from './ModelSelection.jsx';
 import DownloadChatButton from './DownloadChatButton.jsx';
 import { useBotConfig } from '../contexts/BotConfigContext';
+import { useChatSession } from '../contexts/ChatSessionContext';
 import axios from 'axios';
 
-const Conversation = ({ onActivate, openConversation, newChatSignal }) => {
-  const { promptA, promptB, resetPrompts } = useBotConfig();
+const Conversation = ({ onActivate }) => {
+  const { promptA, promptB, setPromptA, setPromptB, initPrompt } = useBotConfig();
+
+  const { activeConversationId, deleteChat, refreshConversationList } = useChatSession();
 
   const [input, setInput] = useState('');
   const [messages, setMessages] = useState(null);
@@ -13,15 +16,16 @@ const Conversation = ({ onActivate, openConversation, newChatSignal }) => {
   const [turns, setTurns] = useState(3);
   const [selectedModel, setSelectedModel] = useState('gpt-4o');
   const [threadId, setThreadId] = useState(crypto.randomUUID());
+
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
   const [isSaving, setIsSaving] = useState(false);
   const [isSaved, setIsSaved] = useState(false);
-  const savedMessageCountRef = useRef(null);
 
+  const savedMessageCountRef = useRef(null);
   const abortControllerRef = useRef(null);
 
-  // Auto-scroll to bottom when messages change
+  // Auto-scroll logic
   useEffect(() => {
     if (messagesRef.current) {
       messagesRef.current.scrollTo({
@@ -31,119 +35,111 @@ const Conversation = ({ onActivate, openConversation, newChatSignal }) => {
     }
   }, [messages]);
 
-  // Load a conversation provided by parent or other components
+  // Load Data when Context ID Changes
   useEffect(() => {
     const controller = new AbortController();
 
     const loadConversation = async () => {
-      if (!openConversation) return;
+      // CASE A: NEW CHAT (ID is null)
+      if (!activeConversationId) {
+        setMessages(null);
+        setThreadId(crypto.randomUUID());
+        setSelectedModel('gpt-4o');
+        setTurns(3);
+        setIsSaved(false);
+        savedMessageCountRef.current = null;
+        setInput('');
+        setError(null);
+        return;
+      }
 
+      // CASE B: LOAD EXISTING CHAT
       try {
-        let data = openConversation;
-        const hasLocalMessages = data.messages && data.messages.length > 0;
+        console.log('Loading conversation id:', activeConversationId);
+        const res = await axios.get(`/api/conversations/${activeConversationId}`, {
+          withCredentials: true,
+          signal: controller.signal,
+        });
 
-        // Fetch data if we don't have messages locally
-        if (!hasLocalMessages) {
-          const id = data.id || data;
-          console.log('Loading conversation id:', id);
+        const data = res.data;
 
-          const res = await axios.get(`/api/conversations/${id}`, {
-            withCredentials: true,
-            signal: controller.signal,
-          });
-
-          data = res.data;
-          console.log('Loaded conversation data:', data);
+        let loadedMsgs = data.messages || [];
+        if (typeof loadedMsgs === 'string') {
+          try {
+            loadedMsgs = JSON.parse(loadedMsgs);
+          } catch {
+            loadedMsgs = [];
+          }
         }
-
-        if (data.messages) {
-          setMessages(data.messages.map(({ chatbot, message }) => ({ chatbot, message })));
-        }
+        setMessages(
+          loadedMsgs.map((m) => ({
+            chatbot: m.chatbot || m.role,
+            message: m.message || m.content,
+          })),
+        );
+        savedMessageCountRef.current = loadedMsgs.length;
 
         setThreadId(data.thread_id || crypto.randomUUID());
-
         if (data.model) setSelectedModel(data.model);
-
+        if (data.turns) setTurns(data.turns);
         setIsSaved(true);
-        if (data && data.messages) savedMessageCountRef.current = data.messages.length;
+
+        // SYNC PROMPTS (Push to Global Context)
+        setPromptA({
+          ...initPrompt,
+          prompt: data.system_prompt_a || '',
+          agent_name: data.system_prompt_a_name || data.system_prompt_a_agent_name || '',
+        });
+
+        setPromptB({
+          ...initPrompt,
+          prompt: data.system_prompt_b || '',
+          agent_name: data.system_prompt_b_name || data.system_prompt_b_agent_name || '',
+        });
       } catch (err) {
-        // Ignore errors caused by us cancelling the request
-        if (axios.isCancel(err)) {
-          console.log('Previous conversation load canceled');
-        } else {
+        if (!axios.isCancel(err)) {
           console.error('Error loading conversation', err);
+          setError('Failed to load conversation');
         }
       }
     };
 
     loadConversation();
 
-    // 5. Cleanup function: Cancel the request if openConversation changes
     return () => {
       controller.abort();
     };
-  }, [openConversation]);
+  }, [activeConversationId, setPromptA, setPromptB, initPrompt]);
 
   const handleStopConversation = () => {
     if (abortControllerRef.current) {
-      abortControllerRef.current.abort(); // Send the cancel signal
+      abortControllerRef.current.abort();
       console.log('--- 🛑 Stream aborted by user ---');
       setIsLoading(false);
     }
   };
 
-  const openConversationRef = useRef(openConversation);
-
-  useEffect(() => {
-    openConversationRef.current = openConversation;
-  }, [openConversation]);
-
   const handleClearConversation = useCallback(
-    (deleteRemote = false) => {
-      setMessages(null);
-      setError(null);
-      setIsSaved(false);
-      setInput('');
-      setThreadId(crypto.randomUUID());
-      savedMessageCountRef.current = null;
+    async (deleteRemote = false) => {
+      if (abortControllerRef.current) abortControllerRef.current.abort();
 
-      const currentConv = openConversationRef.current;
-      const convId = currentConv?.id || currentConv;
-
-      if (convId && deleteRemote) {
-        window.dispatchEvent(new CustomEvent('conversation:deleted', { detail: convId }));
-
-        // We do NOT await this because we want the screen to wipe instantly.
-        axios
-          .delete(`/api/conversations/${convId}`, { withCredentials: true })
-          .then(() => {
-            console.log('✅ Conversation deleted from server:', convId);
-          })
-          .catch((err) => {
-            console.warn('Failed to delete conversation:', err);
-          })
-          .finally(() => {
-            // Even if delete failed
-            window.dispatchEvent(new Event('conversations:updated'));
-          });
+      if (activeConversationId && deleteRemote) {
+        // Use Context to delete
+        await deleteChat(activeConversationId);
+      } else {
+        // Local Clear
+        setMessages(null);
+        setError(null);
+        setIsSaved(false);
+        setInput('');
+        setThreadId(crypto.randomUUID());
+        savedMessageCountRef.current = null;
+        // Do NOT reset prompts here (User Preference)
       }
-
-      resetPrompts();
-
       console.log('--- 🗑️ Conversation cleared ---');
     },
-    [resetPrompts],
+    [activeConversationId, deleteChat],
   );
-
-  useEffect(() => {
-    if (typeof newChatSignal === 'undefined') return;
-    handleClearConversation();
-  }, [newChatSignal, handleClearConversation]);
-
-  useEffect(() => {
-    window.addEventListener('new-chat:start', handleClearConversation);
-    return () => window.removeEventListener('new-chat:start', handleClearConversation);
-  }, [handleClearConversation]);
 
   const handleSaveConversation = async () => {
     if (!messages?.length) return alert('No messages to save');
@@ -161,19 +157,20 @@ const Conversation = ({ onActivate, openConversation, newChatSignal }) => {
         conversation_starter,
         thread_id: threadId,
         model: selectedModel,
+        // Use Context Prompts
         system_prompt_a: promptA?.prompt || null,
         system_prompt_b: promptB?.prompt || null,
         turns,
         messages: messages.map(({ chatbot, message }) => ({ chatbot, message })),
       };
 
-      const response = await axios.post('/api/conversations', conversationData);
-      const saved = response.data;
+      await axios.post('/api/conversations', conversationData, { withCredentials: true });
 
       setIsSaved(true);
+      savedMessageCountRef.current = messages.length;
 
-      window.dispatchEvent(new Event('conversations:updated'));
-      window.dispatchEvent(new CustomEvent('conversation:opened', { detail: saved }));
+      // UPDATE SIDEBAR via Context
+      refreshConversationList();
 
       console.log('✅ Conversation saved');
     } catch (err) {
@@ -182,25 +179,19 @@ const Conversation = ({ onActivate, openConversation, newChatSignal }) => {
       alert(`Error saving conversation: ${errorMessage}`);
     } finally {
       setIsSaving(false);
-      // ensure saved count matches current messages after save
-      savedMessageCountRef.current = messages ? messages.length : 0;
     }
   };
 
-  // Re-enable the Save button when new messages differ from saved count
   useEffect(() => {
     if (!messages) {
-      // no messages -> not saved
       setIsSaved(false);
       return;
     }
-
     const savedCount = savedMessageCountRef.current;
     if (savedCount === null || savedCount === undefined) {
       setIsSaved(false);
       return;
     }
-
     setIsSaved(messages.length === savedCount);
   }, [messages]);
 
@@ -210,6 +201,7 @@ const Conversation = ({ onActivate, openConversation, newChatSignal }) => {
     setIsLoading(true);
     setError(null);
 
+    if (abortControllerRef.current) abortControllerRef.current.abort();
     abortControllerRef.current = new AbortController();
 
     const userMsg = { chatbot: 'user', message: input };
@@ -229,7 +221,7 @@ const Conversation = ({ onActivate, openConversation, newChatSignal }) => {
 
     try {
       console.log('Starting POST /api/conversation with payload:', conversationData);
-      // Has to be fetch, not axios for streaming
+
       const response = await fetch('/api/conversation', {
         method: 'POST',
         headers: {
@@ -246,7 +238,7 @@ const Conversation = ({ onActivate, openConversation, newChatSignal }) => {
       const decoder = new TextDecoder();
       let buffer = '';
 
-      // Read the stream
+      // --- STREAMING LOGIC ---
       while (true) {
         const { done, value } = await reader.read();
         if (done) {
@@ -276,7 +268,6 @@ const Conversation = ({ onActivate, openConversation, newChatSignal }) => {
                     ...lastMessage,
                     message: lastMessage.message + data.content,
                   };
-
                   return [...allButLast, newLastMessage];
                 });
               } else if (data.type === 'end') {
@@ -293,7 +284,7 @@ const Conversation = ({ onActivate, openConversation, newChatSignal }) => {
     } catch (err) {
       if (err.name === 'AbortError') {
         console.log('Fetch aborted as expected.');
-        setError(null); // It's not a real error
+        setError(null);
       } else {
         console.error('Fetch stream error:', err);
         setError(err.message);

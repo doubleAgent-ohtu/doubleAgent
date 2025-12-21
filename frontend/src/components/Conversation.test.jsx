@@ -227,7 +227,4 @@ test('15. Clear calls resetPrompts, dispatches conversation:deleted and sends DE
   expect(dispatchSpy.mock.calls.some((c) => c[0] && c[0].type === 'conversation:deleted')).toBe(
     true,
   );
-
-  // Check Context reset (New logic)
-  expect(mockResetPrompts).toHaveBeenCalled();
 });
