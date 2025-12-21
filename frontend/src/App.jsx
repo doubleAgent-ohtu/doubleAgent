@@ -3,6 +3,7 @@ import axios from 'axios';
 import HomePage from './pages/HomePage';
 import LoginPage from './pages/LoginPage';
 import { BotConfigProvider } from './contexts/BotConfigContext';
+import { ChatSessionProvider } from './contexts/ChatSessionContext';
 
 const App = () => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -33,10 +34,12 @@ const App = () => {
     );
   }
 
-  // Wrap HomePage with BotConfigProvider to provide context, but not LoginPage
+  // Wrap HomePage with BotConfigProvider, and ChatSessionProvider to provide context, but not LoginPage
   return isAuthenticated ? (
     <BotConfigProvider>
-      <HomePage />
+      <ChatSessionProvider>
+        <HomePage />
+      </ChatSessionProvider>
     </BotConfigProvider>
   ) : (
     <LoginPage />

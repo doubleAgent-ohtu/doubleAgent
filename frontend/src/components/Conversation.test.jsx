@@ -5,9 +5,19 @@ import '@testing-library/jest-dom';
 import Conversation from './Conversation';
 import { useBotConfig } from '../contexts/BotConfigContext';
 
-// This bypasses the need for a Provider and lets us inject data directly
+// 1. Mock BotConfigContext
 vi.mock('../contexts/BotConfigContext', () => ({
   useBotConfig: vi.fn(),
+}));
+
+// 2. Mock ChatSessionContext
+const mockDeleteChat = vi.fn();
+const mockRefreshConversationList = vi.fn();
+
+const mockUseChatSession = vi.fn();
+
+vi.mock('../contexts/ChatSessionContext', () => ({
+  useChatSession: () => mockUseChatSession(),
 }));
 
 // Setup Global Mocks
@@ -19,25 +29,31 @@ Element.prototype.scrollTo = vi.fn();
 // We removed promptA/promptB/onClearPrompts from props, so we clean this up
 const defaultProps = {
   onActivate: vi.fn(),
-  // openConversation and newChatSignal are still props in PR #1
 };
 
-// Default Context Values to use in most tests
-const mockResetPrompts = vi.fn();
-const defaultContextValues = {
+// Default Context Values
+const defaultBotConfigValues = {
   promptA: { prompt: '', agent_name: '' },
   promptB: { prompt: '', agent_name: '' },
-  resetPrompts: mockResetPrompts,
+  setPromptA: vi.fn(),
+  setPromptB: vi.fn(),
+  resetPrompts: vi.fn(),
   initPrompt: { id: null, agent_name: '', prompt: '', created_at: null },
 };
 
 beforeEach(() => {
   vi.clearAllMocks();
 
-  // 3. Set default behavior for the context hook
-  useBotConfig.mockReturnValue(defaultContextValues);
+  // Reset Hooks
+  useBotConfig.mockReturnValue(defaultBotConfigValues);
 
-  // Reset default axios implementations
+  mockUseChatSession.mockReturnValue({
+    activeConversationId: null, // Default: New Chat
+    deleteChat: mockDeleteChat,
+    refreshConversationList: mockRefreshConversationList,
+  });
+
+  // Reset axios
   axios.get.mockResolvedValue({ data: {} });
   axios.post.mockResolvedValue({ data: {} });
   axios.delete.mockResolvedValue({ data: {} });
@@ -144,14 +160,12 @@ test('13. Start sends POST to /api/conversation and appends user message', async
 });
 
 test('14. Save posts conversation with system prompts from Context', async () => {
-  // --- NEW LOGIC: Override the Mock Context for this specific test ---
   useBotConfig.mockReturnValue({
-    ...defaultContextValues,
+    ...defaultBotConfigValues,
     promptA: { prompt: 'Prompt A text', agent_name: 'Agent A' },
     promptB: { prompt: 'Prompt B text', agent_name: 'Agent B' },
   });
 
-  // Mock Fetch for the "Start" action
   globalThis.fetch.mockImplementation((url) => {
     if (url === '/api/conversation') {
       return Promise.resolve({
@@ -166,7 +180,6 @@ test('14. Save posts conversation with system prompts from Context', async () =>
 
   render(<Conversation {...defaultProps} />);
 
-  // Start chat to make Save button appear
   fireEvent.change(screen.getByPlaceholderText('Conversation starter...'), {
     target: { value: 'Hi' },
   });
@@ -183,48 +196,40 @@ test('14. Save posts conversation with system prompts from Context', async () =>
         system_prompt_a: 'Prompt A text',
         system_prompt_b: 'Prompt B text',
       }),
+      expect.any(Object),
     );
   });
+
+  // NEW CHECK: Should call refreshConversationList from context
+  expect(mockRefreshConversationList).toHaveBeenCalled();
 });
 
-test('15. Clear dispatches conversation:deleted and sends DELETE', async () => {
-  axios.get.mockResolvedValue({ data: { id: 42, messages: [] } });
-  axios.delete.mockResolvedValue({ data: { success: true } });
-
-  globalThis.fetch.mockImplementation((url) => {
-    if (url === '/api/conversation') {
-      return Promise.resolve({
-        ok: true,
-        body: { getReader: () => ({ read: async () => ({ done: true }) }) },
-      });
-    }
-    return Promise.resolve({ ok: true, json: async () => ({}) });
+test('15. Clear calls context deleteChat when activeConversationId is present', async () => {
+  // SET ACTIVE CHAT
+  mockUseChatSession.mockReturnValue({
+    activeConversationId: 42,
+    deleteChat: mockDeleteChat,
+    refreshConversationList: mockRefreshConversationList,
   });
 
-  const openConv = { id: 42 };
-
-  render(<Conversation {...defaultProps} openConversation={openConv} />);
-
-  fireEvent.change(screen.getByPlaceholderText('Conversation starter...'), {
-    target: { value: 'Bye' },
+  // Mock loading that chat
+  axios.get.mockResolvedValue({
+    data: {
+      id: 42,
+      messages: [{ role: 'user', content: 'Hi' }], // Needs messages to show clear button
+    },
   });
-  fireEvent.click(screen.getByText('Start'));
 
-  const dispatchSpy = vi.spyOn(window, 'dispatchEvent');
+  render(<Conversation {...defaultProps} />);
+
+  // Wait for loading
+  await waitFor(() =>
+    expect(axios.get).toHaveBeenCalledWith('/api/conversations/42', expect.any(Object)),
+  );
 
   const clearButton = await screen.findByText('Clear');
   fireEvent.click(clearButton);
 
-  // Check Axios DELETE
-  await waitFor(() => {
-    expect(axios.delete).toHaveBeenCalledWith(
-      '/api/conversations/42',
-      expect.objectContaining({ withCredentials: true }),
-    );
-  });
-
-  // Check window event (Old logic, still present in PR #1)
-  expect(dispatchSpy.mock.calls.some((c) => c[0] && c[0].type === 'conversation:deleted')).toBe(
-    true,
-  );
+  // Expect Context Action
+  expect(mockDeleteChat).toHaveBeenCalledWith(42);
 });

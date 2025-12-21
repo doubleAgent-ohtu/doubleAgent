@@ -14,17 +14,14 @@ const HomePage = () => {
   const { promptA, setPromptA, promptB, setPromptB, initPrompt } = useBotConfig();
 
   const [savedPrompts, setSavedPrompts] = useState(null);
+
   const [promptManagerContext, setPromptManagerContext] = useState(null);
-
-  const privacyModalRef = useRef(null);
-  const userGuideModalRef = useRef(null);
-
   const [isConvoActive, setIsConvoActive] = useState(false);
   const [userGuideLanguage, setUserGuideLanguage] = useState('FIN');
   const [privacyLanguage, setPrivacyLanguage] = useState('FIN');
-  const [openConversation, setOpenConversation] = useState(null);
-  const [newChatSignal, setNewChatSignal] = useState(0);
 
+  const privacyModalRef = useRef(null);
+  const userGuideModalRef = useRef(null);
   const { alertIsVisible, alertText, alertType, showAlert } = useAlert();
 
   const openPromptManagerModal = (chatbot, promptData, setPrompt, isEditor) => {
@@ -40,31 +37,7 @@ const HomePage = () => {
     userGuideModalRef.current.showModal();
   };
 
-  const handleSelectConversation = async (c) => {
-    if (!c) return;
-    // set the selected conversation immediately; Conversation component will fetch full data if needed
-    // also set the system prompts so Conversation uses the same prompts
-    setPromptA({
-      ...initPrompt,
-      prompt: c.system_prompt_a || '',
-      agent_name: c.system_prompt_a_name || c.system_prompt_a_agent_name || '',
-    });
-    setPromptB({
-      ...initPrompt,
-      prompt: c.system_prompt_b || '',
-      agent_name: c.system_prompt_b_name || c.system_prompt_b_agent_name || '',
-    });
-    setOpenConversation(c);
-    setIsConvoActive(true);
-  };
-
-  const handleNewChat = () => {
-    // increment signal so Conversation clears itself
-    setOpenConversation(null);
-    setNewChatSignal((n) => n + 1);
-    setIsConvoActive(true);
-  };
-
+  // Load Saved Prompts
   useEffect(() => {
     const loadSavedPrompts = async () => {
       try {
@@ -78,28 +51,6 @@ const HomePage = () => {
     };
     loadSavedPrompts();
   }, []);
-
-  useEffect(() => {
-    const handler = (e) => {
-      if (e && e.detail) {
-        const c = e.detail;
-        setPromptA({
-          ...initPrompt,
-          prompt: c.system_prompt_a || '',
-          agent_name: c.system_prompt_a_name || c.system_prompt_a_agent_name || '',
-        });
-        setPromptB({
-          ...initPrompt,
-          prompt: c.system_prompt_b || '',
-          agent_name: c.system_prompt_b_name || c.system_prompt_b_agent_name || '',
-        });
-        setOpenConversation(c);
-        setIsConvoActive(true);
-      }
-    };
-    window.addEventListener('conversation:opened', handler);
-    return () => window.removeEventListener('conversation:opened', handler);
-  }, [setPromptA, setPromptB, initPrompt]);
 
   return (
     <div className="drawer lg:drawer-open">
@@ -115,7 +66,6 @@ const HomePage = () => {
           className="p-8 grow"
           onClick={() => {
             setIsConvoActive(false);
-            // Close drawer when clicking main content
             const drawer = document.getElementById('my-drawer-4');
             if (drawer) {
               drawer.checked = false;
@@ -141,11 +91,7 @@ const HomePage = () => {
             />
 
             <div className="order-3 lg:order-2">
-              <Conversation
-                onActivate={() => setIsConvoActive(true)}
-                openConversation={openConversation}
-                newChatSignal={newChatSignal}
-              />
+              <Conversation onActivate={() => setIsConvoActive(true)} />
             </div>
 
             <div className="order-2 lg:order-3">
@@ -175,11 +121,7 @@ const HomePage = () => {
 
       <div className="drawer-side">
         <label htmlFor="my-drawer-4" aria-label="close sidebar" className="drawer-overlay"></label>
-        <Menu
-          onOpenUserGuide={openUserGuide}
-          onSelectConversation={handleSelectConversation}
-          onNewChat={handleNewChat}
-        />
+        <Menu onOpenUserGuide={openUserGuide} />
       </div>
 
       {promptManagerContext && (
