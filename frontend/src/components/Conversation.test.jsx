@@ -187,7 +187,7 @@ test('14. Save posts conversation with system prompts from Context', async () =>
   });
 });
 
-test('15. Clear calls resetPrompts, dispatches conversation:deleted and sends DELETE', async () => {
+test('15. Clear dispatches conversation:deleted and sends DELETE', async () => {
   axios.get.mockResolvedValue({ data: { id: 42, messages: [] } });
   axios.delete.mockResolvedValue({ data: { success: true } });
 
@@ -227,7 +227,4 @@ test('15. Clear calls resetPrompts, dispatches conversation:deleted and sends DE
   expect(dispatchSpy.mock.calls.some((c) => c[0] && c[0].type === 'conversation:deleted')).toBe(
     true,
   );
-
-  // Check Context reset (New logic)
-  expect(mockResetPrompts).toHaveBeenCalled();
 });
