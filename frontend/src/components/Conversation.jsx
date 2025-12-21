@@ -1,16 +1,12 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import ModelSelection from './ModelSelection.jsx';
 import DownloadChatButton from './DownloadChatButton.jsx';
+import { useBotConfig } from '../contexts/BotConfigContext';
 import axios from 'axios';
 
-const Conversation = ({
-  promptA,
-  promptB,
-  onActivate,
-  onClearPrompts,
-  openConversation,
-  newChatSignal,
-}) => {
+const Conversation = ({ onActivate, openConversation, newChatSignal }) => {
+  const { promptA, promptB } = useBotConfig();
+
   const [input, setInput] = useState('');
   const [messages, setMessages] = useState(null);
   const messagesRef = useRef(null);
@@ -96,13 +92,11 @@ const Conversation = ({
     }
   };
 
-  const onClearPromptsRef = useRef(onClearPrompts);
   const openConversationRef = useRef(openConversation);
 
   useEffect(() => {
-    onClearPromptsRef.current = onClearPrompts;
     openConversationRef.current = openConversation;
-  }, [onClearPrompts, openConversation]);
+  }, [openConversation]);
 
   const handleClearConversation = useCallback((deleteRemote = false) => {
     setMessages(null);
@@ -132,6 +126,7 @@ const Conversation = ({
           window.dispatchEvent(new Event('conversations:updated'));
         });
     }
+
     console.log('--- 🗑️ Conversation cleared ---');
   }, []);
 
@@ -166,8 +161,8 @@ const Conversation = ({
         conversation_starter,
         thread_id: threadId,
         model: selectedModel,
-        system_prompt_a: promptA || null,
-        system_prompt_b: promptB || null,
+        system_prompt_a: promptA?.prompt || null,
+        system_prompt_b: promptB?.prompt || null,
         turns,
         messages: messages.map(({ chatbot, message }) => ({ chatbot, message })),
       };
@@ -225,8 +220,8 @@ const Conversation = ({
       initial_message: input,
       turns: turns,
       model: selectedModel,
-      system_prompt_a: promptA,
-      system_prompt_b: promptB,
+      system_prompt_a: promptA?.prompt || '',
+      system_prompt_b: promptB?.prompt || '',
       thread_id: threadId,
       history: newMessages,
     };
